@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Meet the KOMAL team - Founders, engineers, researchers, and advisors building the future of personalized learning for children.">
+    <meta name="robots" content="index, follow">
+    <title>Our Team - KOMAL</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .team-page {
+            padding: 120px 0 80px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+        }
+        .team-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 80px;
+        }
+        .team-header h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .team-header p {
+            font-size: 20px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .team-section {
+            margin-bottom: 100px;
+        }
+        .team-section h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 48px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 32px;
+            margin-bottom: 60px;
+        }
+        .team-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border-color);
+        }
+        .team-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        .team-card .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+        }
+        .team-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .team-card .role {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 16px;
+        }
+        .team-card .bio {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .team-card .education {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+        .team-card .education-item {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .team-card .education-item:last-child {
+            margin-bottom: 0;
+        }
+        .advisory-section {
+            background: var(--bg-light);
+            padding: 60px 0;
+            border-radius: 16px;
+            margin: 60px 0;
+        }
+        .advisory-category {
+            margin-bottom: 60px;
+        }
+        .advisory-category:last-child {
+            margin-bottom: 0;
+        }
+        .advisory-category h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+        .advisory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .advisory-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+        }
+        .advisory-card h4 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .advisory-card .role {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+        }
+        .advisory-card .bio {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 40px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+        .back-link:hover {
+            opacity: 0.8;
+        }
+        .founders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+        .founder-card {
+            background: var(--bg-white);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+        .founder-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent-color);
+        }
+        .founder-card .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: 700;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .team-header h1 {
+                font-size: 36px;
+            }
+            .team-grid, .founders-grid, .advisory-grid {
+                grid-template-columns: 1fr;
+            }
+            .team-section h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-left">
+                    <a href="index.html" class="logo">KOMAL</a>
+                </div>
+                <div class="nav-center">
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="how-komal-works.html">🔮 The Magic</a>
+                    <a href="meet-komal.html">Meet KOMAL</a>
+                    <a href="team.html">Team</a>
+                    <a href="index.html#for-parents">For Parents</a>
+                    <a href="index.html#pricing">Pricing</a>
+                </div>
+                <div class="nav-right">
+                    <a href="index.html" class="btn-login">Back to Home</a>
+                    <a href="index.html#pricing" class="btn-enterprise">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Team Page Content -->
+    <section class="team-page">
+        <div class="container">
+            <a href="index.html" class="back-link">← Back to Home</a>
+            
+            <div class="team-header">
+                <h1>Our Team</h1>
+                <p>
+                    We're a diverse team of engineers, researchers, and educators building the future of personalized 
+                    learning for children. Together, we're creating technology that truly understands how children learn and grow.
+                </p>
+            </div>
+
+            <!-- Founders -->
+            <section class="team-section">
+                <h2>Founders</h2>
+                <div class="founders-grid">
+                    <div class="founder-card">
+                        <div class="avatar">AR</div>
+                        <h3>Aranyo Ray</h3>
+                        <div class="role">Co-Founder & CEO</div>
+                        <div class="bio">
+                            <div class="education">
+                                <div class="education-item">Yale University '24</div>
+                                <div class="education-item">Formerly at Graymatics and Bain</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="founder-card">
+                        <div class="avatar">SS</div>
+                        <h3>Sania Sinha</h3>
+                        <div class="role">Co-Founder & CTO</div>
+                        <div class="bio">
+                            <div class="education">
+                                <div class="education-item">University of Oxford — MS in Computer Science (2026)</div>
+                                <div class="education-item">Michigan State University — BS in Computer Science & AI (2025, summa cum laude)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Core Team -->
+            <section class="team-section">
+                <h2>Core Team</h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="avatar">UC</div>
+                        <h3>Udayan Chatterjee</h3>
+                        <div class="role">Engineering Lead</div>
+                        <div class="bio">
+                            <div class="education">
+                                <div class="education-item">IIT (ISM) Dhanbad — BTech (2025)</div>
+                                <div class="education-item">Formerly at Accenture</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar">AG</div>
+                        <h3>Aniket Gupta</h3>
+                        <div class="role">Founding Operations Lead</div>
+                        <div class="bio">
+                            <div class="education">
+                                <div class="education-item">IIIT Delhi — BTech in ECE (2025)</div>
+                                <div class="education-item">Founder, Tale of Humankind</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar">SK</div>
+                        <h3>Saarthak Kumar</h3>
+                        <div class="role">Finance & Strategy Advisor</div>
+                        <div class="bio">
+                            <div class="education">
+                                <div class="education-item">Columbia University — MPA (Quantitative Concentration), '25</div>
+                                <div class="education-item">London School of Economics — MPP (2024)</div>
+                                <div class="education-item">Former Advisor, Permanent Mission of India to the United Nations</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Research Advisors -->
+            <section class="team-section">
+                <h2>Research Advisors</h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="avatar">YA</div>
+                        <h3>Yudhajit Ain</h3>
+                        <div class="role">Research Advisor (Neuroscience)</div>
+                        <div class="bio">
+                            <div class="education">
+                                <div class="education-item">PhD Candidate, Neuropsychology</div>
+                                <div class="education-item">Internal Attention Lab, University of Calgary</div>
+                                <div class="education-item">IISER Bhopal — MS-BS (2021, Gold Medallist)</div>
+                                <div class="education-item">Formerly at NBRC</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar">AD</div>
+                        <h3>Anwesha Das</h3>
+                        <div class="role">Research Advisor (Computational Neuroscience)</div>
+                        <div class="bio">
+                            <div class="education">
+                                <div class="education-item">PhD Candidate, Princeton University</div>
+                                <div class="education-item">Caltech (2025)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Advisory Board -->
+            <section class="advisory-section">
+                <div class="container">
+                    <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 60px; text-align: center; color: var(--text-primary);">Advisory Board</h2>
+                    
+                    <!-- Technical Advisors -->
+                    <div class="advisory-category">
+                        <h3>Technical Advisors</h3>
+                        <div class="advisory-grid">
+                            <div class="advisory-card">
+                                <h4>Richard Vidal-Dorsch</h4>
+                                <div class="role">Senior Software Engineer, Aura</div>
+                                <div class="bio">
+                                    <div class="education">
+                                        <div class="education-item">MS in Computer Science (2005)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="advisory-card">
+                                <h4>Doris E. V.</h4>
+                                <div class="role">Research Advisor</div>
+                                <div class="bio">
+                                    <div class="education">
+                                        <div class="education-item">PhD in Integrative Biology</div>
+                                        <div class="education-item">University of California, Berkeley (2001)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clinical & Research Advisors -->
+                    <div class="advisory-category">
+                        <h3>Clinical & Research Advisors</h3>
+                        <div class="advisory-grid">
+                            <div class="advisory-card">
+                                <h4>Dr Om Prakash Singh, MD</h4>
+                                <div class="role">Clinical Advisor</div>
+                                <div class="bio">
+                                    <div class="education">
+                                        <div class="education-item">Incoming National President, Indian Psychiatric Society</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="advisory-card">
+                                <h4>Dr Moumita Roy</h4>
+                                <div class="role">Child Psychologist</div>
+                                <div class="bio">
+                                    <div class="education">
+                                        <div class="education-item">North 24 Parganas District Hospital</div>
+                                        <div class="education-item">(largest district in India by population)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business & GTM Advisors -->
+                    <div class="advisory-category">
+                        <h3>Business & GTM Advisors</h3>
+                        <div class="advisory-grid">
+                            <div class="advisory-card">
+                                <h4>Amit Goenka</h4>
+                                <div class="role">Business Advisor</div>
+                                <div class="bio">
+                                    <div class="education">
+                                        <div class="education-item">Chief Executive, International Broadcast, Zee Entertainment Enterprises</div>
+                                        <div class="education-item">Head, Z5 Global & Zee Learn</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="advisory-card">
+                                <h4>Shreya Jain, MBA</h4>
+                                <div class="role">GTM Advisor</div>
+                                <div class="bio">
+                                    <div class="education">
+                                        <div class="education-item">Founder, The Stack</div>
+                                        <div class="education-item">Founder, Reservoir Neurodiversity</div>
+                                        <div class="education-item">Formerly at BYJU'S</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="team-section" style="text-align: center; padding: 60px 0; background: var(--bg-light); border-radius: 16px; margin-top: 80px;">
+                <h2 style="border: none; margin-bottom: 24px;">Join Our Mission</h2>
+                <p style="max-width: 600px; margin: 0 auto 32px; font-size: 18px; color: var(--text-secondary);">
+                    We're always looking for talented individuals who share our passion for understanding how children learn.
+                </p>
+                <a href="index.html#contact" class="btn-primary">Get in Touch</a>
+            </section>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="index.html#how-it-works">How It Works</a></li>
+                        <li><a href="how-komal-works.html">🔮 The Magic</a></li>
+                        <li><a href="meet-komal.html">Meet KOMAL</a></li>
+                        <li><a href="team.html">Team</a></li>
+                        <li><a href="index.html#for-parents">For Parents</a></li>
+                        <li><a href="index.html#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="index.html#about">About Us</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal & Privacy</h4>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">COPPA Compliance</a></li>
+                        <li><a href="#">Data Security</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#">Twitter</a>
+                        <a href="#">LinkedIn</a>
+                        <a href="#">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>All rights reserved © KOMAL AI Inc.</p>
+                <p class="footer-brand">KOMAL</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
