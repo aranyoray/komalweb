@@ -1,8 +1,20 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KOMAL - Next.js Application
+
+This is a Next.js application for KOMAL - an AI companion that understands how children feel and learns.
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -10,27 +22,61 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+komal-nextjs/
+├── app/
+│   ├── page.tsx              # Home page
+│   ├── how-komal-works/      # How KOMAL Works page
+│   │   └── page.tsx
+│   ├── meet-komal/           # Meet KOMAL platform page
+│   │   └── page.tsx
+│   ├── team/                 # Team page
+│   │   └── page.tsx
+│   ├── layout.tsx            # Root layout with navigation and footer
+│   └── globals.css           # Global styles
+├── components/
+│   ├── Navbar.tsx            # Navigation component
+│   ├── Footer.tsx            # Footer component
+│   └── ClientScripts.tsx     # Client-side scripts for animations
+└── public/                   # Static assets
+```
 
-## Learn More
+## Features
 
-To learn more about Next.js, take a look at the following resources:
+- **Server-Side Rendering (SSR)**: Fast page loads with Next.js App Router
+- **TypeScript**: Full type safety across the application
+- **Responsive Design**: Mobile-first design that works on all devices
+- **SEO Optimized**: Proper metadata and structured data for search engines
+- **Smooth Animations**: Scroll-triggered animations and smooth scrolling
+- **Modern Architecture**: Using the latest Next.js 16 and React 19
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Home** (`/`) - Landing page with hero section, features, pricing, and FAQ
+2. **How KOMAL Works** (`/how-komal-works`) - Detailed explanation of the technology
+3. **Meet KOMAL** (`/meet-komal`) - Platform overview and technical details
+4. **Team** (`/team`) - Meet the team behind KOMAL
 
-## Deploy on Vercel
+## Build for Production
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run build
+npm start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Technologies Used
+
+- **Next.js 16.0.10** - React framework with App Router
+- **React 19.2.1** - UI library
+- **TypeScript** - Type safety
+- **CSS** - Custom styling with CSS variables
+
+## License
+
+All rights reserved © KOMAL AI Inc.
