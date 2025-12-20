@@ -18,27 +18,6 @@ const coreTeam: TeamMember[] = [
         image: "/man.png",
     },
     {
-        name: "Sania Sinha",
-        role: "Co-Founder & CTO",
-        credentials: [
-            "University of Oxford — MS in Computer Science (2026)",
-            "Michigan State University — BS in Computer Science & AI (2025, summa cum laude)",
-        ],
-        image: "/girl.png",
-    },
-    {
-        name: "Udayan Chatterjee",
-        role: "Engineering Lead",
-        credentials: ["Formerly at Accenture", "IIT (ISM) Dhanbad — BTech (2025)"],
-        image: "/man.png",
-    },
-    {
-        name: "Aniket Gupta",
-        role: "Founding Operations Lead",
-        credentials: ["IIIT Delhi — BTech in ECE (2025)", "Founder, Tale of Humankind"],
-        image: "/man.png",
-    },
-    {
         name: "Saarthak Kumar",
         role: "Finance & Strategy Advisor",
         credentials: [
@@ -49,7 +28,7 @@ const coreTeam: TeamMember[] = [
         image: "/man.png",
     },
     {
-        name: "Yudhajit Ain",
+        name: "Yudhajit Ain, MS",
         role: "Research Advisor (Neuroscience)",
         credentials: [
             "PhD Candidate, Neuropsychology",
@@ -201,46 +180,9 @@ export default function TeamSection() {
                     Meet The Team
                 </h2>
 
-                <div className="team-list mb-12 md:mb-16">
+                <div className="team-list">
                     {coreTeam.map((member, index) => renderTeamMember(member, index))}
                     <div className="border-t border-gray-200" />
-                </div>
-
-                {/* Meet Our Advisors - Horizontal Layout */}
-                <h3 className="text-2xl text-center md:text-4xl font-light text-primary mb-8 md:mb-12 tracking-tight ">
-                    Our Advisors
-                </h3>
-
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 md:gap-6">
-                    {advisors.map((advisor, index) => (
-                        <div key={index} className="advisor-card">
-                            {/* Portrait Image */}
-                            <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-gray-100">
-                                <Image
-                                    src={advisor.image}
-                                    alt={advisor.name}
-                                    width={300}
-                                    height={400}
-                                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                                />
-                            </div>
-
-                            {/* Name */}
-                            <h4 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
-                                {advisor.name}
-                            </h4>
-
-                            {/* Title & Company */}
-                            <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-1 md:mb-2">
-                                {advisor.title} {advisor.company}
-                            </p>
-
-                            {/* Description - Hidden on mobile, shown on desktop */}
-                            <p className="hidden md:block text-xs text-text-dim leading-relaxed">
-                                {advisor.description}
-                            </p>
-                        </div>
-                    ))}
                 </div>
             </div>
         </section>

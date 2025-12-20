@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import RotatingText from './RotatingText';
 
 const roles = [
@@ -17,26 +18,36 @@ const roles = [
 
 export default function KomalYourBestSection() {
     return (
-        <section className="komal-roles-section py-24 bg-white">
-            <div className="container max-w-[1240px] px-8 mx-auto text-center">
-                <h2 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-light text-primary mb-8 tracking-tight text-center flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                    <span>KOMAL is your best</span>
-                    <RotatingText
-                        texts={roles}
-                        mainClassName="px-4 sm:px-5 md:px-6 bg-gradient-to-r from-primary/10 via-primary/15 to-primary/10 text-primary overflow-hidden py-1 sm:py-1.5 md:py-2 justify-center rounded-full border border-primary/20 shadow-sm"
-                        staggerFrom="last"
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "-120%" }}
-                        staggerDuration={0.025}
-                        splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                        rotationInterval={2000}
-                    />
+        <section className="komal-roles-section py-8 md:py-24 relative overflow-hidden">
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <Image
+                    src="/landscape.png"
+                    alt=""
+                    fill
+                    className="object-cover"
+                />
+            </div>
+            <div className="container px-4 mx-auto flex justify-center relative z-10">
+                <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold text-primary tracking-tight inline-flex items-baseline gap-1 sm:gap-2 md:gap-3">
+                    <span className="whitespace-nowrap">Meet your best</span>
+                    <span className="inline-block min-w-[150px] sm:min-w-[220px] md:min-w-[450px]">
+                        <RotatingText
+                            texts={roles}
+                            mainClassName="text-primary font-bold py-1 sm:py-1.5 md:py-2 text-left whitespace-nowrap"
+                            staggerFrom="last"
+                            initial={{ y: "100%", opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: "-120%", opacity: 0 }}
+                            staggerDuration={0}
+                            splitBy="words"
+                            splitLevelClassName="pb-0.5 sm:pb-1 md:pb-1 whitespace-nowrap"
+                            elementLevelClassName="whitespace-nowrap"
+                            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                            rotationInterval={2000}
+                        />
+                    </span>
                 </h2>
-                <p className="text-base md:text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto text-center">
-                    Learn via Play. Track Social, Speech & Emotional Skills with AI.
-                </p>
             </div>
         </section>
     );

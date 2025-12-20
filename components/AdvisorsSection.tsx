@@ -1,0 +1,94 @@
+"use client";
+
+import Image from "next/image";
+
+interface Advisor {
+    name: string;
+    title: string;
+    company: string;
+    description: string;
+    image: string;
+}
+
+const advisors: Advisor[] = [
+    {
+        name: "Richard Vidal-Dorsch",
+        title: "SENIOR SOFTWARE ENGINEER",
+        company: "@ AURA",
+        description: "MS in Computer Science (2005). Technical advisor providing guidance on software architecture and engineering best practices.",
+        image: "/man.png",
+    },
+    {
+        name: "Doris E. V.",
+        title: "RESEARCH ADVISOR",
+        company: "@ UC BERKELEY",
+        description: "PhD in Integrative Biology from University of California, Berkeley (2001). Brings deep expertise in biological systems and research methodology.",
+        image: "/girl.png",
+    },
+    {
+        name: "Dr Om Prakash Singh, MD",
+        title: "CLINICAL ADVISOR",
+        company: "@ INDIAN PSYCHIATRIC SOCIETY",
+        description: "Incoming National President, Indian Psychiatric Society. Guides our clinical approach and mental health protocols.",
+        image: "/man.png",
+    },
+    {
+        name: "Dr Moumita Roy",
+        title: "CHILD PSYCHOLOGIST",
+        company: "@ NORTH 24 PARGANAS DISTRICT HOSPITAL",
+        description: "Child Psychologist at North 24 Parganas District Hospital, the largest district in India by population. Expert in child development.",
+        image: "/girl.png",
+    },
+    {
+        name: "Shreya Jain, MBA",
+        title: "GTM ADVISOR",
+        company: "@ THE STACK",
+        description: "Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S. Expert in go-to-market strategy and neurodiversity initiatives.",
+        image: "/girl.png",
+    },
+];
+
+export default function AdvisorsSection() {
+    return (
+        <section className="advisors-section py-16 md:py-24 bg-white" id="advisors">
+            <div className="container max-w-[1240px] px-6 md:px-8 mx-auto">
+                {/* Our Advisors - Horizontal Layout */}
+                <h2 className="section-title font-sans text-3xl md:text-[52px] font-normal mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
+                    Advised by the Best
+                </h2>
+
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+                    {advisors.map((advisor, index) => (
+                        <div key={index} className="advisor-card">
+                            {/* Portrait Image */}
+                            <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-gray-100">
+                                <Image
+                                    src={advisor.image}
+                                    alt={advisor.name}
+                                    width={300}
+                                    height={400}
+                                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                                />
+                            </div>
+
+                            {/* Name */}
+                            <h4 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
+                                {advisor.name}
+                            </h4>
+
+                            {/* Title & Company */}
+                            <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-1 md:mb-2">
+                                {advisor.title} {advisor.company}
+                            </p>
+
+                            {/* Description - Hidden on mobile, shown on desktop */}
+                            <p className="hidden md:block text-xs text-text-dim leading-relaxed">
+                                {advisor.description}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}

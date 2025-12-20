@@ -68,24 +68,15 @@ export default function HowKomalWorks() {
         </div>
 
         <div className="max-w-[1100px] mx-auto relative z-[2]">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium mb-12 transition-colors"
-          >
-            ← Back to Home
-          </Link>
 
           {/* Multi-line headline with inline animated pill */}
           <div className="text-center mb-12 animate-[fadeDown_0.8s_ease_forwards]">
             <h1 className="font-sans text-[22px] md:text-[48px] lg:text-[56px] font-light leading-[1.3] tracking-[-0.02em] text-primary">
-              We use advanced AI to understand your child
-              <br />
-              for delivering{" "}
+              We use advanced AI to understand your child and deliver{" "}
               <span className="inline-flex items-center align-middle mx-1">
                 <span
                   className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#E8E0F5] to-[#D4C8ED] px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
                 >
-                  {/* Animated 3D-ish icon */}
                   <span className="relative w-8 h-8 flex items-center justify-center">
                     <svg className="w-6 h-6 text-primary transition-transform duration-300 group-hover:rotate-12" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.3" />
@@ -95,9 +86,7 @@ export default function HowKomalWorks() {
                   </span>
                 </span>
               </span>
-              {" "}personalized insights
-              <br />
-              to help them thrive
+              {" "}personalized insights to help them thrive.
             </h1>
           </div>
 

@@ -53,7 +53,7 @@
 }
 
 @theme {
-    --font-sans: "Google Sans", sans-serif;
+    --font-sans: "Poppins", sans-serif;
 
     /* Shadcn Colors */
     --color-background: hsl(var(--background));
@@ -273,12 +273,93 @@
     }
 
     --animate-vibrate: vibrate 0.5s ease-in-out;
+
+    @keyframes wiggle {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        20% {
+            transform: translateX(-4px);
+        }
+
+        40% {
+            transform: translateX(4px);
+        }
+
+        60% {
+            transform: translateX(-3px);
+        }
+
+        80% {
+            transform: translateX(3px);
+        }
+    }
+
+    --animate-wiggle: wiggle 0.5s ease-in-out;
 }
 
 /* Utilities */
 @layer utilities {
     .text-shadow-sm {
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+}
+
+/* Hero Highlight Animation - strokes/highlights text after fade-in */
+.hero-highlight {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+}
+
+.hero-highlight::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0.15em;
+    width: 100%;
+    height: 0.35em;
+    background: linear-gradient(120deg, rgba(39, 2, 99, 0.25) 0%, rgba(39, 2, 99, 0.4) 50%, rgba(39, 2, 99, 0.25) 100%);
+    z-index: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.hero-highlight>* {
+    position: relative;
+    z-index: 1;
+}
+
+/* First highlight - "learning companion" */
+.hero-highlight-1::after {
+    animation: highlightStroke 0.4s ease-out forwards;
+    animation-delay: 1.2s;
+}
+
+/* Second highlight - "feel." with pause after first */
+.hero-highlight-2::after {
+    animation: highlightStroke 0.4s ease-out forwards;
+    animation-delay: 1.9s;
+}
+
+@keyframes highlightStroke {
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: scaleX(1);
+        opacity: 1;
     }
 }
 

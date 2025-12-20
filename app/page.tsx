@@ -5,8 +5,9 @@ import Link from "next/link";
 import Script from "next/script";
 import Image from "next/image";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
-import PricingSection from "@/components/PricingSection";
-import TeamSection from "@/components/TeamSection";
+import AdvisorsSection from "@/components/AdvisorsSection";
+
+
 import FaqAccordion from "@/components/FaqAccordion";
 import PartnersCarousel from "@/components/PartnersCarousel";
 import HeroImageGallery from "@/components/HeroImageGallery";
@@ -16,6 +17,7 @@ import { ChevronDown } from "lucide-react";
 import Aurora from "@/components/Aurora";
 import FloatingButterflies from "@/components/FloatingButterflies";
 import KomalYourBestSection from "@/components/KomalYourBestSection";
+import SplitText from "@/components/SplitText";
 
 export default function Home() {
 
@@ -23,95 +25,30 @@ export default function Home() {
     {
       quote:
         "For the first time, I understand when my daughter is actually struggling versus when she's just being playful. The weekly reports are clear and actionable.",
-      author: "Sarah M.",
+      author: "Priya S.",
       role: "Parent",
     },
     {
       quote:
         "My son's therapist loves the reports. She can see patterns between sessions that we never noticed before.",
-      author: "Michael R.",
+      author: "Rajesh K.",
       role: "Parent",
     },
     {
       quote:
         "As a teacher, I've seen many learning apps. KOMAL is different—it actually adapts to each child in real-time.",
-      author: "Jennifer L.",
+      author: "Ananya M.",
       role: "Elementary School Teacher",
     },
     {
       quote:
         "The privacy features give me peace of mind. Everything stays on our device, and I control exactly who sees the insights.",
-      author: "David K.",
+      author: "Vikram P.",
       role: "Parent",
     },
   ];
 
-  const pricingPlans = [
-    {
-      name: "Essentials",
-      priceDisplay: "₹0",
-      priceDisplayUSD: "$0",
-      periodMonthlyLabel: "/month",
-      tagline: "Perfect for getting started",
-      cta: "Start Free",
-      features: [
-        "Core learning and SEL activities",
-        "Real-time, on-device adaptation",
-        "Weekly parent snapshot",
-        "Privacy-first, no raw media storage",
-        "Up to 2 child profiles",
-      ],
-    },
-    {
-      name: "Grow",
-      priceDisplay: "₹99",
-      priceDisplayUSD: "$1.20",
-      periodMonthlyLabel: "/month",
-      tagline: "Built for growing families",
-      featured: true,
-      cta: "Start Free Trial",
-      features: [
-        "Everything in Essentials, plus:",
-        "Deeper personalization across sessions",
-        "Expanded weekly progress insights",
-        "Share reports with caregivers and teachers",
-        "Unlimited child profiles",
-        "Priority parent support",
-      ],
-    },
-    {
-      name: "Thrive",
-      priceDisplay: "₹299",
-      priceDisplayUSD: "$3.60",
-      periodMonthlyLabel: "/child/month",
-      tagline: "For schools and districts",
-      cta: "Contact Sales",
-      features: [
-        "Everything in Grow, plus:",
-        "Classroom-level dashboards",
-        "SEL framework alignment and reporting",
-        "Anonymized engagement trends",
-        "Early support indicators (non-diagnostic)",
-        "Admin controls and role-based access",
-      ],
-    },
-    {
-      name: "Partner",
-      priceDisplay: "from ₹49",
-      priceDisplayUSD: "from $0.60",
-      periodMonthlyLabel: "/child/month",
-      tagline: "For therapy and intervention centers",
-      cta: "Contact Sales",
-      features: [
-        "Everything in Thrive, plus:",
-        "Between-session progress tracking",
-        "Concise async session summaries",
-        "Objective engagement and regulation signals",
-        "Longitudinal progress visualization",
-        "DPDP Act–aligned data handling and consent flows",
-      ],
-    },
-  ];
+
 
   const faqs = [
     {
@@ -240,8 +177,87 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 className="hero-title font-sans text-[42px] sm:text-[48px] md:text-[60px] lg:text-[72px] font-light leading-[1.2] tracking-[-0.02em] text-primary normal-case animate-[fadeDown_1s_ease_forwards]">
-              A <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">learning companion</span> that understands how children <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">feel.</span>
+            <h1 className="hero-title font-sans text-[42px] sm:text-[48px] md:text-[60px] lg:text-[72px] font-light leading-[1.2] tracking-[-0.02em] text-primary normal-case flex flex-col items-center text-center">
+              {/* Line 1: A learning companion */}
+              <span className="flex flex-wrap justify-center items-baseline gap-x-[0.25em]">
+                <SplitText
+                  text="A"
+                  tag="span"
+                  className="inline-block"
+                  delay={50}
+                  duration={0.6}
+                  ease="power3.out"
+                  splitType="words"
+                  from={{ opacity: 0, y: 40 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0.1}
+                  initialDelay={0}
+                />
+                <span className="text-primary font-semibold inline-block hover:animate-[wiggle_0.3s_ease-in-out] cursor-pointer hero-highlight hero-highlight-1">
+                  <SplitText
+                    text="learning companion"
+                    tag="span"
+                    className="inline-block"
+                    delay={50}
+                    duration={0.6}
+                    ease="power3.out"
+                    splitType="words"
+                    from={{ opacity: 0, y: 40 }}
+                    to={{ opacity: 1, y: 0 }}
+                    threshold={0.1}
+                    staggerChildren={0.1}
+                    initialDelay={0.1}
+                  />
+                </span>
+              </span>
+              {/* Line 2: that understands how children feel. */}
+              <span className="flex flex-wrap justify-center items-baseline gap-x-[0.25em]">
+                <SplitText
+                  text="that understands how"
+                  tag="span"
+                  className="inline-block"
+                  delay={50}
+                  duration={0.6}
+                  ease="power3.out"
+                  splitType="words"
+                  from={{ opacity: 0, y: 40 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0.1}
+                  staggerChildren={0.1}
+                  initialDelay={0.35}
+                />
+              </span>
+              {/* Line 3: children feel. */}
+              <span className="flex flex-wrap justify-center items-baseline gap-x-[0.25em]">
+                <SplitText
+                  text="children"
+                  tag="span"
+                  className="inline-block"
+                  delay={50}
+                  duration={0.6}
+                  ease="power3.out"
+                  splitType="words"
+                  from={{ opacity: 0, y: 40 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0.1}
+                  initialDelay={0.6}
+                />
+                <span className="text-primary font-semibold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer hero-highlight hero-highlight-2">
+                  <SplitText
+                    text="feel."
+                    tag="span"
+                    className="inline-block"
+                    delay={50}
+                    duration={0.6}
+                    ease="power3.out"
+                    splitType="words"
+                    from={{ opacity: 0, y: 40 }}
+                    to={{ opacity: 1, y: 0 }}
+                    threshold={0.1}
+                    initialDelay={0.7}
+                  />
+                </span>
+              </span>
             </h1>
 
             {/* CTA Buttons */}
@@ -269,60 +285,51 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feel, Don't Click Section */}
-      <section className="feel-section py-20 md:py-28 bg-white text-center">
+      {/* Core Explainer Section - Talk, Don't Tap + Understanding Beyond Clicks (merged) */}
+      <section className="core-explainer pt-4 pb-16 bg-gradient-to-b from-white via-gray-50 to-white" id="how-it-works">
         <div className="container max-w-[900px] px-8 mx-auto text-center">
-          <h2 className="section-title text-[26px] sm:text-3xl md:text-4xl lg:text-5xl font-light text-primary mb-4 tracking-tight text-center">
+          {/* Main Headline */}
+          <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-light text-primary mb-4 tracking-tight text-center leading-[1.15]">
             Talk, Don&apos;t Tap
           </h2>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-secondary font-medium mb-6 text-center">
+
+          {/* Tagline */}
+          <p className="text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-secondary font-medium mb-8 text-center">
             THE WORLD&apos;S FIRST NON-ADDICTIVE, HANDS-FREE CHILD COMPANION
           </p>
-          <p className="text-lg text-text-dim leading-relaxed max-w-[600px] mx-auto text-center">
-            Komal understands your child through behaviour and feelings, not buttons or clicks. AI-powered insights delivered daily.
+
+          {/* Core Value Proposition */}
+          <p className="text-base sm:text-lg md:text-xl text-text-dim leading-relaxed max-w-[700px] mx-auto text-center mb-6">
+            Traditional apps measure completion, not cognition.<br /> <span className="text-primary font-medium">KOMAL reads behavior in real-time</span>—attention patterns, emotional responses, and engagement quality—and adapts instantly.
           </p>
-        </div>
-      </section>
 
-
-      {/* Partners Section - Trust through Institutional Legitimacy */}
-      <section className="partners-section pb-10 md:pb-20 bg-gradient-to-b from-white to-[#F5F5F7] overflow-hidden relative">
-        <div className="partners-container max-w-[1400px] mx-auto px-6 md:px-16">
-          <h2 className="partners-title text-[11px] uppercase tracking-[0.3em] text-secondary mb-8 md:mb-16 font-medium text-center animate-[fadeDown_1s_ease_forwards]">OUR ECOSYSTEM</h2>
-
-          <PartnersCarousel />
-
-        </div>
-      </section>
-
-      {/* Komal: Your Best Section */}
-      <KomalYourBestSection />
-
-      {/* Main Value Proposition (Moved Down) */}
-      <section className="value-prop section py-24 relative overflow-hidden" id="how-it-works">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <Image
-            src="/landscape.png"
-            alt=""
-            fill
-            className="object-cover"
-          />
-        </div>
-        <div className="container max-w-[1240px] px-8 mx-auto text-center relative z-10 flex flex-col items-center">
-          <h2 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal leading-[1.15] tracking-[-0.02em] text-primary text-center mb-6 drop-shadow-[0_2px_10px_rgba(255,255,255,0.8)]">Understanding Beyond Clicks</h2>
-          <p className="section-description text-lg text-primary/80 leading-relaxed text-center mb-8 max-w-[700px] drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)]">
-            Traditional apps measure completion, not cognition. KOMAL reads behavior in real-time—attention patterns,
-            emotional responses, and engagement quality—and adapts instantly.
+          {/* Secondary explanation */}
+          <p className="text-sm sm:text-base md:text-lg text-text-dim/80 leading-relaxed max-w-[600px] mx-auto text-center mb-10">
+            AI-powered insights delivered daily.
           </p>
+
+          {/* CTA */}
           <Button asChild size="lg" className="rounded-full px-8">
             <Link href="#">See How It Works</Link>
           </Button>
         </div>
       </section>
 
+      {/* Komal: Your Best Section */}
+      <KomalYourBestSection />
+
+      {/* Partners Section - Trust through Institutional Legitimacy */}
+      <section className="partners-section py-20 md:py-20 bg-white overflow-hidden relative">
+        <div className="partners-container max-w-[1400px] mx-auto px-6 md:px-16">
+          <h2 className="partners-title text-[22px] sm:text-[24px] md:text-[28px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#1e3a5f] mb-8 md:mb-16 font-semibold text-center animate-[fadeDown_1s_ease_forwards]">OUR ECOSYSTEM</h2>
+
+          <PartnersCarousel />
+
+        </div>
+      </section>
+
       {/* Testimonials */}
-      <section className="testimonials py-24 bg-white relative overflow-hidden">
+      <section className="testimonials py-14 bg-white relative overflow-hidden">
         {/* Background Image with padding and curved borders */}
         <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none p-4 md:p-6">
           <div className="w-full h-full max-w-[1400px] overflow-hidden rounded-3xl">
@@ -335,24 +342,15 @@ export default function Home() {
             />
           </div>
         </div>
-        <div className="container max-w-[1240px] px-8 mx-auto relative z-10">
-          <h2 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal mb-6 leading-[1.15] tracking-[-0.02em] text-white text-center drop-shadow-lg">Testimonials</h2>
+        <div className="container text-center max-w-[1240px] px-8 mx-auto relative z-10">
+          <h2 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal mb-6 leading-[1.15] tracking-[-0.02em] text-white text-center drop-shadow-lg bg-primary px-6 py-3 rounded-full inline-block mx-auto">What Parents Love</h2>
           <TestimonialsCarousel testimonials={testimonials} />
         </div>
       </section>
 
 
-      {/* Pricing */}
-      <section className="pricing py-24 bg-white" id="pricing">
-        <div className="container max-w-[1240px] px-8 mx-auto">
-          <h2 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center">Simple, Transparent Pricing</h2>
-          <p className="section-description text-lg text-text-dim mb-12 max-w-[700px] mx-auto leading-relaxed text-center">Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.</p>
-          <PricingSection plans={pricingPlans} />
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <TeamSection />
+      {/* Advisors Section */}
+      <AdvisorsSection />
 
       {/* For Schools & Therapists */}
       <section className="enterprise-cta py-24 bg-primary text-white text-center" id="for-schools">

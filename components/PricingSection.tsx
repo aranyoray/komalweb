@@ -19,6 +19,22 @@ type Plan = {
 export default function PricingSection({ plans }: { plans: Plan[] }) {
   const [currency, setCurrency] = useState<"INR" | "USD">("INR");
 
+  // Helper function to render price with cents as superscript
+  const renderPrice = (price: string) => {
+    // Match patterns like $9.99 or ₹99
+    const match = price.match(/^([₹$])(\d+)(\.(\d+))?$/);
+    if (match) {
+      const [, symbol, dollars, , cents] = match;
+      return (
+        <>
+          <span>{symbol}{dollars}</span>
+          {cents && <sup className="text-lg font-bold align-super">.{cents}</sup>}
+        </>
+      );
+    }
+    return price;
+  };
+
   return (
     <div className="w-full">
       {/* Currency Toggle */}
@@ -70,7 +86,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             {/* Price */}
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-3xl font-bold tracking-tight text-primary">
-                {currency === "USD" && plan.priceDisplayUSD ? plan.priceDisplayUSD : plan.priceDisplay}
+                {renderPrice(currency === "USD" && plan.priceDisplayUSD ? plan.priceDisplayUSD : plan.priceDisplay)}
               </span>
               <span className="text-xs text-text-dim">
                 {plan.periodMonthlyLabel}
