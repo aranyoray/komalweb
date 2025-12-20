@@ -874,7 +874,7 @@ export default function MeetKomal() {
               journey.
             </p>
             <Link href="/#pricing" className="btn-primary">
-              Start Free Trial
+              Get FREE AI Report
             </Link>
           </section>
         </div>

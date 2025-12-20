@@ -36,7 +36,7 @@ export default function Home() {
     },
     {
       quote:
-        "As a teacher, I've seen many learning apps. KOMAL is different—it actually adapts to each child in real-time.",
+        "As a teacher, I've seen many learning apps. Komal is different—it actually adapts to each child in real-time.",
       author: "Ananya M.",
       role: "Elementary School Teacher",
     },
@@ -52,29 +52,29 @@ export default function Home() {
 
   const faqs = [
     {
-      question: "What is KOMAL?",
+      question: "What is Komal?",
       answer:
-        "KOMAL is a hyper-personalized learning companion for children ages 3-12 that uses real-time behavioral AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, KOMAL reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
+        "Komal is a hyper-personalised learning companion for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
     },
     {
-      question: "How does KOMAL protect my child's privacy?",
+      question: "How does Komal protect my child's privacy?",
       answer:
         "All AI processing happens on-device—your child's data never leaves your device without explicit consent. Parents control what’s shared, and we never sell data or use it for advertising.",
     },
     {
-      question: "Does KOMAL diagnose my child?",
+      question: "Does Komal diagnose my child?",
       answer:
-        "No. KOMAL provides insights and understanding, not medical or psychological diagnoses. We never label, categorize, or make diagnostic claims.",
+        "No. Komal provides insights and understanding, not medical or psychological diagnoses. We never label, categorise, or make diagnostic claims.",
     },
     {
-      question: "What age is KOMAL designed for?",
+      question: "What age is Komal designed for?",
       answer:
-        "KOMAL is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs.",
+        "Komal is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs.",
     },
     {
       question: "How does the real-time adaptation work?",
       answer:
-        "KOMAL processes behavioral signals in real-time (under ~200ms). When your child hesitates, shows frustration, or loses attention, the app adapts pacing, tone, and difficulty automatically.",
+        "Komal processes behavioural signals in real-time (under ~200ms). When your child hesitates, shows frustration, or loses attention, the app adapts pacing, tone, and difficulty automatically.",
     },
     {
       question: "What do the parent reports include?",
@@ -87,7 +87,7 @@ export default function Home() {
         "Yes. Sharing is parent-initiated and parent-controlled. You can share reports via email or WhatsApp with one click.",
     },
     {
-      question: "Does KOMAL work offline?",
+      question: "Does Komal work offline?",
       answer: "Yes. Core learning features and real-time adaptation work offline; internet is only needed for syncing and report delivery (if you enable it).",
     },
   ];
@@ -104,10 +104,10 @@ export default function Home() {
             operatingSystem: "Web",
             applicationCategory: "EducationApplication",
             description:
-              "The world's first AI companion that reads how a child feels, not just what they click. Hyper-personalized learning platform for children ages 3-12.",
+              "The world's first AI companion that reads how a child feels, not just what they click. Hyper-personalised learning platform for children ages 3-12.",
             screenshot: "https://komal.ai/screenshot.jpg",
             featureList:
-              "Real-time behavioral AI, Personalized learning, Parent insights, Privacy-first design",
+              "Real-time behavioural AI, Personalised learning, Parent insights, Privacy-first design",
           }),
         }}
       />
@@ -177,7 +177,7 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 className="hero-title font-sans text-[42px] sm:text-[48px] md:text-[60px] lg:text-[72px] font-light leading-[1.2] tracking-[-0.02em] text-primary normal-case flex flex-col items-center text-center">
+            <h1 className="hero-title font-sans text-[42px] sm:text-[48px] md:text-[60px] lg:text-[72px] font-bold leading-[1.2] tracking-[-0.02em] text-primary normal-case flex flex-col items-center text-center">
               {/* Line 1: A learning companion */}
               <span className="flex flex-wrap justify-center items-baseline gap-x-[0.25em]">
                 <SplitText
@@ -289,7 +289,7 @@ export default function Home() {
       <section className="core-explainer pt-4 pb-16 bg-gradient-to-b from-white via-gray-50 to-white" id="how-it-works">
         <div className="container max-w-[900px] px-8 mx-auto text-center">
           {/* Main Headline */}
-          <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-light text-primary mb-4 tracking-tight text-center leading-[1.15]">
+          <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-bold text-primary mb-4 tracking-tight text-center leading-[1.15]">
             Talk, Don&apos;t Tap
           </h2>
 
@@ -300,7 +300,7 @@ export default function Home() {
 
           {/* Core Value Proposition */}
           <p className="text-base sm:text-lg md:text-xl text-text-dim leading-relaxed max-w-[700px] mx-auto text-center mb-6">
-            Traditional apps measure completion, not cognition.<br /> <span className="text-primary font-medium">KOMAL reads behavior in real-time</span>—attention patterns, emotional responses, and engagement quality—and adapts instantly.
+            Traditional apps measure completion, not cognition.<br /> <span className="text-primary font-medium">Komal reads behaviour in real-time</span>—attention patterns, emotional responses, and engagement quality—and adapts instantly.
           </p>
 
           {/* Secondary explanation */}
@@ -355,9 +355,9 @@ export default function Home() {
       {/* For Schools & Therapists */}
       <section className="enterprise-cta py-24 bg-primary text-white text-center" id="for-schools">
         <div className="container max-w-[900px] px-8 mx-auto text-center">
-          <h2 className="text-[24px] sm:text-3xl md:text-[36px] lg:text-4xl font-sans font-light mb-6 text-center">For Schools, Daycares, and Paediatric Practices</h2>
+          <h2 className="text-[24px] sm:text-3xl md:text-[36px] lg:text-4xl font-sans font-bold mb-6 text-center">For Schools, Daycares, and Paediatric Practices</h2>
           <p className="text-lg opacity-90 leading-relaxed mb-8  text-center">
-            KOMAL integrates seamlessly into your existing workflow. No new systems to learn—just plug into the insights
+            Komal integrates seamlessly into your existing workflow. No new systems to learn—just plug into the insights
             parents already trust. Get classroom-level analytics, SEL compliance dashboards, and early risk identification
             without disrupting your current processes.
           </p>
@@ -394,16 +394,16 @@ export default function Home() {
       {/* Final CTA */}
       <section className="final-cta py-32  text-center bg-primary text-white text-center">
         <div className="container max-w-[1240px] px-8 mx-auto text-center">
-          <h2 className="text-[24px] sm:text-3xl md:text-4xl lg:text-5xl font-sans font-light mb-6 text-center">Ready to Understand Your Child Better?</h2>
+          <h2 className="text-[24px] sm:text-3xl md:text-4xl lg:text-5xl font-sans font-bold mb-6 text-center">Ready to Understand Your Child Better?</h2>
           <p className="text-xl opacity-90 mb-10 text-center ">Start your free trial today—no credit card required.</p>
           <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto rounded-full">
-            <Link href="#">Start Free Trial</Link>
+            <Link href="#">Get FREE AI Report</Link>
           </Button>
         </div>
       </section>
       <div className="my-6 text-center">
         <p className="text-text-dim/60 text-[10px] leading-relaxed  mx-auto">
-          Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of KOMAL (ChildCog Private Limited).
+          Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of Komal (ChildCog Private Limited).
         </p>
       </div>
     </>

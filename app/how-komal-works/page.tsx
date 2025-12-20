@@ -4,7 +4,7 @@ import Link from "next/link";
 import FloatingParticles from "@/components/FloatingParticles";
 import { Button } from "@/components/ui/button";
 
-// Abstract SVG Icons for "Anatomy of KOMAL" section
+// Abstract SVG Icons for "Anatomy of Komal" section
 const CoreIdentityIcon = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="24" cy="24" r="8" stroke="#1A1A1A" strokeWidth="2" />
@@ -71,8 +71,8 @@ export default function HowKomalWorks() {
 
           {/* Multi-line headline with inline animated pill */}
           <div className="text-center mb-12 animate-[fadeDown_0.8s_ease_forwards]">
-            <h1 className="font-sans text-[22px] md:text-[48px] lg:text-[56px] font-light leading-[1.3] tracking-[-0.02em] text-primary">
-              We use advanced AI to understand your child and deliver{" "}
+            <h1 className="font-sans text-[22px] md:text-[48px] lg:text-[56px] font-bold leading-[1.3] tracking-[-0.02em] text-primary">
+              We use <span className="font-semibold">advanced AI</span> to understand your child and deliver{" "}
               <span className="inline-flex items-center align-middle mx-1">
                 <span
                   className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#E8E0F5] to-[#D4C8ED] px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
@@ -86,7 +86,7 @@ export default function HowKomalWorks() {
                   </span>
                 </span>
               </span>
-              {" "}personalized insights to help them thrive.
+              {" "}<span className="font-semibold">personalised insights</span> to help them thrive.
             </h1>
           </div>
 
@@ -107,10 +107,7 @@ export default function HowKomalWorks() {
               {/* Center content */}
               <div className="relative z-10 text-center px-8">
                 <p className="text-primary/60 text-lg md:text-xl font-medium">
-                  Behavioral AI in Action
-                </p>
-                <p className="text-primary/40 text-sm mt-2">
-                  Placeholder for hero visualization
+                  Behavioural AI in Action
                 </p>
               </div>
             </div>
@@ -121,7 +118,10 @@ export default function HowKomalWorks() {
                 className="group bg-white rounded-full px-5 py-3 shadow-lg border border-border/50 flex items-center gap-3 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
                 <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-lg transition-transform duration-300 group-hover:rotate-[360deg]">
-                  🧠
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    <path d="M12 6v6l4 2"/>
+                  </svg>
                 </span>
                 <div>
                   <p className="text-primary font-medium text-sm">Real-time Analysis</p>
@@ -133,14 +133,14 @@ export default function HowKomalWorks() {
         </div>
       </section>
 
-      {/* The Anatomy of KOMAL - Inspired by reference image */}
+      {/* The Anatomy of Komal - Inspired by reference image */}
       <section className="py-16 md:py-24 bg-[#F5F5F7]">
         <div className="max-w-[1100px] mx-auto px-6 md:px-16">
-          <h2 className="font-sans text-[36px] md:text-[42px] font-light text-primary mb-4 text-center md:text-left">
-            The anatomy of understanding
+          <h2 className="font-sans text-[36px] md:text-[42px] font-semibold text-primary mb-4 text-center md:text-left">
+            The anatomy of <span className="font-bold">companionship</span>
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-12 max-w-[800px] text-center md:text-left">
-            KOMAL has studied the key markers of child development and engagement, building a sophisticated system that synthesizes your child&apos;s unique patterns and needs.
+            Komal has studied the key markers of child development and engagement, building a sophisticated system that synthesises your child&apos;s unique patterns and needs.
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -165,127 +165,15 @@ export default function HowKomalWorks() {
       {/* The Big Idea */}
       <section className="py-20 md:py-28 bg-white">
         <div className="max-w-[900px] mx-auto px-6 md:px-8">
-          <h2 className="font-sans text-[32px] md:text-[42px] font-light text-primary mb-6 tracking-[-0.02em]">
+          <h2 className="font-sans text-[32px] md:text-[42px] font-semibold text-primary mb-6 tracking-[-0.02em]">
             The Big Idea
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
-            Most learning apps are like blindfolded teachers—they only see if your child got the answer right or wrong. KOMAL is different. We watch how your child engages, not just what they click. It&apos;s like having a teacher who notices when your child hesitates, when they&apos;re getting frustrated, or when they&apos;re genuinely excited.
+            Most learning apps are blindfolded—they only see if your child got the answer right or wrong. Komal is different. We watch how your child engages, not just what they click. We use <span className="font-semibold">microexpressions</span> and <span className="font-semibold">gaze</span> to study <span className="font-semibold">behaviour</span>, instead of bombarding them with buttons.
           </p>
           <p className="text-lg text-text-dim leading-relaxed">
-            We use something called &quot;behavioral signals&quot;—tiny clues about how your child is feeling and learning. Think of it like reading body language, but for learning. And here&apos;s the best part: everything happens instantly, right on your device, keeping your child&apos;s privacy safe.
+            It&apos;s like having a teacher who notices when your child hesitates, when they&apos;re getting frustrated, or when they&apos;re genuinely excited. Komal is <span className="font-bold">(child-first, game-second)</span>.
           </p>
-        </div>
-      </section>
-
-      {/* Why Choose KOMAL - Comparison Table */}
-      <section className="py-20 md:py-28 bg-[#F5F5F7]">
-        <div className="max-w-[1100px] mx-auto px-6 md:px-16">
-          <div className="text-center mb-12">
-            <span className="text-primary text-sm font-medium uppercase tracking-[0.2em] mb-4 block">
-              Comparison
-            </span>
-            <h2 className="font-sans text-[36px] md:text-[48px] text-center font-light text-primary mb-4 tracking-[-0.02em]">
-              Why Choose KOMAL?
-            </h2>
-            <p className="text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto mb-8">
-              You need a learning companion that truly understands. That&apos;s why we built KOMAL—a behavioral-first approach to help your child thrive.
-            </p>
-            <Button asChild className="bg-white hover:bg-violet-100 border-violet-400 border text-primary rounded-full px-8">
-              <Link href="#pricing">Discover More</Link>
-            </Button>
-          </div>
-
-          {/* Comparison Table */}
-          <div className="bg-white border-violet-400 rounded-2xl overflow-hidden shadow-sm border border-border/30">
-            {/* Header Row */}
-            <div className="grid border-violet-100 grid-cols-3 border-b border-border/30">
-              <div className="p-6 bg-violet-100 text-center md:p-8 font-semibold text-primary text-lg border-r border-border/30">
-                KOMAL
-              </div>
-              <div className="p-6 bg-gray-100 md:p-8 font-medium text-text-dim text-center border-r border-border/30">
-                Traditional Apps
-              </div>
-              <div className="p-6 bg-slate-100 md:p-8 font-medium text-text-dim text-center">
-                Standard Screen Time
-              </div>
-            </div>
-
-            {/* Comparison Rows */}
-            {[
-              {
-                komal: "Real-time behavioral AI",
-                komalCheck: true,
-                traditional: "Click-based tracking only",
-                traditionalCheck: true,
-                standard: "No learning insights",
-                standardCheck: false,
-              },
-              {
-                komal: "Emotional state detection",
-                komalCheck: true,
-                traditional: "No emotional awareness",
-                traditionalCheck: false,
-                standard: "No emotional support",
-                standardCheck: false,
-              },
-              {
-                komal: "On-device privacy",
-                komalCheck: true,
-                traditional: "Cloud data collection",
-                traditionalCheck: true,
-                standard: "Data shared with ads",
-                standardCheck: false,
-              },
-              {
-                komal: "Instant adaptation (<200ms)",
-                komalCheck: true,
-                traditional: "Session-based changes",
-                traditionalCheck: true,
-                standard: "Static content",
-                standardCheck: false,
-              },
-              {
-                komal: "Parent-friendly insights",
-                komalCheck: true,
-                traditional: "Basic progress reports",
-                traditionalCheck: true,
-                standard: "No parent visibility",
-                standardCheck: false,
-              },
-              {
-                komal: "Non-addictive by design",
-                komalCheck: true,
-                traditional: "Gamification hooks",
-                traditionalCheck: false,
-                standard: "Designed for engagement",
-                standardCheck: false,
-              },
-            ].map((row, index) => (
-              <div
-                key={index}
-                className="grid border-violet-100 grid-cols-3 border-b border-border/30 last:border-b-0"
-              >
-                <div className="p-4 border-violet-100 md:p-6 flex items-center gap-3 border-r border-border/30">
-                  <span className={`text-lg ${row.komalCheck ? "text-green-600" : "text-red-500"}`}>
-                    {row.komalCheck ? "✓" : "✗"}
-                  </span>
-                  <span className="text-sm md:text-base text-primary">{row.komal}</span>
-                </div>
-                <div className="p-4 md:p-6 flex items-center gap-3 justify-center border-r border-border/30">
-                  <span className={`text-lg ${row.traditionalCheck ? "text-green-600" : "text-red-500"}`}>
-                    {row.traditionalCheck ? "✓" : "✗"}
-                  </span>
-                  <span className="text-sm md:text-base text-text-dim">{row.traditional}</span>
-                </div>
-                <div className="p-4 md:p-6 flex items-center gap-3 justify-center">
-                  <span className={`text-lg ${row.standardCheck ? "text-green-600" : "text-red-500"}`}>
-                    {row.standardCheck ? "✓" : "✗"}
-                  </span>
-                  <span className="text-sm md:text-base text-text-dim">{row.standard}</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -293,11 +181,11 @@ export default function HowKomalWorks() {
       <section className="py-20 md:py-28 bg-white">
         <div className="max-w-[1100px] text-center mx-auto px-6 md:px-16">
           <div className="text-center mb-12">
-            <h2 className="font-sans text-center text-[36px] md:text-[48px] font-light text-primary mb-4 tracking-[-0.02em]">
+            <h2 className="font-sans text-center text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em]">
               Where the Magic Happens
             </h2>
             <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-              All the smart stuff happens right on your device—like having a tiny, super-smart assistant living in your phone or tablet.
+              All the smart stuff happens right on your device—like having a tiny parent assistant living in your phone, laptop, or PC.
             </p>
           </div>
 
@@ -305,7 +193,7 @@ export default function HowKomalWorks() {
           <div className="grid grid-cols-2 gap-3 md:gap-6">
             {/* Card 1: Instant Adaptation */}
             <div className="bg-[#E8E0F5] rounded-3xl p-8 md:p-10 flex flex-col items-center justify-center min-h-[280px]">
-              <span className="text-[72px] md:text-[96px] font-light text-primary mb-4">&lt;200ms</span>
+              <span className="text-[72px] md:text-[96px] font-bold text-primary mb-4">&lt;200ms</span>
               <p className="text-lg md:text-xl text-primary font-medium text-center">Instant Adaptation</p>
             </div>
 
@@ -347,7 +235,7 @@ export default function HowKomalWorks() {
 
             {/* Card 4: Better Every Week */}
             <div className="bg-[#E8E0F5] rounded-3xl p-8 md:p-10 flex flex-col items-center justify-center min-h-[280px]">
-              <span className="text-[72px] md:text-[96px] font-light text-primary mb-4">∞</span>
+              <span className="text-[72px] md:text-[96px] font-bold text-primary mb-4">∞</span>
               <p className="text-lg md:text-xl text-primary font-medium text-center">Better Every Week</p>
             </div>
           </div>
@@ -359,7 +247,7 @@ export default function HowKomalWorks() {
                 <span></span> Instant Adaptation
               </h4>
               <p className="text-text-dim text-[15px] leading-relaxed">
-                When your child shows frustration, KOMAL adapts in less than a blink of an eye. It might slow down the activity or introduce a calming mini-game—all automatically.
+                When your child shows frustration, Komal adapts in less than a blink of an eye. It might slow down the activity or introduce a calming mini-game—all automatically.
               </p>
             </div>
             <div className="text-center">
@@ -367,7 +255,7 @@ export default function HowKomalWorks() {
                 <span></span> Learning Over Time
               </h4>
               <p className="text-text-dim text-[15px] leading-relaxed">
-                KOMAL gets smarter about your child the more they play. It learns their unique patterns and adapts personalization every week.
+                Komal gets smarter about your child the more they play. It learns their unique patterns and adapts personalisation every week.
               </p>
             </div>
             <div className="text-center md:text-left">
@@ -375,7 +263,7 @@ export default function HowKomalWorks() {
                 <span></span> Understanding, Not Data
               </h4>
               <p className="text-text-dim text-[15px] leading-relaxed">
-                We translate complex behavioral signals into simple insights. Instead of jargon, you see &quot;Your child showed strong focus today!&quot;
+                We translate complex <span className="font-semibold">behavioural signals</span> into simple insights. Instead of jargon, you see &quot;Your child showed strong focus today!&quot;
               </p>
             </div>
           </div>
@@ -386,11 +274,11 @@ export default function HowKomalWorks() {
       <section className="py-20 md:py-28 bg-white">
         <div className="max-w-[1100px] text-center mx-auto px-6 md:px-16">
           <div className="text-center mb-12">
-            <h2 className="font-sans text-center text-[36px] md:text-[48px] font-light text-primary mb-4 tracking-[-0.02em]">
-              The Science (Simplified)
+            <h2 className="font-sans text-center text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em]">
+              The Science, Simply Said
             </h2>
             <p className="text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto">
-              KOMAL is built on research from socially assistive robotics and educational psychology. We use advanced AI techniques, but we keep them simple for you.
+              Komal is built on research from socially assistive robotics and educational psychology. We use <span className="font-semibold">advanced AI</span> techniques, but we keep them simple for you.
             </p>
           </div>
 
@@ -409,30 +297,40 @@ export default function HowKomalWorks() {
               <div className="flex gap-3 mb-6">
                 <div className="bg-white rounded-xl p-4 flex-1 shadow-sm">
                   <div className="w-10 h-10 rounded-lg bg-[#E8E0F5] flex items-center justify-center mb-3">
-                    <span className="text-xl">👤</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#270263" strokeWidth="2">
+                      <circle cx="12" cy="8" r="4"/>
+                      <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                    </svg>
                   </div>
                   <div className="h-2 bg-[#E8E0F5] rounded w-3/4 mb-2"></div>
                   <div className="h-2 bg-[#E8E0F5] rounded w-1/2"></div>
                 </div>
                 <div className="bg-white rounded-xl p-4 flex-1 shadow-sm">
                   <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mb-3">
-                    <span className="text-white text-xl">🔒</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
                   </div>
                   <div className="h-2 bg-[#E8E0F5] rounded w-3/4 mb-2"></div>
                   <div className="h-2 bg-[#E8E0F5] rounded w-1/2"></div>
                 </div>
                 <div className="bg-white rounded-xl p-4 flex-1 shadow-sm">
                   <div className="w-10 h-10 rounded-lg bg-[#E8E0F5] flex items-center justify-center mb-3">
-                    <span className="text-xl">📊</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#270263" strokeWidth="2">
+                      <line x1="12" y1="20" x2="12" y2="10"/>
+                      <line x1="18" y1="20" x2="18" y2="4"/>
+                      <line x1="6" y1="20" x2="6" y2="16"/>
+                    </svg>
                   </div>
                   <div className="h-2 bg-[#E8E0F5] rounded w-3/4 mb-2"></div>
                   <div className="h-2 bg-[#E8E0F5] rounded w-1/2"></div>
                 </div>
               </div>
 
-              <p className="text-primary font-medium mb-2">🧪 Federated Learning</p>
+              <p className="text-primary font-medium mb-2">Federated Learning</p>
               <p className="text-text-dim text-[15px] leading-relaxed">
-                We improve our AI by learning from many children without ever seeing their individual data. It&apos;s like learning from a crowd while respecting everyone&apos;s privacy.
+                We improve our <span className="font-semibold">advanced AI</span> by learning from many children without ever seeing their individual data. It&apos;s like learning from a crowd whilst respecting everyone&apos;s privacy.
               </p>
             </div>
 
@@ -456,9 +354,9 @@ export default function HowKomalWorks() {
                 </div>
               </div>
 
-              <p className="text-primary font-medium mb-2">💬 Explainability</p>
+              <p className="text-primary font-medium mb-2">Explainability</p>
               <p className="text-text-dim text-[15px] leading-relaxed">
-                If we can&apos;t explain it simply, we don&apos;t use it. Every insight comes with confidence ranges and plain-language explanations.
+                If we can&apos;t explain it simply, we don&apos;t use it. Every insight comes with confidence ranges and plain-language explanations using <span className="font-semibold">personalised insights</span>.
               </p>
             </div>
 
@@ -467,14 +365,14 @@ export default function HowKomalWorks() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 {/* Left side: Text content */}
                 <div>
-                  <h3 className="font-sans text-[28px] md:text-[32px] font-light text-primary mb-4">
+                  <h3 className="font-sans text-[28px] md:text-[32px] font-semibold text-primary mb-4">
                     Fairness & Ethics
                   </h3>
                   <p className="text-text-dim leading-relaxed mb-6">
                     We regularly check our AI to make sure it works equally well for all children, regardless of age, background, or learning style. We audit for bias and fix issues before they become problems.
                   </p>
                   <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-full px-6">
-                    <Link href="/privacy">Learn More ⚡</Link>
+                    <Link href="/privacy">Learn More</Link>
                   </Button>
                 </div>
 
@@ -488,13 +386,20 @@ export default function HowKomalWorks() {
                   </div>
                   <div className="bg-[#E8E0F5] rounded-2xl p-4 aspect-[4/3] flex flex-col justify-between">
                     <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                      <span>🌍</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#270263" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                      </svg>
                     </div>
                     <p className="text-primary text-sm font-medium">Global Standards</p>
                   </div>
                   <div className="bg-[#E8E0F5] rounded-2xl p-4 aspect-[4/3] flex flex-col justify-between">
                     <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                      <span>👶</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#270263" strokeWidth="2">
+                        <circle cx="12" cy="8" r="3"/>
+                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                      </svg>
                     </div>
                     <p className="text-primary text-sm font-medium">Age Inclusive</p>
                   </div>
@@ -512,11 +417,11 @@ export default function HowKomalWorks() {
       </section>
 
 
-      {/* What KOMAL Sees & What Parents See - Side by Side */}
+      {/* What Komal Sees & What Parents See - Side by Side */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-white to-[#F5F5F7]">
         <div className="max-w-[1200px] mx-auto px-6 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - What KOMAL Sees */}
+            {/* Left Column - What Komal Sees */}
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/30">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-full bg-[#E8E0F5] flex items-center justify-center">
@@ -525,10 +430,10 @@ export default function HowKomalWorks() {
                     <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-primary">What KOMAL Sees</h3>
+                <h3 className="text-xl font-semibold text-primary">What Komal Sees</h3>
               </div>
 
-              <p className="text-text-dim mb-6 text-[15px]">KOMAL pays attention to how your child interacts, not who they are:</p>
+              <p className="text-text-dim mb-6 text-[15px]">Komal pays attention to how your child interacts, not who they are:</p>
 
               <ul className="space-y-4 mb-6">
                 <li className="flex items-start gap-3 text-text-dim">
@@ -605,14 +510,14 @@ export default function HowKomalWorks() {
       {/* Privacy & Safety */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-white to-[#F5F5F7]">
         <div className="max-w-[900px] mx-auto px-6 md:px-8">
-          <h2 className="font-sans text-[32px] md:text-[42px] font-light text-primary mb-10 tracking-[-0.02em]">
+          <h2 className="font-sans text-[32px] md:text-[42px] font-semibold text-primary mb-10 tracking-[-0.02em]">
             Privacy &amp; Safety: Our Non-Negotiables
           </h2>
 
           <div className="grid gap-6">
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/50">
               <h3 className="text-xl font-medium text-primary mb-4 flex items-center gap-3">
-                <span className="text-2xl">🔒</span> Privacy First, Always
+                Privacy First, Always
               </h3>
               <p className="text-text-dim leading-relaxed mb-6">
                 <strong className="text-primary">Parental consent is mandatory.</strong> You control everything. You can turn off any sensor anytime. Want to disable the camera? Done. Don&apos;t want voice analysis? No problem. You&apos;re in complete control.
@@ -627,23 +532,19 @@ export default function HowKomalWorks() {
 
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/50">
               <h3 className="text-xl font-medium text-primary mb-4 flex items-center gap-3">
-                <span className="text-2xl">🛡️</span> Child Safety Built-In
+                Child Safety Built-In
               </h3>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">No open chat:</strong> Your child only interacts with our carefully designed avatar responses</span>
                 </li>
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">Bounded interactions:</strong> Everything your child sees is scripted and safe—no surprises</span>
                 </li>
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">No identity inference:</strong> We don&apos;t try to figure out who your child is beyond learning patterns</span>
                 </li>
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">No diagnosis claims:</strong> We provide insights, not medical or psychological labels</span>
                 </li>
               </ul>
@@ -651,24 +552,20 @@ export default function HowKomalWorks() {
 
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/50">
               <h3 className="text-xl font-medium text-primary mb-4 flex items-center gap-3">
-                <span className="text-2xl">📋</span> Compliance &amp; Ethics
+                Compliance &amp; Ethics
               </h3>
               <p className="text-text-dim mb-4">We follow the strictest standards:</p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">COPPA compliant:</strong> Meets all US children&apos;s privacy laws</span>
                 </li>
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">GDPR-K compliant:</strong> Follows European children&apos;s data protection rules</span>
                 </li>
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">HIPAA-aligned:</strong> When used by therapists, we meet healthcare privacy standards</span>
                 </li>
                 <li className="flex items-start gap-3 text-text-dim">
-                  <span className="text-lg mt-0.5">✨</span>
                   <span><strong className="text-primary">Regular audits:</strong> Third-party experts check our systems regularly</span>
                 </li>
               </ul>
@@ -681,11 +578,11 @@ export default function HowKomalWorks() {
       {/* The Vision */}
       <section className="py-20 md:py-28 bg-white">
         <div className="max-w-[900px] mx-auto px-6 md:px-8">
-          <h2 className="font-sans text-[32px] md:text-[42px] font-light text-primary mb-6 tracking-[-0.02em]">
+          <h2 className="font-sans text-[32px] md:text-[42px] font-semibold text-primary mb-6 tracking-[-0.02em]">
             Our Bigger Vision
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
-            We&apos;re not just building an app. We&apos;re building the foundation for how AI can understand and support children&apos;s learning. Our goal is to become the &quot;behavioral interface&quot; for childhood learning—meaning any educational tool could use KOMAL&apos;s understanding to better adapt to your child.
+            We&apos;re not just building an app. We&apos;re building the foundation for how AI can understand and support children&apos;s learning. Our goal is to become the &quot;behavioural interface&quot; for childhood learning—meaning any educational tool could use Komal&apos;s understanding to better adapt to your child.
           </p>
           <p className="text-lg text-text-dim leading-relaxed">
             Imagine if every learning app could answer: &quot;Is the child engaged? Is this too hard? Is this helping?&quot; That&apos;s the future we&apos;re building—one where technology truly understands children, not just tracks them.
@@ -696,18 +593,18 @@ export default function HowKomalWorks() {
       {/* Final CTA */}
       <section className="py-24 md:py-32 bg-primary text-white text-center">
         <div className="max-w-[900px] mx-auto px-6 md:px-8">
-          <h2 className="text-4xl md:text-5xl text-center font-sans font-light mb-6">
+          <h2 className="text-4xl md:text-5xl text-center font-sans font-semibold mb-6">
             Ready to Experience the Magic?
           </h2>
           <p className="text-xl opacity-90 mb-10 max-w-[600px] mx-auto">
-            See how KOMAL understands your child. Start your free trial today.
+            See how Komal understands your child. Get your FREE AI Report today.
           </p>
           <Button
             asChild
             size="lg"
             className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto rounded-full"
           >
-            <Link href="/#pricing">Start Free Trial</Link>
+            <Link href="/#pricing">Get FREE AI Report</Link>
           </Button>
         </div>
       </section>

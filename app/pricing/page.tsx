@@ -26,7 +26,7 @@ export default function PricingPage() {
             periodMonthlyLabel: "/month",
             tagline: "Built for growing families",
             featured: true,
-            cta: "Start Free Trial",
+            cta: "Get FREE AI Report",
             features: [
                 "Everything in Essentials, plus:",
                 "Deeper personalization across sessions",

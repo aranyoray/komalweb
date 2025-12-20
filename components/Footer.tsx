@@ -97,8 +97,28 @@ export default function Footer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const mouseRef = useRef<{ x: number; y: number }>({ x: -1000, y: -1000 });
 
   useEffect(() => {
+    // Track mouse position relative to container
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        mouseRef.current = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        };
+      }
+    };
+
+    const handleMouseLeave = () => {
+      // Move mouse position far away when cursor leaves
+      mouseRef.current = { x: -1000, y: -1000 };
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
+
     // Initialize butterflies
     const initButterflies = (): ButterflyState[] => {
       const count = 20; // More butterflies
@@ -121,8 +141,39 @@ export default function Footer() {
       const deltaTime = Math.min((currentTime - lastTimeRef.current) / 16, 3); // Normalize to ~60fps
       lastTimeRef.current = currentTime;
 
+      const mousePos = mouseRef.current;
+
       setButterflies(prev => prev.map(butterfly => {
         let { x, y, vx, vy, angle, wingPhase, size, id } = butterfly;
+
+        // Calculate distance from mouse cursor
+        const dx = x - mousePos.x;
+        const dy = y - mousePos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Repulsion zone - butterflies flee when cursor is within 150px (larger radius)
+        const repulsionRadius = 150;
+        let isFleeing = false;
+        if (distance < repulsionRadius && distance > 0) {
+          isFleeing = true;
+          // Calculate stronger repulsion force - more vigorous when closer
+          const repulsionStrength = (1 - distance / repulsionRadius) * 15;
+          const repulsionX = (dx / distance) * repulsionStrength;
+          const repulsionY = (dy / distance) * repulsionStrength;
+
+          vx += repulsionX;
+          vy += repulsionY;
+
+          // Add random perpendicular scatter for more chaotic, natural fleeing
+          const scatterAmount = (1 - distance / repulsionRadius) * 2.5;
+          const perpX = (-dy / distance) * scatterAmount * (Math.random() - 0.5) * 2;
+          const perpY = (dx / distance) * scatterAmount * (Math.random() - 0.5) * 2;
+          vx += perpX;
+          vy += perpY;
+
+          // Much faster wing flapping when fleeing (panicked)
+          wingPhase += 0.6 * deltaTime;
+        }
 
         // Wing flapping - fast flutter
         wingPhase += 0.4 * deltaTime;
@@ -137,8 +188,8 @@ export default function Footer() {
         vy += Math.sin(currentTime * 0.002 + id) * 0.02;
         vx += Math.cos(currentTime * 0.001 + id * 0.5) * 0.01;
 
-        // Apply velocity limits
-        const maxSpeed = 3;
+        // Apply velocity limits - higher when fleeing
+        const maxSpeed = isFleeing ? 6 : 3;
         const speed = Math.sqrt(vx * vx + vy * vy);
         if (speed > maxSpeed) {
           vx = (vx / speed) * maxSpeed;
@@ -178,6 +229,8 @@ export default function Footer() {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 

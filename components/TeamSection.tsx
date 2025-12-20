@@ -121,8 +121,8 @@ export default function TeamSection() {
                 </div>
 
                 {/* Center Column: Name */}
-                <div className="text-center">
-                    <h3 className="text-2xl text-center md:text-3xl font-medium text-primary">
+                <div className="text-left">
+                    <h3 className="text-2xl md:text-3xl font-bold text-primary">
                         {member.name}
                     </h3>
                 </div>
@@ -154,9 +154,9 @@ export default function TeamSection() {
                     />
                 </div>
 
-                {/* Right: Name & Details aligned right */}
-                <div className="flex-1 text-right">
-                    <h3 className="text-lg font-medium text-primary">
+                {/* Right: Name & Details aligned left */}
+                <div className="flex-1 text-left">
+                    <h3 className="text-lg font-bold text-primary">
                         {member.name}
                     </h3>
                     <p className="text-xs font-semibold text-primary mb-0.5">

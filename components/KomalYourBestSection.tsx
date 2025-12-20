@@ -28,8 +28,8 @@ export default function KomalYourBestSection() {
                     className="object-cover"
                 />
             </div>
-            <div className="container px-4 mx-auto flex justify-center relative z-10">
-                <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold text-primary tracking-tight inline-flex items-baseline gap-1 sm:gap-2 md:gap-3">
+            <div className="container px-4 mx-auto flex flex-col items-center relative z-10">
+                <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold text-primary tracking-tight inline-flex items-baseline gap-1 sm:gap-2 md:gap-3 mb-3 md:mb-4">
                     <span className="whitespace-nowrap">Meet your best</span>
                     <span className="inline-block min-w-[150px] sm:min-w-[220px] md:min-w-[450px]">
                         <RotatingText
@@ -48,6 +48,9 @@ export default function KomalYourBestSection() {
                         />
                     </span>
                 </h2>
+                <p className="text-xs sm:text-sm md:text-base font-bold text-primary text-center drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)] backdrop-blur-sm px-2 py-1 rounded">
+                    Learn via Play. Track Social, Speech & Emotional Skills with AI.
+                </p>
             </div>
         </section>
     );
