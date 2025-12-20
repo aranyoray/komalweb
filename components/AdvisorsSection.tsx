@@ -12,14 +12,14 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Richard Vidal-Dorsch",
+        name: "Richard Vidal-Dorsch, MS",
         title: "SENIOR SOFTWARE ENGINEER",
         company: "@ AURA",
         description: "MS in Computer Science (2005). Technical advisor providing guidance on software architecture and engineering best practices.",
         image: "/man.png",
     },
     {
-        name: "Doris E. V.",
+        name: "Doris E. V., PhD",
         title: "RESEARCH ADVISOR",
         company: "@ UC BERKELEY",
         description: "PhD in Integrative Biology from University of California, Berkeley (2001). Brings deep expertise in biological systems and research methodology.",
@@ -33,7 +33,7 @@ const advisors: Advisor[] = [
         image: "/man.png",
     },
     {
-        name: "Dr Moumita Roy",
+        name: "Dr Moumita Roy, PhD",
         title: "CHILD PSYCHOLOGIST",
         company: "@ NORTH 24 PARGANAS DISTRICT HOSPITAL",
         description: "Child Psychologist at North 24 Parganas District Hospital, the largest district in India by population. Expert in child development.",
@@ -45,6 +45,13 @@ const advisors: Advisor[] = [
         company: "@ THE STACK",
         description: "Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S. Expert in go-to-market strategy and neurodiversity initiatives.",
         image: "/girl.png",
+    },
+    {
+        name: "Dr Brian Scassellati, PhD",
+        title: "PRINCIPAL INVESTIGATOR",
+        company: "@ YALE SOCIAL ROBOTICS LAB",
+        description: "Principal Investigator at Yale Social Robotics Lab and Professor of Computer Science & Engineering at Yale University. Leading expert in social robotics and human-robot interaction.",
+        image: "/man.png",
     },
 ];
 

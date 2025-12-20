@@ -7,6 +7,7 @@ interface TeamMember {
     role: string;
     credentials: string[];
     image: string;
+    bio?: string;
 }
 
 // Core Team Members
@@ -16,9 +17,10 @@ const coreTeam: TeamMember[] = [
         role: "Co-Founder & CEO",
         credentials: ["Yale University '24", "Formerly at Graymatics and Bain"],
         image: "/man.png",
+        bio: "Co-Founder & CEO with a background from Yale University. Previously worked at Graymatics and Bain, bringing strategic vision and leadership to Komal.",
     },
     {
-        name: "Saarthak Kumar",
+        name: "Saarthak Kumar, MPA",
         role: "Finance & Strategy Advisor",
         credentials: [
             "Columbia University — MPA (Quantitative Concentration), '25",
@@ -26,6 +28,7 @@ const coreTeam: TeamMember[] = [
             "London School of Economics — MPP (2024)",
         ],
         image: "/man.png",
+        bio: "Finance & Strategy Advisor with extensive experience in international policy and quantitative analysis. Former advisor at the Permanent Mission of India to the United Nations.",
     },
     {
         name: "Yudhajit Ain, MS",
@@ -37,12 +40,31 @@ const coreTeam: TeamMember[] = [
             "IISER Bhopal — MS-BS (2021, Gold Medallist)",
         ],
         image: "/man.png",
+        bio: "Research Advisor specialising in Neuroscience. PhD candidate in Neuropsychology at the Internal Attention Lab, University of Calgary. Gold Medallist from IISER Bhopal.",
     },
     {
         name: "Anwesha Das",
         role: "Research Advisor (Computational Neuroscience)",
         credentials: ["PhD Candidate, Princeton University", "Caltech (2025)"],
         image: "/girl.png",
+        bio: "Research Advisor in Computational Neuroscience. PhD candidate at Princeton University with expertise from Caltech, bringing cutting-edge research insights to Komal.",
+    },
+    {
+        name: "Md Zahirul Haque",
+        role: "Senior Software Engineer",
+        credentials: ["ex-Engineer, Speech Therapy Ai"],
+        image: "/man.png",
+        bio: "Senior Software Engineer with experience in Speech Therapy AI. Brings technical expertise to Komal's development team.",
+    },
+    {
+        name: "Jvalaj (Jay) Pandey",
+        role: "Software Engineer",
+        credentials: [
+            "Prev SWE Intern @ Delta Air Lines, Nucor Steel",
+            "University of South Florida '26",
+        ],
+        image: "/man.png",
+        bio: "Software Engineer with internship experience at Delta Air Lines and Nucor Steel. Currently pursuing studies at University of South Florida, graduating in 2026.",
     },
 ];
 
@@ -57,14 +79,14 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Richard Vidal-Dorsch",
+        name: "Richard Vidal-Dorsch, MS",
         title: "SENIOR SOFTWARE ENGINEER",
         company: "@ AURA",
         description: "MS in Computer Science (2005). Technical advisor providing guidance on software architecture and engineering best practices.",
         image: "/man.png",
     },
     {
-        name: "Doris E. V.",
+        name: "Doris E. V., PhD",
         title: "RESEARCH ADVISOR",
         company: "@ UC BERKELEY",
         description: "PhD in Integrative Biology from University of California, Berkeley (2001). Brings deep expertise in biological systems and research methodology.",
@@ -78,7 +100,7 @@ const advisors: Advisor[] = [
         image: "/man.png",
     },
     {
-        name: "Dr Moumita Roy",
+        name: "Dr Moumita Roy, PhD",
         title: "CHILD PSYCHOLOGIST",
         company: "@ NORTH 24 PARGANAS DISTRICT HOSPITAL",
         description: "Child Psychologist at North 24 Parganas District Hospital, the largest district in India by population. Expert in child development.",
@@ -98,91 +120,111 @@ const advisors: Advisor[] = [
         description: "Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S. Expert in go-to-market strategy and neurodiversity initiatives.",
         image: "/girl.png",
     },
+    {
+        name: "Dr Brian Scassellati, PhD",
+        title: "PRINCIPAL INVESTIGATOR",
+        company: "@ YALE SOCIAL ROBOTICS LAB",
+        description: "Principal Investigator at Yale Social Robotics Lab and Professor of Computer Science & Engineering at Yale University. Leading expert in social robotics and human-robot interaction.",
+        image: "/man.png",
+    },
 ];
 
 export default function TeamSection() {
-    const renderTeamMember = (member: TeamMember, index: number) => (
-        <div
-            key={index}
-            className="team-member-row relative border-t border-gray-200 py-5 md:py-6"
-        >
-            {/* Desktop Layout */}
-            <div className="hidden md:grid md:grid-cols-3 items-center">
-                {/* Left Column: Role & Credentials */}
-                <div className="text-left">
-                    <p className="text-sm font-semibold  text-primary mb-1">
-                        {member.role}
-                    </p>
-                    {member.credentials.slice(0, 2).map((cred, i) => (
-                        <p key={i} className="text-xs text-text-dim leading-relaxed">
-                            {cred}
-                        </p>
-                    ))}
-                </div>
-
-                {/* Center Column: Name */}
-                <div className="text-left">
-                    <h3 className="text-2xl md:text-3xl font-bold text-primary">
-                        {member.name}
-                    </h3>
-                </div>
-
-                {/* Right Column: Image */}
-                <div className="flex justify-end">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-200 shadow-sm">
-                        <Image
-                            src={member.image}
-                            alt={member.name}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile Layout: Icon left, Text right-aligned */}
-            <div className="md:hidden flex items-center gap-4">
-                {/* Left: Icon */}
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-200 shadow-sm flex-shrink-0">
-                    <Image
-                        src={member.image}
-                        alt={member.name}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-
-                {/* Right: Name & Details aligned left */}
-                <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold text-primary">
-                        {member.name}
-                    </h3>
-                    <p className="text-xs font-semibold text-primary mb-0.5">
-                        {member.role}
-                    </p>
-                    {member.credentials.slice(0, 1).map((cred, i) => (
-                        <p key={i} className="text-[10px] text-text-dim">
-                            {cred}
-                        </p>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-
     return (
         <section className="team-section py-16 md:py-24 bg-white" id="team">
             <div className="container max-w-[1240px] px-6 md:px-8 mx-auto">
                 {/* Core Team */}
-                <h2 className="section-title font-sans text-3xl md:text-[52px] font-normal mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
+                <h2 className="section-title font-sans text-3xl md:text-[52px] font-semibold mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
                     Meet The Team
                 </h2>
 
-                <div className="team-list">
-                    {coreTeam.map((member, index) => renderTeamMember(member, index))}
-                    <div className="border-t border-gray-200" />
+                {/* Grid Layout - 3 columns */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                    {coreTeam.map((member, index) => (
+                        <div
+                            key={index}
+                            className="group relative"
+                        >
+                            {/* Image Container with Hover Effect */}
+                            <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-gray-100">
+                                <Image
+                                    src={member.image}
+                                    alt={member.name}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                                
+                                {/* Bio Overlay on Hover */}
+                                {member.bio && (
+                                    <div className="absolute inset-0 bg-primary/95 text-white p-6 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
+                                        <p className="text-sm leading-relaxed">{member.bio}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Name and Role */}
+                            <div className="text-left">
+                                <h3 className="text-xl md:text-2xl font-bold text-primary mb-1">
+                                    {member.name}
+                                </h3>
+                                <p className="text-sm font-semibold text-primary mb-2">
+                                    {member.role}
+                                </p>
+                                {member.credentials.slice(0, 2).map((cred, i) => (
+                                    <p key={i} className="text-xs text-text-dim leading-relaxed">
+                                        {cred}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Advisors Section */}
+                <div className="mt-16 md:mt-24">
+                    <h2 className="section-title font-sans text-3xl md:text-[52px] font-semibold mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
+                        Our Advisors
+                    </h2>
+
+                    {/* Grid Layout - 3 columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                        {advisors.map((advisor, index) => (
+                            <div
+                                key={index}
+                                className="group relative"
+                            >
+                                {/* Image Container with Hover Effect */}
+                                <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-gray-100">
+                                    <Image
+                                        src={advisor.image}
+                                        alt={advisor.name}
+                                        fill
+                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                    
+                                    {/* Bio Overlay on Hover */}
+                                    <div className="absolute inset-0 bg-primary/95 text-white p-6 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
+                                        <p className="text-sm font-semibold mb-2">{advisor.title}</p>
+                                        <p className="text-xs mb-3 opacity-90">{advisor.company}</p>
+                                        <p className="text-sm leading-relaxed">{advisor.description}</p>
+                                    </div>
+                                </div>
+
+                                {/* Name and Title */}
+                                <div className="text-left">
+                                    <h3 className="text-xl md:text-2xl font-bold text-primary mb-1">
+                                        {advisor.name}
+                                    </h3>
+                                    <p className="text-sm font-semibold text-primary mb-2">
+                                        {advisor.title}
+                                    </p>
+                                    <p className="text-xs text-text-dim">
+                                        {advisor.company}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
