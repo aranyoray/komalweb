@@ -5,7 +5,9 @@ import Image from "next/image";
 
 const partners = [
     { src: "/startup_yale_logo.png", name: "Yale University", caption: "Early Learning Partner" },
-    { src: "/reservoir_neurodiversity_consultants.png", name: "Reservoir Neurodiversity Consultants", caption: "Research Partner" },
+    { src: "/reservoir_neurodiversity_consultants_india_logo.png", name: "Reservoir Neurodiversity Consultants", caption: "Research Partner" },
+    { src: "/trehaus_singapore_logo.png", name: "Trehaus Singapore", caption: "Brand Partner" },
+    { src: "/california-state-university-longbeach_seal-pilot-partners-komalkids.png", name: "California State University Long Beach", caption: "Pilot Partners" },
     { src: "/ucb.png", name: "UC Berkeley", caption: "Developmental Research" },
     { src: "/ips.png", name: "IPS", caption: "Pedagogical Advisor" },
     { src: "/zeelearn.png", name: "Zee Learn", caption: "Scaling Partner" },

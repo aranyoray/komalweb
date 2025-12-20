@@ -50,15 +50,6 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    
-    /* Dark mode custom colors */
-    --color-primary-dark: #8B5CF6;
-    --color-bg-light: #1E1B2E;
-    --color-text-main: #F9FAFB;
-    --color-text-dim: #9CA3AF;
-    --color-bg: #0F0E17;
-    --color-text: #F9FAFB;
-    --color-surface: #1E1B2E;
 }
 
 @theme {

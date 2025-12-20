@@ -4,8 +4,6 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ClientScripts from "@/components/ClientScripts";
-import { DarkModeProvider } from "@/components/DarkModeProvider";
-import DarkModeToggle from "@/components/DarkModeToggle";
 
 // Removed Inter configuration
 
@@ -49,13 +47,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
-        <DarkModeProvider>
-          <DarkModeToggle />
-          <Navbar />
-          {children}
-          <Footer />
-          <ClientScripts />
-        </DarkModeProvider>
+        <Navbar />
+        {children}
+        <Footer />
+        <ClientScripts />
       </body>
     </html>
   );
