@@ -1,0 +1,558 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+    /* #1A1A1A */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 263 96% 20%;
+    /* #270263 Deep Institutional Violet */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 264 2% 67%;
+    /* #AAA8AD */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    /* #F9F9FB roughly */
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 263 96% 20%;
+    --radius: 0.5rem;
+}
+
+.dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    
+    /* Dark mode custom colors */
+    --color-primary-dark: #8B5CF6;
+    --color-bg-light: #1E1B2E;
+    --color-text-main: #F9FAFB;
+    --color-text-dim: #9CA3AF;
+    --color-bg: #0F0E17;
+    --color-text: #F9FAFB;
+    --color-surface: #1E1B2E;
+}
+
+@theme {
+    --font-sans: "Google Sans", sans-serif;
+
+    /* Shadcn Colors */
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
+    --color-popover: hsl(var(--popover));
+    --color-popover-foreground: hsl(var(--popover-foreground));
+    --color-primary: hsl(var(--primary));
+    --color-primary-foreground: hsl(var(--primary-foreground));
+    --color-secondary: hsl(var(--secondary));
+    --color-secondary-foreground: hsl(var(--secondary-foreground));
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
+    --color-accent: hsl(var(--accent));
+    --color-accent-foreground: hsl(var(--accent-foreground));
+    --color-destructive: hsl(var(--destructive));
+    --color-destructive-foreground: hsl(var(--destructive-foreground));
+    --color-border: hsl(var(--border));
+    --color-input: hsl(var(--input));
+    --color-ring: hsl(var(--ring));
+
+    /* Restored Custom Colors from Project */
+    --color-primary-dark: #1A0142;
+    --color-bg-light: #F9F9FB;
+    --color-text-main: #1A1A1A;
+    --color-text-dim: #6E6E73;
+    --color-bg: #FFFFFF;
+    --color-text: #1A1A1A;
+    --color-surface: #F9F9FB;
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+
+    @keyframes accordion-down {
+        from {
+            height: 0;
+        }
+
+        to {
+            height: var(--radix-accordion-content-height);
+        }
+    }
+
+    @keyframes accordion-up {
+        from {
+            height: var(--radix-accordion-content-height);
+        }
+
+        to {
+            height: 0;
+        }
+    }
+
+    /* Animation Keyframes */
+    @keyframes fadeDown {
+        0% {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes marchBorder {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes dashMove {
+        to {
+            stroke-dashoffset: -20;
+        }
+    }
+
+    @keyframes drawUnderline {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes underlineMove {
+        0% {
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+
+        45% {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        55% {
+            transform: scaleX(1);
+            transform-origin: right;
+        }
+
+        100% {
+            transform: scaleX(0);
+            transform-origin: right;
+        }
+    }
+
+    @keyframes spinSlow {
+        0% {
+            transform: rotate(0deg);
+            opacity: 0.7;
+        }
+
+        50% {
+            opacity: 1;
+        }
+
+        100% {
+            transform: rotate(360deg);
+            opacity: 0.7;
+        }
+    }
+
+    @keyframes slowDrift {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    @keyframes underlineSlide {
+        0% {
+            width: 0%;
+            left: 0;
+        }
+
+        50% {
+            width: 100%;
+            left: 0;
+        }
+
+        100% {
+            width: 0%;
+            left: 100%;
+        }
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(0, 210, 106, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(0, 210, 106, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(0, 210, 106, 0);
+        }
+    }
+
+    @keyframes vibrate {
+        0% {
+            transform: translateX(0);
+        }
+
+        10% {
+            transform: translateX(-2px) rotate(-1deg);
+        }
+
+        20% {
+            transform: translateX(2px) rotate(1deg);
+        }
+
+        30% {
+            transform: translateX(-2px) rotate(-1deg);
+        }
+
+        40% {
+            transform: translateX(2px) rotate(1deg);
+        }
+
+        50% {
+            transform: translateX(-1px) rotate(-0.5deg);
+        }
+
+        60% {
+            transform: translateX(1px) rotate(0.5deg);
+        }
+
+        70% {
+            transform: translateX(-1px) rotate(-0.5deg);
+        }
+
+        80% {
+            transform: translateX(1px) rotate(0.5deg);
+        }
+
+        90% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    --animate-vibrate: vibrate 0.5s ease-in-out;
+}
+
+/* Utilities */
+@layer utilities {
+    .text-shadow-sm {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+}
+
+/* Global resets and base styles that might be tricky with just utilities */
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply font-sans text-text antialiased bg-bg overflow-x-hidden leading-relaxed;
+    }
+
+    ::selection {
+        @apply bg-primary text-white;
+    }
+
+    * {
+        scroll-margin-top: 90px;
+    }
+
+    /* Container styles for consistent layout */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+    }
+
+    @media (min-width: 768px) {
+        .container {
+            padding: 0 32px;
+        }
+    }
+
+    /* Privacy Policy Page Styles */
+    .privacy-policy-content {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 0;
+        line-height: 1.8;
+        color: hsl(var(--foreground));
+        text-align: left;
+    }
+
+    .privacy-title {
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 24px;
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 0;
+        color: hsl(var(--primary));
+        line-height: 1.2;
+        text-align: left;
+    }
+
+    .last-updated {
+        font-size: 14px;
+        color: hsl(var(--muted-foreground));
+        margin-bottom: 32px;
+        margin-left: 0;
+        margin-right: 0;
+        padding-bottom: 24px;
+        border-bottom: 1px solid hsl(var(--border));
+        text-align: left;
+    }
+
+    .privacy-policy-content h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-top: 48px;
+        margin-bottom: 20px;
+        margin-left: 0;
+        margin-right: 0;
+        color: hsl(var(--primary));
+        line-height: 1.3;
+        text-align: left;
+    }
+
+    .privacy-policy-content h3 {
+        font-size: 22px;
+        font-weight: 600;
+        margin-top: 32px;
+        margin-bottom: 16px;
+        margin-left: 0;
+        margin-right: 0;
+        color: hsl(var(--foreground));
+        line-height: 1.4;
+        text-align: left;
+    }
+
+    .privacy-policy-content p {
+        margin-bottom: 20px;
+        margin-left: 0;
+        margin-right: 0;
+        font-size: 16px;
+        line-height: 1.8;
+        color: hsl(var(--foreground));
+        text-align: left;
+    }
+
+    .privacy-policy-content ul,
+    .privacy-policy-content ol {
+        margin-bottom: 20px;
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 32px;
+        padding-right: 0;
+        line-height: 1.8;
+        text-align: left;
+    }
+
+    .privacy-policy-content li {
+        margin-bottom: 12px;
+        margin-left: 0;
+        margin-right: 0;
+        font-size: 16px;
+        line-height: 1.8;
+        color: hsl(var(--foreground));
+        text-align: left;
+    }
+
+    .privacy-policy-content a {
+        color: hsl(var(--primary));
+        text-decoration: underline;
+        transition: opacity 0.2s;
+    }
+
+    .privacy-policy-content a:hover {
+        opacity: 0.8;
+    }
+
+    .privacy-highlight {
+        background-color: hsl(var(--muted));
+        border-left: 4px solid hsl(var(--primary));
+        padding: 24px;
+        margin: 32px 0;
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 8px;
+        text-align: left;
+    }
+
+    .privacy-highlight p {
+        margin-bottom: 16px;
+        margin-left: 0;
+        margin-right: 0;
+        text-align: left;
+    }
+
+    .privacy-highlight p:last-child {
+        margin-bottom: 0;
+    }
+
+    .privacy-highlight ul {
+        margin-top: 16px;
+        margin-bottom: 0;
+        margin-left: 0;
+        margin-right: 0;
+        text-align: left;
+    }
+
+    .privacy-divider {
+        margin: 48px 0;
+        margin-left: 0;
+        margin-right: 0;
+        border: none;
+        border-top: 2px solid hsl(var(--border));
+    }
+
+    .privacy-footer {
+        font-size: 14px;
+        color: hsl(var(--muted-foreground));
+        text-align: center;
+        margin-top: 32px;
+    }
+
+    .contact-info {
+        background-color: hsl(var(--muted));
+        padding: 24px;
+        border-radius: 8px;
+        margin: 24px 0;
+        margin-left: 0;
+        margin-right: 0;
+        text-align: left;
+    }
+
+    .contact-info p {
+        margin-bottom: 12px;
+        margin-left: 0;
+        margin-right: 0;
+        text-align: left;
+    }
+
+    .contact-info p:last-child {
+        margin-bottom: 0;
+    }
+
+    /* General content page styles for better readability */
+    .value-prop {
+        padding: 80px 0;
+    }
+
+    .value-prop .container {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Ensure proper text alignment on all content pages */
+    section p,
+    section li,
+    section h2,
+    section h3,
+    section h4 {
+        text-align: left;
+    }
+
+    section h2,
+    section h3 {
+        text-align: left;
+    }
+
+    /* Mobile responsiveness for privacy policy */
+    @media (max-width: 768px) {
+        .privacy-policy-content {
+            padding: 24px 0;
+        }
+
+        .privacy-title {
+            font-size: 32px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .privacy-policy-content h2 {
+            font-size: 24px;
+            margin-top: 36px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .privacy-policy-content h3 {
+            font-size: 20px;
+            margin-top: 28px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .privacy-policy-content p,
+        .privacy-policy-content li {
+            font-size: 15px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .privacy-highlight {
+            padding: 20px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .contact-info {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+}
