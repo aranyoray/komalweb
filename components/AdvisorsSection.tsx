@@ -81,7 +81,7 @@ export default function AdvisorsSection() {
                                     alt={advisor.name}
                                     width={300}
                                     height={400}
-                                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                                    className="w-full h-full object-contain grayscale hover:grayscale-0 transition-all duration-500"
                                 />
                             </div>
 

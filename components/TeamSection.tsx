@@ -151,7 +151,7 @@ export default function TeamSection() {
                                     src={member.image}
                                     alt={member.name}
                                     fill
-                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    className="object-contain transition-transform duration-300 group-hover:scale-105"
                                 />
                                 
                                 {/* Bio Overlay on Hover */}
@@ -199,7 +199,7 @@ export default function TeamSection() {
                                         src={advisor.image}
                                         alt={advisor.name}
                                         fill
-                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                        className="object-contain transition-transform duration-300 group-hover:scale-105"
                                     />
                                     
                                     {/* Bio Overlay on Hover */}
