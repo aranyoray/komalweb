@@ -75,13 +75,16 @@ export default function AdvisorsSection() {
                     {advisors.map((advisor, index) => (
                         <div key={index} className="advisor-card">
                             {/* Portrait Image */}
-                            <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-gray-100">
+                            <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-white">
                                 <Image
                                     src={advisor.image}
                                     alt={advisor.name}
                                     width={300}
                                     height={400}
-                                    className="w-full h-full object-contain grayscale hover:grayscale-0 transition-all duration-500"
+                                    className="w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-500"
+                                    style={{ 
+                                        objectPosition: 'center 30%',
+                                    }}
                                 />
                             </div>
 

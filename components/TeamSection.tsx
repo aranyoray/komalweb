@@ -146,12 +146,15 @@ export default function TeamSection() {
                             className="group relative"
                         >
                             {/* Image Container with Hover Effect */}
-                            <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-gray-100">
+                            <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-white">
                                 <Image
                                     src={member.image}
                                     alt={member.name}
                                     fill
-                                    className="object-contain transition-transform duration-300 group-hover:scale-105"
+                                    className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                    style={{ 
+                                        objectPosition: 'center 30%',
+                                    }}
                                 />
                                 
                                 {/* Bio Overlay on Hover */}
@@ -194,12 +197,15 @@ export default function TeamSection() {
                                 className="group relative"
                             >
                                 {/* Image Container with Hover Effect */}
-                                <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-gray-100">
+                                <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-white">
                                     <Image
                                         src={advisor.image}
                                         alt={advisor.name}
                                         fill
-                                        className="object-contain transition-transform duration-300 group-hover:scale-105"
+                                        className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                        style={{ 
+                                            objectPosition: 'center 30%',
+                                        }}
                                     />
                                     
                                     {/* Bio Overlay on Hover */}
