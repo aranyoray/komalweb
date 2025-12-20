@@ -14,7 +14,8 @@ import { BrainIcon, ActivityIcon, ChartIcon, ShieldIcon, LockIcon, ZapIcon } fro
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import Aurora from "@/components/Aurora";
-import FloatingParticles from "@/components/FloatingParticles";
+import FloatingButterflies from "@/components/FloatingButterflies";
+import KomalYourBestSection from "@/components/KomalYourBestSection";
 
 export default function Home() {
 
@@ -178,7 +179,7 @@ export default function Home() {
       <section className="hero-section relative pt-32 pb-16 px-6 md:px-16 overflow-hidden">
         {/* Aurora Background */}
         <div className="absolute inset-0 z-0">
-          <FloatingParticles count={80} />
+          <FloatingButterflies count={25} />
         </div>
         {/* White gradient overlay at bottom for smooth transition */}
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/80 to-transparent z-[1]" />
@@ -239,7 +240,7 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 className="hero-title font-sans text-[28px] sm:text-[40px] md:text-[60px] lg:text-[72px] font-light leading-[1.2] tracking-[-0.02em] text-primary normal-case animate-[fadeDown_1s_ease_forwards]">
+            <h1 className="hero-title font-sans text-[42px] sm:text-[48px] md:text-[60px] lg:text-[72px] font-light leading-[1.2] tracking-[-0.02em] text-primary normal-case animate-[fadeDown_1s_ease_forwards]">
               A <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">learning companion</span> that understands how children <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">feel.</span>
             </h1>
 
@@ -295,26 +296,7 @@ export default function Home() {
       </section>
 
       {/* Komal: Your Best Section */}
-      <section className="komal-roles-section py-24 bg-white">
-        <div className="container max-w-[1240px] px-8 mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-light text-primary mb-6 tracking-tight text-center">
-            Komal: Your Best
-          </h2>
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8 max-w-[900px] mx-auto">
-            {["Buddy", "Companion", "Friend", "Peer", "Buddy", "Confidant", "Playmate", "Trainer", "Supporter", "Cheerleader", "Partner-in-Crime"].map((role, index) => (
-              <span
-                key={index}
-                className="inline-block px-4 py-2 bg-primary/5 text-primary rounded-full text-sm md:text-base font-medium hover:bg-primary/10 transition-colors"
-              >
-                {role}
-              </span>
-            ))}
-          </div>
-          <p className="text-lg md:text-xl text-text-dim leading-relaxed max-w-[700px] mx-auto text-center">
-            Learn via Play. Track Social, Speech & Emotional Skills with AI.
-          </p>
-        </div>
-      </section>
+      <KomalYourBestSection />
 
       {/* Main Value Proposition (Moved Down) */}
       <section className="value-prop section py-24 relative overflow-hidden" id="how-it-works">
