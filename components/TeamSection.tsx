@@ -151,9 +151,9 @@ export default function TeamSection() {
                                     src={member.image}
                                     alt={member.name}
                                     fill
-                                    className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                                     style={{ 
-                                        objectPosition: 'center 30%',
+                                        objectPosition: 'center 15%',
                                     }}
                                 />
                                 
@@ -202,9 +202,9 @@ export default function TeamSection() {
                                         src={advisor.image}
                                         alt={advisor.name}
                                         fill
-                                        className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                                         style={{ 
-                                            objectPosition: 'center 30%',
+                                            objectPosition: 'center 20%',
                                         }}
                                     />
                                     
