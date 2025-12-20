@@ -211,11 +211,11 @@ export default function TeamSection() {
                     Our Advisors
                 </h3>
 
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 md:gap-6">
                     {advisors.map((advisor, index) => (
                         <div key={index} className="advisor-card">
                             {/* Portrait Image */}
-                            <div className="aspect-[3/4] w-full mb-4 overflow-hidden bg-gray-100">
+                            <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-gray-100">
                                 <Image
                                     src={advisor.image}
                                     alt={advisor.name}
@@ -226,17 +226,17 @@ export default function TeamSection() {
                             </div>
 
                             {/* Name */}
-                            <h4 className="text-lg md:text-xl font-medium text-primary mb-1">
+                            <h4 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
                                 {advisor.name}
                             </h4>
 
                             {/* Title & Company */}
-                            <p className="text-[10px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-2">
+                            <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-1 md:mb-2">
                                 {advisor.title} {advisor.company}
                             </p>
 
-                            {/* Description */}
-                            <p className="text-xs text-text-dim leading-relaxed">
+                            {/* Description - Hidden on mobile, shown on desktop */}
+                            <p className="hidden md:block text-xs text-text-dim leading-relaxed">
                                 {advisor.description}
                             </p>
                         </div>

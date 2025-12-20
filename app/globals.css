@@ -546,4 +546,95 @@
             margin-right: 0;
         }
     }
+
+    /* Mobile Typography - Clean headlines that fit in ~2 lines on phones */
+    @media (max-width: 640px) {
+
+        /* Hero headline - biggest impact area */
+        .hero-title {
+            font-size: 28px !important;
+            line-height: 1.2 !important;
+            letter-spacing: -0.02em !important;
+        }
+
+        /* Section titles throughout the page */
+        .section-title {
+            font-size: 28px !important;
+            line-height: 1.2 !important;
+            letter-spacing: -0.01em !important;
+        }
+
+        /* General body text slightly smaller on mobile */
+        section p,
+        section li,
+        .section-description {
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+        }
+
+        /* FAQ title adjustment */
+        .faq h2.section-title {
+            font-size: 26px !important;
+        }
+
+        /* Enterprise/School CTA sections */
+        .enterprise-cta h2,
+        .final-cta h2 {
+            font-size: 26px !important;
+            line-height: 1.25 !important;
+        }
+
+        /* Partners section title */
+        .partners-title {
+            font-size: 10px !important;
+            letter-spacing: 0.2em !important;
+        }
+
+        /* Prevent word splitting - keep words intact on mobile */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .hero-title,
+        .section-title {
+            word-break: keep-all !important;
+            overflow-wrap: normal !important;
+            hyphens: none !important;
+            -webkit-hyphens: none !important;
+            -ms-hyphens: none !important;
+        }
+
+        /* Smaller buttons on mobile */
+        .cta-group .bg-primary,
+        .cta-group [class*="border-primary"],
+        button[class*="rounded-full"],
+        a[class*="rounded-full"] {
+            padding: 10px 20px !important;
+            font-size: 14px !important;
+            height: auto !important;
+        }
+
+        /* CTA button groups - stack and smaller */
+        .cta-group {
+            flex-direction: column !important;
+            gap: 12px !important;
+            width: 100%;
+            max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-group>* {
+            width: 100% !important;
+        }
+
+        /* Section CTA buttons */
+        section button,
+        section a[class*="rounded-full"] {
+            padding: 12px 24px !important;
+            font-size: 14px !important;
+        }
+    }
 }

@@ -239,8 +239,8 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 className="hero-title font-sans text-[40px] md:text-[60px] lg:text-[72px] font-light leading-[1.15] tracking-[-0.03em] text-primary normal-case animate-[fadeDown_1s_ease_forwards]">
-              A <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">learning companion </span> that <br /> understands how children <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">feel.</span>
+            <h1 className="hero-title font-sans text-[28px] sm:text-[40px] md:text-[60px] lg:text-[72px] font-light leading-[1.2] tracking-[-0.02em] text-primary normal-case animate-[fadeDown_1s_ease_forwards]">
+              A <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">learning companion</span> that understands how children <span className="text-primary underline bold inline-block hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer">feel.</span>
             </h1>
 
             {/* CTA Buttons */}
@@ -248,7 +248,7 @@ export default function Home() {
               <Button
                 asChild
                 size="lg"
-                className="bg-primary hover:bg-primary/90 hover:scale-105 text-white text-lg px-8 py-4 h-auto rounded-full shadow-lg transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)]"
+                className="bg-primary hover:bg-primary/90 hover:scale-105 text-white text-sm sm:text-base md:text-lg px-5 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 h-auto rounded-full shadow-lg transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)]"
               >
                 <Link href="#">Get Free AI Report</Link>
               </Button>
@@ -256,7 +256,7 @@ export default function Home() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-primary/30 hover:bg-primary/5 hover:scale-105 text-primary text-lg px-8 py-4 h-auto rounded-full transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)]"
+                className="border-primary/30 hover:bg-primary/5 hover:scale-105 text-primary text-sm sm:text-base md:text-lg px-5 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 h-auto rounded-full transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)]"
               >
                 <Link href="#contact">Talk to Us</Link>
               </Button>
@@ -271,7 +271,7 @@ export default function Home() {
       {/* Feel, Don't Click Section */}
       <section className="feel-section py-20 md:py-28 bg-white text-center">
         <div className="container max-w-[900px] px-8 mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-light text-primary mb-4 tracking-tight text-center">
+          <h2 className="section-title text-[26px] sm:text-3xl md:text-4xl lg:text-5xl font-light text-primary mb-4 tracking-tight text-center">
             Talk, Don&apos;t Tap
           </h2>
           <p className="text-[11px] uppercase tracking-[0.3em] text-secondary font-medium mb-6 text-center">
@@ -328,7 +328,7 @@ export default function Home() {
           />
         </div>
         <div className="container max-w-[1240px] px-8 mx-auto text-center relative z-10 flex flex-col items-center">
-          <h2 className="section-title font-sans text-[52px] font-normal leading-[1.1] tracking-[-0.02em] text-primary text-center mb-6 drop-shadow-[0_2px_10px_rgba(255,255,255,0.8)]">Understanding Beyond Clicks</h2>
+          <h2 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal leading-[1.15] tracking-[-0.02em] text-primary text-center mb-6 drop-shadow-[0_2px_10px_rgba(255,255,255,0.8)]">Understanding Beyond Clicks</h2>
           <p className="section-description text-lg text-primary/80 leading-relaxed text-center mb-8 max-w-[700px] drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)]">
             Traditional apps measure completion, not cognition. KOMAL reads behavior in real-time—attention patterns,
             emotional responses, and engagement quality—and adapts instantly.
@@ -354,7 +354,7 @@ export default function Home() {
           </div>
         </div>
         <div className="container max-w-[1240px] px-8 mx-auto relative z-10">
-          <h2 className="section-title font-sans text-[52px] font-normal mb-6 leading-[1.1] tracking-[-0.02em] text-white text-center drop-shadow-lg"> Testimonials</h2>
+          <h2 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal mb-6 leading-[1.15] tracking-[-0.02em] text-white text-center drop-shadow-lg">Testimonials</h2>
           <TestimonialsCarousel testimonials={testimonials} />
         </div>
       </section>
@@ -363,7 +363,7 @@ export default function Home() {
       {/* Pricing */}
       <section className="pricing py-24 bg-white" id="pricing">
         <div className="container max-w-[1240px] px-8 mx-auto">
-          <h2 className="section-title font-sans text-[52px] font-normal mb-6 leading-[1.1] tracking-[-0.02em] text-primary text-center">Simple, Transparent Pricing</h2>
+          <h2 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center">Simple, Transparent Pricing</h2>
           <p className="section-description text-lg text-text-dim mb-12 max-w-[700px] mx-auto leading-relaxed text-center">Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.</p>
           <PricingSection plans={pricingPlans} />
         </div>
@@ -375,7 +375,7 @@ export default function Home() {
       {/* For Schools & Therapists */}
       <section className="enterprise-cta py-24 bg-primary text-white text-center" id="for-schools">
         <div className="container max-w-[900px] px-8 mx-auto text-center">
-          <h2 className="text-4xl font-sans font-light mb-6 text-center">For Schools, Daycares, and Paediatric Practices</h2>
+          <h2 className="text-[24px] sm:text-3xl md:text-[36px] lg:text-4xl font-sans font-light mb-6 text-center">For Schools, Daycares, and Paediatric Practices</h2>
           <p className="text-lg opacity-90 leading-relaxed mb-8  text-center">
             KOMAL integrates seamlessly into your existing workflow. No new systems to learn—just plug into the insights
             parents already trust. Get classroom-level analytics, SEL compliance dashboards, and early risk identification
@@ -400,7 +400,7 @@ export default function Home() {
       <section className="faq py-24 bg-surface">
         <div className="container max-w-[1240px] px-8 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
           <div className="lg:col-span-5">
-            <h2 className="section-title font-sans text-[42px] font-normal mb-6 leading-[1.1] tracking-[-0.02em] text-primary text-left">Frequently Asked Questions</h2>
+            <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-normal mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-left">Frequently Asked Questions</h2>
             <p className="section-description text-lg text-text-dim mb-8 leading-relaxed text-left">
               Explore your data, build your dashboard, bring your team together.
             </p>
@@ -414,7 +414,7 @@ export default function Home() {
       {/* Final CTA */}
       <section className="final-cta py-32  text-center bg-primary text-white text-center">
         <div className="container max-w-[1240px] px-8 mx-auto text-center">
-          <h2 className="text-5xl font-sans font-light mb-6 text-center">Ready to Understand Your Child Better?</h2>
+          <h2 className="text-[24px] sm:text-3xl md:text-4xl lg:text-5xl font-sans font-light mb-6 text-center">Ready to Understand Your Child Better?</h2>
           <p className="text-xl opacity-90 mb-10 text-center ">Start your free trial today—no credit card required.</p>
           <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto rounded-full">
             <Link href="#">Start Free Trial</Link>
