@@ -16,21 +16,21 @@ const advisors: Advisor[] = [
         title: "SENIOR SOFTWARE ENGINEER",
         company: "@ AURA",
         description: "MS in Computer Science (2005). Technical advisor providing guidance on software architecture and engineering best practices.",
-        image: "/man.png",
+        image: "/richard-dorsch-ms-technical-advisor-komalkids-san-francisco.png",
     },
     {
         name: "Doris E. V., PhD",
         title: "RESEARCH ADVISOR",
         company: "@ UC BERKELEY",
         description: "PhD in Integrative Biology from University of California, Berkeley (2001). Brings deep expertise in biological systems and research methodology.",
-        image: "/girl.png",
+        image: "/doris-vidal-dorsch-phd-technical-advisor-los-angeles.png",
     },
     {
         name: "Dr Om Prakash Singh, MD",
         title: "CLINICAL ADVISOR",
         company: "@ INDIAN PSYCHIATRIC SOCIETY",
         description: "Incoming National President, Indian Psychiatric Society. Guides our clinical approach and mental health protocols.",
-        image: "/man.png",
+        image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
     },
     {
         name: "Dr Moumita Roy, PhD",
@@ -40,18 +40,25 @@ const advisors: Advisor[] = [
         image: "/girl.png",
     },
     {
+        name: "Amit Goenka",
+        title: "BUSINESS ADVISOR",
+        company: "@ ZEE ENTERTAINMENT",
+        description: "Chief Executive, International Broadcast at Zee Entertainment Enterprises. Head of Z5 Global & Zee Learn. Guides our business strategy.",
+        image: "/man.png",
+    },
+    {
         name: "Shreya Jain, MBA",
         title: "GTM ADVISOR",
         company: "@ THE STACK",
         description: "Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S. Expert in go-to-market strategy and neurodiversity initiatives.",
-        image: "/girl.png",
+        image: "/shreya-jain-mba-business-gtm-advisor-india.png",
     },
     {
         name: "Dr Brian Scassellati, PhD",
         title: "PRINCIPAL INVESTIGATOR",
         company: "@ YALE SOCIAL ROBOTICS LAB",
         description: "Principal Investigator at Yale Social Robotics Lab and Professor of Computer Science & Engineering at Yale University. Leading expert in social robotics and human-robot interaction.",
-        image: "/man.png",
+        image: "/professor-brian-scassellati-phd-research-advisor-new-york.jpg",
     },
 ];
 
