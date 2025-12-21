@@ -33,7 +33,7 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
           {items.map((t, index) => (
             <CarouselItem key={`${t.author}-${index}`} className="pl-4 basis-[85%] md:basis-1/2 lg:basis-1/3">
               <div className="h-full p-1">
-                <Card className="h-full border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                <Card className="h-full border-border/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl overflow-hidden">
                   <CardContent className="flex flex-col justify-between h-full p-8 md:p-10">
                     <div>
                       <Quote className="w-8 h-8 text-primary/20 mb-6" />

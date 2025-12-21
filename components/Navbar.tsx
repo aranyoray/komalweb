@@ -55,8 +55,8 @@ export default function Navbar() {
     <>
       <nav
         className={`fixed z-[100] h-[64px] flex items-center transition-all duration-500 ${isScrolled
-          ? "left-1/2 top-4 rounded-full border backdrop-blur-xl bg-black/50 shadow-[0_8px_32px_rgba(0,0,0,0.4)] border-white/15 px-6"
-          : "left-0 right-0 top-0 bg-white border-b border-gray-100 px-6 md:px-10"
+          ? "left-1/2 top-4 rounded-full border backdrop-blur-xl bg-black/50 shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-3 md:px-6"
+          : "left-0 right-0 top-0 bg-white border-b border-gray-100 px-3 md:px-10"
           }`}
         style={{
           width: isScrolled ? "min(90%, 72rem)" : "100%",

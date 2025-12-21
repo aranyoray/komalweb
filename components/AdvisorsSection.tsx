@@ -53,11 +53,11 @@ export default function AdvisorsSection() {
         <section className="advisors-section py-16 md:py-24 bg-white" id="advisors">
             <div className="container max-w-[1240px] px-6 md:px-8 mx-auto">
                 {/* Our Advisors - Horizontal Layout */}
-                <h2 className="section-title font-sans text-3xl md:text-[52px] font-normal mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
+                <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-normal mb-8 md:mb-12 leading-[1.15] tracking-[-0.02em] text-primary text-center">
                     Advised by the Best
                 </h2>
 
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                     {advisors.map((advisor, index) => (
                         <div key={index} className="advisor-card">
                             {/* Portrait Image */}
@@ -68,7 +68,7 @@ export default function AdvisorsSection() {
                                     width={300}
                                     height={400}
                                     className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                                    style={{ 
+                                    style={{
                                         objectPosition: 'center 15%',
                                     }}
                                 />

@@ -60,15 +60,23 @@ export default function PartnersCarousel() {
                 ))}
             </div>
 
-            {/* Navigation dots */}
-            <div className="flex justify-center gap-2 mt-6">
+            {/* Navigation dots - hidden on mobile */}
+            <div className="hidden sm:flex justify-center gap-1.5 mt-4">
                 {partners.map((_, idx) => (
                     <button
                         key={idx}
                         onClick={() => setCurrentIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex
-                                ? "bg-primary scale-125"
-                                : "bg-primary/30 hover:bg-primary/50"
+                        style={{
+                            width: '6px',
+                            height: '6px',
+                            minWidth: '6px',
+                            minHeight: '6px',
+                            padding: 0,
+                            borderRadius: '50%',
+                        }}
+                        className={`transition-all duration-300 ${idx === currentIndex
+                            ? "bg-primary scale-125"
+                            : "bg-primary/30 hover:bg-primary/50"
                             }`}
                         aria-label={`Go to slide ${idx + 1}`}
                     />
