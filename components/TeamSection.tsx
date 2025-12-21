@@ -100,13 +100,6 @@ const advisors: Advisor[] = [
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
     },
     {
-        name: "Dr Moumita Roy, PhD",
-        title: "CHILD PSYCHOLOGIST",
-        company: "@ NORTH 24 PARGANAS DISTRICT HOSPITAL",
-        description: "Child Psychologist at North 24 Parganas District Hospital, the largest district in India by population. Expert in child development.",
-        image: "/girl.png",
-    },
-    {
         name: "Amit Goenka",
         title: "BUSINESS ADVISOR",
         company: "@ ZEE ENTERTAINMENT",
