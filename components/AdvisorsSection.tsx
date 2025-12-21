@@ -33,13 +33,6 @@ const advisors: Advisor[] = [
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
     },
     {
-        name: "Amit Goenka",
-        title: "BUSINESS ADVISOR",
-        company: "@ ZEE ENTERTAINMENT",
-        description: "Chief Executive, International Broadcast at Zee Entertainment Enterprises. Head of Z5 Global & Zee Learn. Guides our business strategy.",
-        image: "/man.png",
-    },
-    {
         name: "Shreya Jain, MBA",
         title: "GTM ADVISOR",
         company: "@ THE STACK",
