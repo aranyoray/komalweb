@@ -37,7 +37,7 @@ export default function Navbar() {
 
   const navItems = useMemo(
     () => [
-      { label: "How It Works", href: { type: "route", value: "/how-komal-works" } as const },
+      { label: "Our Magic", href: { type: "route", value: "/how-komal-works" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
       { label: "Pricing", href: { type: "route", value: "/pricing" } as const },
     ],
