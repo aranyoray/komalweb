@@ -130,154 +130,154 @@ export default function HowKomalWorks() {
           <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-[#E8E0F5]">
             {/* Table Header */}
             <div className="grid grid-cols-3 border-b border-[#E8E0F5]">
-              <div className="p-4 md:p-6 bg-[#F5F0FF] text-center">
-                <span className="font-semibold text-primary text-sm md:text-base">KOMAL</span>
+              <div className="p-2 md:p-6 bg-[#F5F0FF] text-center">
+                <span className="font-semibold text-primary text-[11px] md:text-base">KOMAL</span>
               </div>
-              <div className="p-4 md:p-6 text-center">
-                <span className="font-medium text-text-dim text-sm md:text-base">Traditional Apps</span>
+              <div className="p-2 md:p-6 text-center">
+                <span className="font-medium text-text-dim text-[11px] md:text-base">Traditional Apps</span>
               </div>
-              <div className="p-4 md:p-6 text-center">
-                <span className="font-medium text-text-dim text-sm md:text-base">Standard Screen Time</span>
+              <div className="p-2 md:p-6 text-center">
+                <span className="font-medium text-text-dim text-[11px] md:text-base">Standard Screen Time</span>
               </div>
             </div>
 
             {/* Row 1: Real-time behavioral AI */}
             <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-4 md:p-6 bg-[#F5F0FF] flex items-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-sm md:text-base">Real-time behavioral AI</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">Real-time behavioral AI</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Click-based tracking only</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Click-based tracking only</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">No learning insights</span>
+                <span className="text-text-dim text-[10px] md:text-sm">No learning insights</span>
               </div>
             </div>
 
             {/* Row 2: Emotional state detection */}
             <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-4 md:p-6 bg-[#F5F0FF] flex items-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-sm md:text-base">Emotional state detection</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">Emotional state detection</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">No emotional awareness</span>
+                <span className="text-text-dim text-[10px] md:text-sm">No emotional awareness</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">No emotional support</span>
+                <span className="text-text-dim text-[10px] md:text-sm">No emotional support</span>
               </div>
             </div>
 
             {/* Row 3: On-device privacy */}
             <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-4 md:p-6 bg-[#F5F0FF] flex items-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-sm md:text-base">On-device privacy</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">On-device privacy</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Cloud data collection</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Cloud data collection</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Data shared with ads</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Data shared with ads</span>
               </div>
             </div>
 
             {/* Row 4: Instant adaptation */}
             <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-4 md:p-6 bg-[#F5F0FF] flex items-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-sm md:text-base">Instant adaptation (&lt;200ms)</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">Instant adaptation (&lt;200ms)</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Session-based changes</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Session-based changes</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Static content</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Static content</span>
               </div>
             </div>
 
             {/* Row 5: Parent-friendly insights */}
             <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-4 md:p-6 bg-[#F5F0FF] flex items-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-sm md:text-base">Parent-friendly insights</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">Parent-friendly insights</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Basic progress reports</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Basic progress reports</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">No parent visibility</span>
+                <span className="text-text-dim text-[10px] md:text-sm">No parent visibility</span>
               </div>
             </div>
 
             {/* Row 6: Non-addictive by design */}
             <div className="grid grid-cols-3">
-              <div className="p-4 md:p-6 bg-[#F5F0FF] flex items-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-sm md:text-base">Non-addictive by design</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">Non-addictive by design</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Gamification hooks</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Gamification hooks</span>
               </div>
-              <div className="p-4 md:p-6 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                <span className="text-text-dim text-xs md:text-sm">Designed for engagement</span>
+                <span className="text-text-dim text-[10px] md:text-sm">Designed for engagement</span>
               </div>
             </div>
           </div>
