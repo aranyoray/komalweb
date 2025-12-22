@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
@@ -18,6 +18,23 @@ type Plan = {
 
 export default function PricingSection({ plans }: { plans: Plan[] }) {
   const [currency, setCurrency] = useState<"INR" | "USD">("INR");
+
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        // If country is NOT India, switch to USD
+        if (data && data.country_code && data.country_code !== "IN") {
+          setCurrency("USD");
+        }
+      } catch (error) {
+        console.error("Error detecting location:", error);
+      }
+    };
+
+    detectLocation();
+  }, []);
 
   // Helper function to render price with cents as superscript
   const renderPrice = (price: string) => {

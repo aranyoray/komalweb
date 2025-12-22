@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import FloatingParticles from "@/components/FloatingParticles";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,34 @@ const NavigationIcon = () => (
 );
 
 export default function HowKomalWorks() {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Lazy load the image when it comes into view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect(); // Stop observing once visible
+          }
+        });
+      },
+      {
+        rootMargin: '100px', // Start loading 100px before it enters viewport
+        threshold: 0.1
+      }
+    );
+
+    if (imageContainerRef.current) {
+      observer.observe(imageContainerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const anatomyCards = [
     {
       icon: <CoreIdentityIcon />,
@@ -91,14 +120,30 @@ export default function HowKomalWorks() {
           </div>
 
           {/* App Screenshot Showcase */}
-          <div className="relative mt-8 mb-4">
-            <div className="rounded-[2.5rem] overflow-hidden shadow-2xl bg-white/50">
+          <div className="relative mt-8 mb-4 flex justify-center">
+            <div
+              ref={imageContainerRef}
+              className="rounded-[2.5rem] overflow-hidden shadow-2xl bg-white/50 max-w-4xl w-full relative"
+            >
+              {/* Loading skeleton - only show while loading or before in view */}
+              {(!isInView || !imageLoaded) && (
+                <div className="absolute inset-0 bg-gradient-to-r from-[#E8E0F5] via-[#F5F0FF] to-[#E8E0F5] animate-pulse flex items-center justify-center min-h-[300px] md:min-h-[500px]">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-[#D4C8ED] animate-bounce" />
+                    <div className="text-primary/60 text-sm font-medium">Loading magic...</div>
+                  </div>
+                </div>
+              )}
               <div className="relative z-10 w-full h-full">
-                <img
-                  src="/elephanthand.png"
-                  alt="Komal Elephant"
-                  className="w-full h-full object-cover"
-                />
+                {/* Only load the image when container is in viewport */}
+                {isInView && (
+                  <img
+                    src="/elephanthand.png"
+                    alt="Komal Elephant"
+                    className={`w-full h-full object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    onLoad={() => setImageLoaded(true)}
+                  />
+                )}
               </div>
             </div>
 
@@ -108,7 +153,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* Why Choose KOMAL - Comparison Table */}
-      <section className="py-10 md:py-16 bg-[#F5F5F7] relative overflow-hidden">
+      <section className="py-6 md:py-10 bg-[#F5F5F7] relative overflow-hidden">
         {/* Floating Particles Background */}
         <div className="absolute inset-0 z-0">
           <FloatingParticles count={25} />
@@ -118,12 +163,7 @@ export default function HowKomalWorks() {
             <h2 className="font-sans text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em] text-center">
               Why Choose KOMAL?
             </h2>
-            <p className="text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto mb-8">
-              You need a learning companion that truly understands. That&apos;s why we built KOMAL—a behavioral-first approach to help your child thrive.
-            </p>
-            <Button asChild className="bg-white border border-border text-primary hover:bg-gray-50 rounded-full px-6">
-              <Link href="#the-big-idea">Discover More</Link>
-            </Button>
+
           </div>
 
           {/* Comparison Table */}
@@ -285,7 +325,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* The Anatomy of Komal - Inspired by reference image */}
-      <section className="py-10 md:py-16 bg-[#F5F0FF]">
+      <section className="py-6 md:py-10 bg-[#F5F0FF]">
         <div className="max-w-[1100px] mx-auto px-6 md:px-16">
           <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-6">
             <div className="flex-1 text-center md:text-left">
@@ -326,7 +366,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* The Big Idea */}
-      <section className="py-12 md:py-20 bg-white">
+      <section className="py-8 md:py-12 bg-white">
         <div className="max-w-[900px] mx-auto px-6 md:px-8">
           <h2 className="font-sans text-[32px] md:text-[42px] font-semibold text-primary mb-6 tracking-[-0.02em]">
             The Big Idea
@@ -341,7 +381,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* Where the Magic Happens */}
-      <section className="py-12 md:py-20 bg-[#F5F5F7] relative overflow-hidden">
+      <section className="py-8 md:py-12 bg-[#F5F5F7] relative overflow-hidden">
         {/* Floating Particles Background */}
         <div className="absolute inset-0 z-0">
           <FloatingParticles count={30} />
@@ -357,17 +397,17 @@ export default function HowKomalWorks() {
           </div>
 
           {/* 2x2 Grid of Violet Cards */}
-          <div className="grid grid-cols-2 gap-2 md:gap-6">
+          <div className="grid grid-cols-2 gap-2 md:gap-4">
             {/* Card 1: Instant Adaptation */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-4 md:p-10 flex flex-col items-center justify-center min-h-[140px] md:min-h-[280px]">
-              <span className="text-[28px] sm:text-[48px] md:text-[96px] font-bold text-primary mb-2 md:mb-4">&lt;200ms</span>
-              <p className="text-sm md:text-xl text-primary font-medium text-center">Instant Adaptation</p>
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
+              <span className="text-[24px] sm:text-[36px] md:text-[64px] font-bold text-primary mb-1 md:mb-2">&lt;200ms</span>
+              <p className="text-xs md:text-base text-primary font-medium text-center">Instant Adaptation</p>
             </div>
 
             {/* Card 2: Learning Over Time - with graph icon */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-4 md:p-10 flex flex-col items-center justify-center min-h-[140px] md:min-h-[280px]">
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
               {/* Simple bar chart SVG */}
-              <svg className="w-20 sm:w-28 md:w-40 h-12 sm:h-16 md:h-24 mb-2 md:mb-4" viewBox="0 0 120 60" fill="none">
+              <svg className="w-16 sm:w-20 md:w-28 h-10 sm:h-12 md:h-16 mb-1 md:mb-2" viewBox="0 0 120 60" fill="none">
                 <rect x="0" y="45" width="12" height="15" fill="#270263" opacity="0.4" rx="2" />
                 <rect x="16" y="40" width="12" height="20" fill="#270263" opacity="0.5" rx="2" />
                 <rect x="32" y="35" width="12" height="25" fill="#270263" opacity="0.6" rx="2" />
@@ -377,14 +417,14 @@ export default function HowKomalWorks() {
                 <rect x="96" y="8" width="12" height="52" fill="#270263" rx="2" />
                 <path d="M6 42 L22 38 L38 32 L54 25 L70 18 L86 12 L102 6" stroke="#270263" strokeWidth="2" strokeDasharray="3 3" fill="none" />
               </svg>
-              <p className="text-sm md:text-xl text-primary font-medium text-center">Learning Over Time</p>
+              <p className="text-xs md:text-base text-primary font-medium text-center">Learning Over Time</p>
             </div>
 
             {/* Card 3: On-Device Processing - with sync icon */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-4 md:p-10 flex flex-col items-center justify-center min-h-[140px] md:min-h-[280px]">
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
               {/* Circular sync icon */}
-              <div className="relative mb-2 md:mb-4">
-                <svg className="w-14 sm:w-20 md:w-28 h-14 sm:h-20 md:h-28" viewBox="0 0 100 100" fill="none">
+              <div className="relative mb-1 md:mb-2">
+                <svg className="w-10 sm:w-14 md:w-20 h-10 sm:h-14 md:h-20" viewBox="0 0 100 100" fill="none">
                   {/* Dashed circle */}
                   <circle cx="50" cy="50" r="40" stroke="#270263" strokeWidth="2" strokeDasharray="6 4" opacity="0.4" />
                   {/* Center circle with arrows */}
@@ -397,13 +437,13 @@ export default function HowKomalWorks() {
                   <circle cx="15" cy="65" r="6" fill="#270263" opacity="0.6" />
                 </svg>
               </div>
-              <p className="text-sm md:text-xl text-primary font-medium text-center">On-Device Processing</p>
+              <p className="text-xs md:text-base text-primary font-medium text-center">On-Device Processing</p>
             </div>
 
             {/* Card 4: Better Every Week */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-4 md:p-10 flex flex-col items-center justify-center min-h-[140px] md:min-h-[280px]">
-              <span className="text-[36px] sm:text-[56px] md:text-[96px] font-bold text-primary mb-2 md:mb-4">∞</span>
-              <p className="text-sm md:text-xl text-primary font-medium text-center">Better Every Week</p>
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
+              <span className="text-[28px] sm:text-[40px] md:text-[64px] font-bold text-primary mb-1 md:mb-2">∞</span>
+              <p className="text-xs md:text-base text-primary font-medium text-center">Better Every Week</p>
             </div>
           </div>
 
@@ -438,7 +478,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* Experience the App - Showcase Section */}
-      <section className="py-12 md:py-20 bg-white">
+      <section className="py-8 md:py-12 bg-white">
         <div className="max-w-[1100px] mx-auto px-6 md:px-16">
           <div className="text-center mb-12">
             <h2 className="font-sans text-center text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em]">
@@ -532,7 +572,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* Choose Your Avatar Section */}
-      <section className="py-10 md:py-16 bg-[#F5F5F7]">
+      <section className="py-6 md:py-10 bg-[#F5F5F7]">
         <div className="max-w-[1100px] mx-auto px-6 md:px-16">
           <div className="text-center mb-10">
             <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4 inline-block">
@@ -582,7 +622,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* The Science */}
-      <section className="py-12 md:py-20 bg-white">
+      <section className="py-8 md:py-12 bg-white">
         <div className="max-w-[1100px] text-center mx-auto px-6 md:px-16">
           <div className="text-center mb-12">
             <h2 className="font-sans text-center text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em]">
@@ -729,7 +769,7 @@ export default function HowKomalWorks() {
 
 
       {/* What Komal Sees & What Parents See - Side by Side */}
-      <section className="py-12 md:py-20 bg-[#F5F5F7]">
+      <section className="py-8 md:py-12 bg-[#F5F5F7]">
         <div className="max-w-[1200px] mx-auto px-6 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - What Komal Sees */}

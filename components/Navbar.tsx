@@ -7,12 +7,14 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import WaitlistModal from "@/components/WaitlistModal";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   // Scroll-based: flat at top, pill on scroll
   useEffect(() => {
@@ -101,16 +103,14 @@ export default function Navbar() {
         {/* Mobile: CTA Button + Hamburger Menu */}
         <div className="ml-auto flex items-center gap-2 md:hidden">
           <Button
-            asChild
+            onClick={() => setIsWaitlistOpen(true)}
             className={`h-9 px-4 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
           >
-            <Link href="#">
-              Get Started
-              <ArrowUpRight className="w-4 h-4" />
-            </Link>
+            Get Started
+            <ArrowUpRight className="w-4 h-4" />
           </Button>
 
           {/* Hamburger Menu Button */}
@@ -133,16 +133,14 @@ export default function Navbar() {
         {/* Desktop CTA Button - Right */}
         <div className="hidden md:block shrink-0">
           <Button
-            asChild
+            onClick={() => setIsWaitlistOpen(true)}
             className={`h-9 px-5 rounded-full border-0 font-medium text-sm transition-all duration-300 flex items-center gap-1.5 ${isScrolled
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
           >
-            <Link href="#">
-              Get Started
-              <ArrowUpRight className="w-4 h-4" />
-            </Link>
+            Get Started
+            <ArrowUpRight className="w-4 h-4" />
           </Button>
         </div>
       </nav>
@@ -177,6 +175,9 @@ export default function Navbar() {
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
+
+      {/* Waitlist Modal */}
+      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
     </>
   );
 }

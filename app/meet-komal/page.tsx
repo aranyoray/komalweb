@@ -260,7 +260,7 @@ export default function MeetKomal() {
           </Link>
 
           <div className="meet-header">
-            <h1>Meet KOMAL</h1>
+            <h1 className="animate-[fadeDown_0.8s_ease_forwards]">Meet KOMAL</h1>
             <p className="subtitle">Knowledge-Oriented Mental-Health & Affective Learning</p>
             <p>
               A mobile and web-based application with hyperpersonalized virtual humans for social-emotional learning

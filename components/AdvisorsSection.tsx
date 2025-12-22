@@ -26,7 +26,7 @@ const advisors: Advisor[] = [
         image: "/doris-vidal-dorsch-phd-technical-advisor-los-angeles.png",
     },
     {
-        name: "Dr Om Prakash Singh, MD",
+        name: "Dr (Prof) Om Prakash Singh, MD",
         title: "CLINICAL ADVISOR",
         company: "@ INDIAN PSYCHIATRIC SOCIETY",
         description: "Incoming National President, Indian Psychiatric Society. Guides our clinical approach and mental health protocols.",
@@ -50,10 +50,10 @@ const advisors: Advisor[] = [
 
 export default function AdvisorsSection() {
     return (
-        <section className="advisors-section py-16 md:py-24 bg-white" id="advisors">
+        <section className="advisors-section py-8 md:py-12 bg-white" id="advisors">
             <div className="container max-w-[1240px] px-6 md:px-8 mx-auto">
                 {/* Our Advisors - Horizontal Layout */}
-                <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-normal mb-8 md:mb-12 leading-[1.15] tracking-[-0.02em] text-primary text-center">
+                <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-bold mb-8 md:mb-12 leading-[1.15] tracking-[-0.02em] text-primary text-center">
                     Advised by the Best
                 </h2>
 

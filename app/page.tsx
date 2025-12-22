@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import Image from "next/image";
@@ -19,8 +19,10 @@ import FloatingButterflies from "@/components/FloatingButterflies";
 import FloatingDots from "@/components/FloatingDots";
 import KomalYourBestSection from "@/components/KomalYourBestSection";
 import SplitText from "@/components/SplitText";
+import WaitlistModal from "@/components/WaitlistModal";
 
 export default function Home() {
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   const testimonials = [
     {
@@ -212,11 +214,11 @@ export default function Home() {
             {/* CTA Buttons */}
             <div className="cta-group flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-8 w-full sm:w-auto animate-[fadeDown_1s_ease_forwards]" style={{ animationDelay: "0.2s" }}>
               <Button
-                asChild
+                onClick={() => setIsWaitlistOpen(true)}
                 size="lg"
                 className="bg-primary hover:bg-primary/90 hover:scale-105 text-white text-lg sm:text-base md:text-lg px-8 py-4 sm:px-6 sm:py-3 md:px-8 md:py-4 h-auto rounded-full shadow-lg transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)] w-full sm:w-auto"
               >
-                <Link href="#">Get Free AI Report</Link>
+                Join Waitlist
               </Button>
               <Button
                 asChild
@@ -224,7 +226,7 @@ export default function Home() {
                 variant="outline"
                 className="border-primary/30 hover:bg-primary/5 hover:scale-105 text-primary text-lg sm:text-base md:text-lg px-8 py-4 sm:px-6 sm:py-3 md:px-8 md:py-4 h-auto rounded-full transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)] w-full sm:w-auto"
               >
-                <Link href="#contact">Talk to Us</Link>
+                <Link href="mailto:sales@komalkids.com">Talk to Us</Link>
               </Button>
             </div>
           </div>
@@ -287,16 +289,7 @@ export default function Home() {
         <div className="container max-w-[900px] px-8 mx-auto text-center mt-16 relative z-[2]" id="how-it-works">
           {/* Main Headline */}
           <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-bold text-primary mb-4 tracking-tight text-center leading-[1.15]">
-            Talk, D
-            <span className="inline-block relative" style={{ width: '1em', height: '1.1em', top: '0.25em' }}>
-              <Image
-                src="/finalstrokemonkey.png"
-                alt="O"
-                fill
-                className="object-contain"
-              />
-            </span>
-            n&apos;t Tap
+            Talk, Don&apos;t Tap
           </h2>
 
           {/* Tagline */}
@@ -324,8 +317,79 @@ export default function Home() {
       {/* Komal: Your Best Section */}
       <KomalYourBestSection />
 
+      {/* Key Features Section */}
+      <section className="features-section py-12 md:py-16 bg-white">
+        <div className="container max-w-[1100px] px-8 mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 text-center">
+            {/* Feature 1: 100% Hands-Free */}
+            <div className="flex flex-col items-center">
+              <div className="flex gap-1 mb-4">
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+              </div>
+              <h3 className="text-lg md:text-xl font-bold text-primary mb-2">
+                100% Hands-Free
+              </h3>
+              <p className="text-sm md:text-base text-text-dim leading-relaxed text-center">
+                Minimal clicks; just talk.<br />
+                Behavioural infra at scale.
+              </p>
+            </div>
+
+            {/* Feature 2: Dynamic Content */}
+            <div className="flex flex-col items-center">
+              <div className="flex gap-1 mb-4">
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+              </div>
+              <h3 className="text-lg md:text-xl font-bold text-primary mb-2">
+                Dynamic Content
+              </h3>
+              <p className="text-sm md:text-base text-text-dim leading-relaxed text-center">
+                First child-safe LLM to meet<br />
+                the child where they are.
+              </p>
+            </div>
+
+            {/* Feature 3: Longitudinal AI */}
+            <div className="flex flex-col items-center">
+              <div className="flex gap-1 mb-4">
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+                <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+              </div>
+              <h3 className="text-lg md:text-xl font-bold text-primary mb-2">
+                Longitudinal AI
+              </h3>
+              <p className="text-sm md:text-base text-text-dim leading-relaxed text-center">
+                Learn milestones missed,<br />
+                partially hit, and risks identified<br />
+                through our proprietary <span className="font-bold">Kurriculum</span>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sleek divider line */}
+      <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-violet-200/60 to-transparent" />
+
       {/* Partners Section - Trust through Institutional Legitimacy */}
-      <section className="partners-section pt-8 pb-0 md:py-20 bg-white overflow-hidden relative">
+      <section className="partners-section pt-4 pb-0 md:py-12 bg-white overflow-hidden relative">
         <div className="partners-container max-w-[1400px] mx-auto px-6 md:px-16">
           <h2 className="partners-title text-[22px] sm:text-[24px] md:text-[28px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#1e3a5f] mb-8 md:mb-16 font-semibold text-center animate-[fadeDown_1s_ease_forwards]">OUR ECOSYSTEM</h2>
 
@@ -335,7 +399,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="testimonials mt-2 md:mt-8 py-6 md:py-10 bg-white relative overflow-hidden">
+      <section className="testimonials mt-0 md:mt-4 py-4 md:py-8 bg-white relative overflow-hidden">
         {/* Background Image with padding and curved borders */}
         <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none p-4 md:p-6">
           <div className="w-full h-full max-w-[1400px] overflow-hidden rounded-3xl">
@@ -349,7 +413,7 @@ export default function Home() {
           </div>
         </div>
         <div className="container text-center max-w-[1240px] px-8 mx-auto relative z-10">
-          <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-normal mt-4 mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center drop-shadow-lg bg-white px-6 py-3 rounded-full inline-block mx-auto">What Parents Love</h2>
+          <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-bold mt-4 mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center drop-shadow-lg bg-white px-6 py-3 rounded-full inline-block mx-auto">What Parents Love</h2>
           <TestimonialsCarousel testimonials={testimonials} />
         </div>
       </section>
@@ -359,9 +423,9 @@ export default function Home() {
       <AdvisorsSection />
 
       {/* For Schools & Therapists */}
-      <section className="enterprise-cta pt-12 pb-16 md:py-24 bg-primary text-white text-center" id="for-schools">
+      <section className="enterprise-cta pt-8 pb-12 md:py-16 bg-primary text-white text-center" id="for-schools">
         <div className="container max-w-[900px] px-8 mx-auto text-center">
-          <h2 className="text-[24px] sm:text-3xl md:text-[36px] lg:text-4xl font-sans font-bold mb-6 text-center">For Schools, Daycares, and Paediatric Practices</h2>
+          <h2 className="text-[24px] sm:text-3xl md:text-[36px] lg:text-4xl font-sans font-bold mb-6 text-center">For Schools, Daycares, <br /> and Paediatric Practices</h2>
           <p className="text-lg opacity-90 leading-relaxed mb-8  text-center">
             Komal integrates seamlessly into your existing workflow. No new systems to learn—just plug into the insights
             parents already trust. Get classroom-level analytics, SEL compliance dashboards, and early risk identification
@@ -369,10 +433,10 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center flex-wrap mt-8">
             <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 rounded-full px-8">
-              <Link href="#contact">Request Demo</Link>
+              <Link href="mailto:sales@komalkids.com">Request Demo</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="bg-transparent border-white/30 text-white hover:bg-white/10 hover:text-white rounded-full px-8">
-              <Link href="#for-therapists">Learn More</Link>
+              <Link href="mailto:sales@komalkids.com">Learn More</Link>
             </Button>
           </div>
         </div>
@@ -383,7 +447,7 @@ export default function Home() {
       <div className="section-divider h-3 w-full bg-primary" />
 
       {/* FAQ */}
-      <section className="faq py-12 md:py-24 bg-surface">
+      <section className="faq py-8 md:py-16 bg-surface">
         <div className="container max-w-[1240px] px-8 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-12 lg:gap-24 items-start">
           <div className="lg:col-span-5">
             <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-normal mb-4 md:mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-left">Frequently Asked Questions</h2>
@@ -398,12 +462,16 @@ export default function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="final-cta py-12 md:py-32 text-center bg-primary text-white text-center">
+      <section className="final-cta py-10 md:py-20 text-center bg-primary text-white text-center">
         <div className="container max-w-[1240px] px-8 mx-auto text-center">
           <h2 className="text-[24px] sm:text-3xl md:text-4xl lg:text-5xl font-sans font-bold mb-6 text-center">Ready to Understand Your Child Better?</h2>
           <p className="text-xl opacity-90 mb-10 text-center ">Start your free trial today—no credit card required.</p>
-          <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto rounded-full">
-            <Link href="#">Get FREE AI Report</Link>
+          <Button
+            onClick={() => setIsWaitlistOpen(true)}
+            size="lg"
+            className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto rounded-full"
+          >
+            Join Waitlist
           </Button>
         </div>
       </section>
@@ -412,6 +480,9 @@ export default function Home() {
           Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of Komal (ChildCog Private Limited).
         </p>
       </div>
+
+      {/* Waitlist Modal */}
+      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
     </>
   );
 }

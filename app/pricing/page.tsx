@@ -74,8 +74,8 @@ export default function PricingPage() {
         <main className="pt-24 pb-16 bg-white">
             <section className="pricing py-14" id="pricing">
                 <div className="container max-w-[1240px] px-8 mx-auto">
-                    <h1 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-normal mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center">
-                        Pick Your Perfect Plan ✨
+                    <h1 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-bold mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center animate-[fadeDown_0.8s_ease_forwards]">
+                        Pick Your Perfect Plan
                     </h1>
                     <p className="section-description text-lg text-text-dim mb-12 max-w-[700px] mx-auto leading-relaxed text-center">
                         Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.

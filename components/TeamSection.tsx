@@ -21,7 +21,7 @@ const coreTeam: TeamMember[] = [
     },
     {
         name: "Saarthak Kumar, MPA",
-        role: "Finance & Strategy Advisor",
+        role: "Growth and Partnerships",
         credentials: [
             "Columbia University — MPA (Quantitative Concentration), '25",
             "Former Advisor, Permanent Mission of India to the United Nations",
@@ -31,16 +31,14 @@ const coreTeam: TeamMember[] = [
         bio: "Finance & Strategy Advisor with extensive experience in international policy and quantitative analysis. Former advisor at the Permanent Mission of India to the United Nations.",
     },
     {
-        name: "Yudhajit Ain, MS",
-        role: "Research Advisor (Neuroscience)",
+        name: "Jvalaj Pandey",
+        role: "UI Engineer",
         credentials: [
-            "PhD Candidate, Neuropsychology",
-            "Internal Attention Lab, University of Calgary",
-            "Formerly at NBRC",
-            "IISER Bhopal — MS-BS (2021, Gold Medallist)",
+            "Prev SWE Intern @ Delta Air Lines, Nucor Steel",
+            "University of South Florida '26",
         ],
-        image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
-        bio: "Research Advisor specialising in Neuroscience. PhD candidate in Neuropsychology at the Internal Attention Lab, University of Calgary. Gold Medallist from IISER Bhopal.",
+        image: "/komaljvalaj.png",
+        bio: "Software Engineer with internship experience at Delta Air Lines and Nucor Steel. Currently pursuing studies at University of South Florida, graduating in 2026.",
     },
     {
         name: "Anwesha Das",
@@ -57,14 +55,16 @@ const coreTeam: TeamMember[] = [
         bio: "Senior Software Engineer with experience in Speech Therapy AI. Brings technical expertise to Komal's development team.",
     },
     {
-        name: "Jvalaj (Jay) Pandey",
-        role: "Software Engineer",
+        name: "Yudhajit Ain, MS",
+        role: "Research Advisor (Neuroscience)",
         credentials: [
-            "Prev SWE Intern @ Delta Air Lines, Nucor Steel",
-            "University of South Florida '26",
+            "PhD Candidate, Neuropsychology",
+            "Internal Attention Lab, University of Calgary",
+            "Formerly at NBRC",
+            "IISER Bhopal — MS-BS (2021, Gold Medallist)",
         ],
-        image: "/man.png",
-        bio: "Software Engineer with internship experience at Delta Air Lines and Nucor Steel. Currently pursuing studies at University of South Florida, graduating in 2026.",
+        image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
+        bio: "Research Advisor specialising in Neuroscience. PhD candidate in Neuropsychology at the Internal Attention Lab, University of Calgary. Gold Medallist from IISER Bhopal.",
     },
 ];
 
@@ -117,10 +117,10 @@ const advisors: Advisor[] = [
 
 export default function TeamSection() {
     return (
-        <section className="team-section py-16 md:py-24 bg-white" id="team">
+        <section className="team-section pt-24 pb-16 md:pb-24 bg-white" id="team">
             <div className="container max-w-[1240px] px-6 md:px-8 mx-auto">
                 {/* Core Team */}
-                <h2 className="section-title font-sans text-3xl md:text-[52px] font-semibold mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
+                <h2 className="section-title font-sans text-3xl md:text-[52px] font-bold mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center animate-[fadeDown_0.8s_ease_forwards]">
                     Meet The Team
                 </h2>
 
@@ -138,11 +138,11 @@ export default function TeamSection() {
                                     alt={member.name}
                                     fill
                                     className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                    style={{ 
-                                        objectPosition: 'center 15%',
+                                    style={{
+                                        objectPosition: member.name.includes('Saarthak') ? 'center top' : 'center 15%',
                                     }}
                                 />
-                                
+
                                 {/* Bio Overlay on Hover */}
                                 {member.bio && (
                                     <div className="absolute inset-0 bg-primary/95 text-white p-6 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
@@ -189,11 +189,11 @@ export default function TeamSection() {
                                         alt={advisor.name}
                                         fill
                                         className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                        style={{ 
+                                        style={{
                                             objectPosition: 'center 20%',
                                         }}
                                     />
-                                    
+
                                     {/* Bio Overlay on Hover */}
                                     <div className="absolute inset-0 bg-primary/95 text-white p-6 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
                                         <p className="text-sm font-semibold mb-2">{advisor.title}</p>
