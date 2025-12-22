@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import Image from "next/image";
@@ -23,6 +23,11 @@ import WaitlistModal from "@/components/WaitlistModal";
 
 export default function Home() {
   const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+
+  // Auto-open waitlist modal when someone visits the website
+  useEffect(() => {
+    setIsWaitlistOpen(true);
+  }, []);
 
   const testimonials = [
     {
@@ -136,7 +141,7 @@ export default function Home() {
         </div>
 
 
-        <div className="hero-container max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-8 items-start relative z-[2] w-full px-4">
+        <div className="hero-container max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-8 items-start relative z-[2] w-full px-8 lg:px-16">
           {/* Left Column - Text Content */}
           <div className="hero-content text-center lg:text-left order-1 lg:order-1 pt-0 lg:pt-12 flex flex-col items-center lg:items-start">
             {/* Yale Scientists Badge */}
@@ -232,7 +237,7 @@ export default function Home() {
           </div>
 
           {/* Right Column - Phone Image */}
-          <div className="hero-image flex justify-center lg:justify-end order-2 lg:order-2 mt-12 sm:mt-2 lg:-mt-12" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
+          <div className="hero-image flex justify-center lg:justify-center order-2 lg:order-2 mt-12 sm:mt-2 lg:-mt-12" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
             <div className="relative">
               {/* Purple accent blob behind phone */}
               <div className="absolute -right-8 -bottom-8 w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-[#270263] rounded-full blur-3xl opacity-25 z-0" />
@@ -241,17 +246,17 @@ export default function Home() {
               <div className="relative inline-block">
 
                 <Image
-                  src="/floatingphone.png"
+                  src="/newfloatingphone.png"
                   alt="Komal App on Phone"
-                  width={500}
-                  height={600}
-                  className="relative z-10 w-[380px] sm:w-[380px] md:w-[420px] lg:w-[450px] xl:w-[500px] h-auto drop-shadow-2xl"
+                  width={350}
+                  height={420}
+                  className="relative z-10 w-[260px] sm:w-[280px] md:w-[300px] lg:w-[330px] xl:w-[350px] h-auto drop-shadow-2xl"
                   priority
                 />
               </div>
 
               {/* Sketch Card 1 - Top Left */}
-              <div className="sketch-card absolute left-[-15px] lg:left-[-25px] top-[5%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both" }}>
+              <div className="sketch-card absolute left-[-40px] lg:left-[-60px] top-[5%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both" }}>
                 <div className="rounded-xl p-3 lg:p-4 -rotate-3 w-[130px] lg:w-[150px] bg-[#FFFBEB] border-2 border-dashed border-amber-300" style={{ boxShadow: "2px 2px 0px #FCD34D" }}>
                   <h4 className="text-amber-900 font-medium text-xs lg:text-sm mb-1">they talk to it</h4>
                   <p className="text-amber-700/90 text-[9px] lg:text-[10px] leading-snug italic">no tapping, just chatting</p>
@@ -259,7 +264,7 @@ export default function Home() {
               </div>
 
               {/* Sketch Card 2 - Top Right */}
-              <div className="sketch-card absolute right-[-10px] lg:right-[-20px] top-[18%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s both" }}>
+              <div className="sketch-card absolute right-[-55px] lg:right-[-75px] top-[18%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s both" }}>
                 <div className="rounded-xl p-3 lg:p-4 rotate-2 w-[125px] lg:w-[145px] bg-[#FDF2F8] border-2 border-dashed border-pink-300" style={{ boxShadow: "2px 2px 0px #F9A8D4" }}>
                   <h4 className="text-pink-900 font-medium text-xs lg:text-sm mb-1">not addictive</h4>
                   <p className="text-pink-700/90 text-[9px] lg:text-[10px] leading-snug italic">bonds like a real buddy</p>
@@ -267,7 +272,7 @@ export default function Home() {
               </div>
 
               {/* Sketch Card 3 - Bottom Left */}
-              <div className="sketch-card absolute left-[-20px] lg:left-[-30px] bottom-[22%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s both" }}>
+              <div className="sketch-card absolute left-[-45px] lg:left-[-65px] bottom-[22%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s both" }}>
                 <div className="rounded-xl p-3 lg:p-4 rotate-1 w-[135px] lg:w-[155px] bg-[#ECFDF5] border-2 border-dashed border-emerald-300" style={{ boxShadow: "2px 2px 0px #6EE7B7" }}>
                   <h4 className="text-emerald-900 font-medium text-xs lg:text-sm mb-1">a whole village</h4>
                   <p className="text-emerald-700/90 text-[9px] lg:text-[10px] leading-snug italic">40+ characters</p>
@@ -275,7 +280,7 @@ export default function Home() {
               </div>
 
               {/* Sketch Card 4 - Bottom Right */}
-              <div className="sketch-card absolute right-[-5px] lg:right-[-15px] bottom-[12%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.85s both" }}>
+              <div className="sketch-card absolute right-[-50px] lg:right-[-70px] bottom-[12%] z-30" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.85s both" }}>
                 <div className="rounded-xl p-3 lg:p-4 -rotate-2 w-[130px] lg:w-[150px] bg-[#F5F3FF] border-2 border-dashed border-purple-300" style={{ boxShadow: "2px 2px 0px #C4B5FD" }}>
                   <h4 className="text-purple-900 font-medium text-xs lg:text-sm mb-1">fewer tantrums</h4>
                   <p className="text-purple-700/90 text-[9px] lg:text-[10px] leading-snug italic">calmer evenings</p>

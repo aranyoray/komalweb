@@ -571,52 +571,140 @@ export default function HowKomalWorks() {
         </div>
       </section>
 
-      {/* Choose Your Avatar Section */}
-      <section className="py-6 md:py-10 bg-[#F5F5F7]">
+      {/* Choose Your Companion - Marquee with Magnetic Effect */}
+      <section className="py-10 md:py-16 bg-[#F5F5F7] overflow-hidden">
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes marquee {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .marquee-track {
+              display: flex;
+              animation: marquee 40s linear infinite;
+            }
+            .marquee-track:hover {
+              animation-play-state: paused;
+            }
+            .animal-item {
+              flex-shrink: 0;
+              transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+              cursor: pointer;
+            }
+            .animal-item:hover {
+              z-index: 10;
+            }
+            .animal-circle {
+              border-radius: 50%;
+              overflow: hidden;
+              background: linear-gradient(135deg, #F5F5F7 0%, #E8E0F5 100%);
+              box-shadow: 0 4px 20px rgba(39, 2, 99, 0.15);
+              transition: transform 0.3s ease, box-shadow 0.3s ease;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .animal-item:hover .animal-circle {
+              transform: scale(1.15);
+              box-shadow: 0 8px 35px rgba(39, 2, 99, 0.25);
+            }
+            .animal-circle img {
+              mix-blend-mode: multiply;
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              object-position: center 20% !important;
+            }
+          `
+        }} />
         <div className="max-w-[1100px] mx-auto px-6 md:px-16">
           <div className="text-center mb-10">
             <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4 inline-block">
-              🎨 Custom Avatars
+              🎨 Choose Your Friend
             </span>
             <h2 className="font-sans text-center text-[32px] md:text-[42px] font-semibold text-primary mb-4 tracking-[-0.02em]">
               Choose Your Companion
             </h2>
             <p className="text-lg text-text-dim leading-relaxed max-w-[600px] mx-auto">
-              Every child gets to pick and customize their own unique avatar friend—making learning feel personal and fun!
+              Every child gets to pick their own unique animal friend—making learning feel personal and magical!
             </p>
           </div>
 
-          {/* Avatar Grid */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            {/* Avatar 1 */}
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
-              <img src="/avatar1.jpeg" alt="KOMAL Avatar 1" className="w-full h-full object-cover" />
-            </div>
-            {/* Avatar 2 */}
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
-              <img src="/avatar2.jpeg" alt="KOMAL Avatar 2" className="w-full h-full object-cover" />
-            </div>
-            {/* Avatar 3 */}
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
-              <img src="/avatar3.jpeg" alt="KOMAL Avatar 3" className="w-full h-full object-cover" />
-            </div>
-            {/* Avatar 4 */}
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
-              <img src="/avatar4.jpeg" alt="KOMAL Avatar 4" className="w-full h-full object-cover" />
-            </div>
-            {/* Avatar 5 */}
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
-              <img src="/avatar5.jpeg" alt="KOMAL Avatar 5" className="w-full h-full object-cover" />
-            </div>
-            {/* Avatar 6 */}
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
-              <img src="/avatar6.jpeg" alt="KOMAL Avatar 6" className="w-full h-full object-cover" />
+          {/* Marquee Container */}
+          <div
+            className="relative py-8"
+            onMouseMove={(e) => {
+              const container = e.currentTarget;
+              const items = container.querySelectorAll('.animal-item') as NodeListOf<HTMLElement>;
+              const rect = container.getBoundingClientRect();
+              const mouseX = e.clientX - rect.left;
+              const mouseY = e.clientY - rect.top;
+
+              items.forEach((item) => {
+                const itemRect = item.getBoundingClientRect();
+                const itemCenterX = itemRect.left - rect.left + itemRect.width / 2;
+                const itemCenterY = itemRect.top - rect.top + itemRect.height / 2;
+
+                const distX = mouseX - itemCenterX;
+                const distY = mouseY - itemCenterY;
+                const distance = Math.sqrt(distX * distX + distY * distY);
+
+                const maxDistance = 150;
+                const maxMove = 25;
+
+                if (distance < maxDistance) {
+                  const force = (maxDistance - distance) / maxDistance;
+                  const moveX = (distX / distance) * force * maxMove;
+                  const moveY = (distY / distance) * force * maxMove;
+                  item.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                } else {
+                  item.style.transform = 'translate(0, 0)';
+                }
+              });
+            }}
+            onMouseLeave={(e) => {
+              const items = e.currentTarget.querySelectorAll('.animal-item') as NodeListOf<HTMLElement>;
+              items.forEach((item) => {
+                item.style.transform = 'translate(0, 0)';
+              });
+            }}
+          >
+
+
+            {/* Scrolling Track */}
+            <div className="marquee-track gap-6 md:gap-10">
+              {/* First set of animals */}
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
+                <div key={`a-${num}`} className="animal-item px-3 md:px-4">
+                  <div className="animal-circle w-20 h-20 md:w-28 md:h-28">
+                    <img
+                      src={`/animal${num}.png`}
+                      alt={`Animal Companion ${num}`}
+                      className="w-full h-full object-cover"
+                      style={{ objectPosition: 'center 90%' }}
+                    />
+                  </div>
+                </div>
+              ))}
+              {/* Duplicate set for seamless loop */}
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
+                <div key={`b-${num}`} className="animal-item px-3 md:px-4">
+                  <div className="animal-circle w-20 h-20 md:w-28 md:h-28">
+                    <img
+                      src={`/animal${num}.png`}
+                      alt={`Animal Companion ${num}`}
+                      className="w-full h-full object-cover"
+                      style={{ objectPosition: 'center 90%' }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Plus more indicator */}
-          <div className="text-center mt-8">
-            <p className="text-text-dim text-sm text-center">...and many more to unlock! 🎉</p>
+          {/* Caption */}
+          <div className="text-center mt-4">
+            <p className="text-text-dim text-sm text-center">Hover over your favorite friend! 🎉</p>
           </div>
         </div>
       </section>
