@@ -27,6 +27,7 @@ export default function PrivacyPolicyPage() {
                 their parents/guardians in compliance with:
               </p>
               <ul>
+                <li><strong>Google Play Families Policy</strong> (for child-directed apps distributed on Google Play)</li>
                 <li>
                   <strong>COPPA</strong> (Children&apos;s Online Privacy Protection Act) - United States
                 </li>
@@ -183,11 +184,12 @@ export default function PrivacyPolicyPage() {
             </ul>
 
             <h3>2.5 Advertising Data</h3>
-            <p>Our App uses Google AdMob to display advertisements. AdMob may collect:</p>
+            <p>Our App uses Google AdMob to display advertisements. Because Komal is a child-directed app, we configure our advertising requests to support the Google Play Families Policy and applicable children's privacy laws.</p>
             <ul>
-              <li>Device identifiers (advertising ID)</li>
-              <li>App usage data for ad personalization</li>
-              <li>Location data (general, not precise)</li>
+              <li><strong>Child-directed ad requests:</strong> We request ads as child-directed (COPPA) and for users under the age of consent (TFUA) where applicable.</li>
+              <li><strong>No personalized ads:</strong> We do not allow interest-based / personalized advertising for children.</li>
+              <li><strong>Ad content rating:</strong> We restrict ad content to be suitable for general audiences ("G").</li>
+              <li><strong>Identifiers:</strong> AdMob may still process limited device/app information necessary to serve ads, prevent fraud, and measure performance.</li>
             </ul>
             <p>
               For more information about how Google AdMob handles data, please visit:{" "}
