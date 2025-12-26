@@ -248,7 +248,7 @@ export default function Footer() {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <Image
-              src="/finalstrokemonkey.png"
+              src="/komaliconnobg.png"
               alt="Komal Logo"
               width={40}
               height={40}

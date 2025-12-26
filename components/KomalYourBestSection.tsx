@@ -35,15 +35,15 @@ export default function KomalYourBestSection() {
                             texts={roles}
                             mainClassName="text-primary font-bold py-1 sm:py-1.5 md:py-2 text-center whitespace-nowrap"
                             staggerFrom="last"
-                            initial={{ y: "100%", opacity: 0 }}
+                            initial={{ y: "-100%", opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: "-120%", opacity: 0 }}
-                            staggerDuration={0}
+                            exit={{ y: "100%", opacity: 0 }}
+                            staggerDuration={0.015}
                             splitBy="words"
                             splitLevelClassName="pb-0.5 sm:pb-1 md:pb-1 whitespace-nowrap"
                             elementLevelClassName="whitespace-nowrap"
-                            transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                            rotationInterval={2000}
+                            transition={{ type: "spring", stiffness: 500, damping: 25, mass: 0.8 }}
+                            rotationInterval={1400}
                         />
                     </span>
                 </h2>

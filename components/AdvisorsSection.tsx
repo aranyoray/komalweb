@@ -44,7 +44,7 @@ const advisors: Advisor[] = [
         title: "PRINCIPAL INVESTIGATOR",
         company: "@ YALE SOCIAL ROBOTICS LAB",
         description: "Principal Investigator at Yale Social Robotics Lab and Professor of Computer Science & Engineering at Yale University. Leading expert in social robotics and human-robot interaction.",
-        image: "/professor-brian-scassellati-phd-research-advisor-new-york.jpg",
+        image: "/briannobg.png",
     },
 ];
 

@@ -82,7 +82,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                         {/* Decorative logo */}
                         <div className="mb-4 w-16 h-16 mx-auto">
                             <Image
-                                src="/finalstrokemonkey.png"
+                                src="/komaliconnobg.png"
                                 alt="KOMAL Logo"
                                 width={64}
                                 height={64}

@@ -27,11 +27,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/finalstrokemonkey.png', href: '/finalstrokemonkey.png' },
+      { url: '/komaliconnobg.png', href: '/komaliconnobg.png' },
     ],
-    shortcut: ['/finalstrokemonkey.png'],
+    shortcut: ['/komaliconnobg.png'],
     apple: [
-      { url: '/finalstrokemonkey.png' },
+      { url: '/komaliconnobg.png' },
     ],
   },
 };

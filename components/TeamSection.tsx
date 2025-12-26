@@ -111,7 +111,7 @@ const advisors: Advisor[] = [
         title: "PRINCIPAL INVESTIGATOR",
         company: "@ YALE SOCIAL ROBOTICS LAB",
         description: "Principal Investigator at Yale Social Robotics Lab and Professor of Computer Science & Engineering at Yale University. Leading expert in social robotics and human-robot interaction.",
-        image: "/professor-brian-scassellati-phd-research-advisor-new-york.jpg",
+        image: "/briannobg.png",
     },
 ];
 
@@ -188,9 +188,14 @@ export default function TeamSection() {
                                         src={advisor.image}
                                         alt={advisor.name}
                                         fill
-                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                        className={`transition-transform duration-300 group-hover:scale-105 ${advisor.name.includes('Brian') || advisor.name.includes('Doris')
+                                                ? 'object-contain'
+                                                : 'object-cover'
+                                            }`}
                                         style={{
-                                            objectPosition: 'center 20%',
+                                            objectPosition: advisor.name.includes('Brian') || advisor.name.includes('Doris')
+                                                ? 'center center'
+                                                : 'center 20%',
                                         }}
                                     />
 

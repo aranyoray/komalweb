@@ -75,7 +75,7 @@ export default function Navbar() {
         >
           <div className="w-10 h-10 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
             <Image
-              src="/finalstrokemonkey.png"
+              src="/komaliconnobg.png"
               alt="KOMAL Logo"
               width={40}
               height={40}
