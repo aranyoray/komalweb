@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 // Abstract SVG Icons for "Anatomy of Komal" section
 const CoreIdentityIcon = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="8" stroke="#1A1A1A" strokeWidth="2" />
-    <circle cx="24" cy="24" r="14" stroke="#1A1A1A" strokeWidth="2" />
-    <circle cx="24" cy="24" r="20" stroke="#1A1A1A" strokeWidth="2" />
+    <circle cx="24" cy="24" r="20" stroke="#1A1A1A" strokeWidth="2" fill="white" />
+    <circle cx="24" cy="24" r="14" stroke="#1A1A1A" strokeWidth="2" fill="white" />
+    <circle cx="24" cy="24" r="8" stroke="#1A1A1A" strokeWidth="2" fill="#1A1A1A" />
   </svg>
 );
 
@@ -101,8 +101,7 @@ export default function HowKomalWorks() {
           {/* Multi-line headline with inline animated pill */}
           <div className="text-center mb-12 animate-[fadeDown_0.8s_ease_forwards]">
             <h1 className="font-sans text-[22px] md:text-[48px] lg:text-[56px] font-bold leading-[1.3] tracking-[-0.02em] text-primary">
-              We use <span className="font-semibold">advanced AI</span> to understand your child and deliver{" "}
-              <span className="inline-flex items-center align-middle mx-1">
+              We use frontier AI  <span className="inline-flex items-center align-middle mx-1">
                 <span
                   className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#E8E0F5] to-[#D4C8ED] px-4 py-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
                 >
@@ -114,8 +113,9 @@ export default function HowKomalWorks() {
                     </svg>
                   </span>
                 </span>
-              </span>
-              {" "}<span className="font-semibold">personalised insights</span> to help them thrive.
+              </span> to understand your child and deliver{" "}
+
+              {" "} personalised insights to help them thrive.
             </h1>
           </div>
 
@@ -153,7 +153,7 @@ export default function HowKomalWorks() {
       </section>
 
       {/* Why Choose KOMAL - Comparison Table */}
-      <section className="py-6 md:py-10 bg-[#F5F5F7] relative overflow-hidden">
+      <section className="pt-6 md:pt-10 pb-12 md:pb-16 bg-[#F5F5F7] relative overflow-hidden">
         {/* Floating Particles Background */}
         <div className="absolute inset-0 z-0">
           <FloatingParticles count={25} />
@@ -161,41 +161,41 @@ export default function HowKomalWorks() {
         <div className="max-w-[1100px] mx-auto px-6 md:px-16 relative z-10">
           <div className="text-center mb-12">
             <h2 className="font-sans text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em] text-center">
-              Why Choose KOMAL?
+              Why Komal?
             </h2>
 
           </div>
 
           {/* Comparison Table */}
-          <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-[#E8E0F5]">
+          <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-gray-300">
             {/* Table Header */}
-            <div className="grid grid-cols-3 border-b border-[#E8E0F5]">
-              <div className="p-2 md:p-6 bg-[#F5F0FF] text-center">
-                <span className="font-semibold text-primary text-[11px] md:text-base">KOMAL</span>
+            <div className="grid grid-cols-3 border-b border-gray-300">
+              <div className="py-3 px-2 md:py-6 md:px-6 bg-[#F5F0FF] flex items-center justify-center border-r border-gray-300">
+                <span className="font-bold text-primary text-[18px] md:text-2xl">KOMAL</span>
               </div>
-              <div className="p-2 md:p-6 text-center">
-                <span className="font-medium text-text-dim text-[11px] md:text-base">Traditional Apps</span>
+              <div className="py-3 px-2 md:py-6 md:px-6 flex items-center justify-center border-r border-gray-300">
+                <span className="font-bold text-text-dim text-[14px] md:text-lg">Traditional Apps</span>
               </div>
-              <div className="p-2 md:p-6 text-center">
-                <span className="font-medium text-text-dim text-[11px] md:text-base">Standard Screen Time</span>
+              <div className="py-3 px-2 md:py-6 md:px-6 flex items-center justify-center">
+                <span className="font-bold text-text-dim text-[14px] md:text-lg">Standard Screen Time</span>
               </div>
             </div>
 
-            {/* Row 1: Real-time behavioral AI */}
-            <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+            {/* Row 1: Real-time behavioural AI */}
+            <div className="grid grid-cols-3 border-b border-gray-300">
+              <div className="py-1 px-2 md:py-3 md:px-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-[11px] md:text-base">Real-time behavioral AI</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">Real-time behavioural AI</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-text-dim text-[10px] md:text-sm">Click-based tracking only</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -205,21 +205,21 @@ export default function HowKomalWorks() {
             </div>
 
             {/* Row 2: Emotional state detection */}
-            <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+            <div className="grid grid-cols-3 border-b border-gray-300">
+              <div className="py-1 px-2 md:py-3 md:px-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-primary font-medium text-[11px] md:text-base">Emotional state detection</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
                 <span className="text-text-dim text-[10px] md:text-sm">No emotional awareness</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -229,20 +229,20 @@ export default function HowKomalWorks() {
             </div>
 
             {/* Row 3: On-device privacy */}
-            <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+            <div className="grid grid-cols-3 border-b border-gray-300">
+              <div className="py-1 px-2 md:py-3 md:px-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-primary font-medium text-[11px] md:text-base">On-device privacy</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-text-dim text-[10px] md:text-sm">Cloud data collection</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -252,20 +252,20 @@ export default function HowKomalWorks() {
             </div>
 
             {/* Row 4: Instant adaptation */}
-            <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+            <div className="grid grid-cols-3 border-b border-gray-300">
+              <div className="py-1 px-2 md:py-3 md:px-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-primary font-medium text-[11px] md:text-base">Instant adaptation (&lt;200ms)</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-text-dim text-[10px] md:text-sm">Session-based changes</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -275,20 +275,20 @@ export default function HowKomalWorks() {
             </div>
 
             {/* Row 5: Parent-friendly insights */}
-            <div className="grid grid-cols-3 border-b border-gray-100">
-              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+            <div className="grid grid-cols-3 border-b border-gray-300">
+              <div className="py-1 px-2 md:py-3 md:px-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-primary font-medium text-[11px] md:text-base">Parent-friendly insights</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-text-dim text-[10px] md:text-sm">Basic progress reports</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -299,20 +299,20 @@ export default function HowKomalWorks() {
 
             {/* Row 6: Non-addictive by design */}
             <div className="grid grid-cols-3">
-              <div className="p-2 md:p-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3">
+              <div className="py-1 px-2 md:py-3 md:px-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span className="text-primary font-medium text-[11px] md:text-base">Non-addictive by design</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
                 <span className="text-text-dim text-[10px] md:text-sm">Gamification hooks</span>
               </div>
-              <div className="p-2 md:p-6 flex items-center justify-center gap-1 md:gap-2">
+              <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -333,7 +333,7 @@ export default function HowKomalWorks() {
                 The anatomy of <span className="font-bold">companionship</span>
               </h2>
               <p className="text-lg text-text-dim leading-relaxed max-w-[800px]">
-                Komal has studied the key markers of child development and engagement, building a sophisticated system that synthesises your child&apos;s unique patterns and needs.
+                Komal incorporates the key signals of development and engagement, to turn each child’s distinct patterns into a system that adapts to how they think, learn, and grow.
               </p>
             </div>
             {/* Elephant Mascot */}
@@ -372,10 +372,10 @@ export default function HowKomalWorks() {
             The Big Idea
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
-            Most learning apps are blindfolded—they only see if your child got the answer right or wrong. Komal is different. We watch how your child engages, not just what they click. We use <span className="font-semibold">microexpressions</span> and <span className="font-semibold">gaze</span> to study <span className="font-semibold">behaviour</span>, instead of bombarding them with buttons.
+            Most learning apps are blindfolded—they only see if your child got the answer right or wrong. Komal is different. We watch how your child engages, not just what they click. We use <span className="font-semibold">gaze, speech,</span> and <span className="font-semibold">microexpressions</span> to study <span className="font-semibold">behaviour</span> instead of bombarding them with buttons.
           </p>
           <p className="text-lg text-text-dim leading-relaxed">
-            It&apos;s like having a teacher who notices when your child hesitates, when they&apos;re getting frustrated, or when they&apos;re genuinely excited. Komal is <span className="font-bold">(child-first, game-second)</span>.
+            It&apos;s like a teacher who notices when your child hesitates, when they&apos;re getting frustrated, or when they&apos;re genuinely excited. Komal is <span className="font-bold">(child-first, game-second)</span>.
           </p>
         </div>
       </section>
@@ -396,18 +396,18 @@ export default function HowKomalWorks() {
             </p>
           </div>
 
-          {/* 2x2 Grid of Violet Cards */}
-          <div className="grid grid-cols-2 gap-2 md:gap-4">
+          {/* Single Row of Violet Cards */}
+          <div className="grid grid-cols-4 gap-2 md:gap-4">
             {/* Card 1: Instant Adaptation */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
-              <span className="text-[24px] sm:text-[36px] md:text-[64px] font-bold text-primary mb-1 md:mb-2">&lt;200ms</span>
-              <p className="text-xs md:text-base text-primary font-medium text-center">Instant Adaptation</p>
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-between min-h-[100px] md:min-h-[180px]">
+              <span className="text-[18px] sm:text-[24px] md:text-[42px] font-bold text-primary flex-1 flex items-center">&lt;200ms</span>
+              <p className="text-xs md:text-base text-primary font-medium text-center">Instant<br />Adaptation</p>
             </div>
 
             {/* Card 2: Learning Over Time - with graph icon */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-between min-h-[100px] md:min-h-[180px]">
               {/* Simple bar chart SVG */}
-              <svg className="w-16 sm:w-20 md:w-28 h-10 sm:h-12 md:h-16 mb-1 md:mb-2" viewBox="0 0 120 60" fill="none">
+              <svg className="w-16 sm:w-20 md:w-28 h-10 sm:h-12 md:h-16 flex-1" viewBox="0 0 120 60" fill="none">
                 <rect x="0" y="45" width="12" height="15" fill="#270263" opacity="0.4" rx="2" />
                 <rect x="16" y="40" width="12" height="20" fill="#270263" opacity="0.5" rx="2" />
                 <rect x="32" y="35" width="12" height="25" fill="#270263" opacity="0.6" rx="2" />
@@ -417,13 +417,13 @@ export default function HowKomalWorks() {
                 <rect x="96" y="8" width="12" height="52" fill="#270263" rx="2" />
                 <path d="M6 42 L22 38 L38 32 L54 25 L70 18 L86 12 L102 6" stroke="#270263" strokeWidth="2" strokeDasharray="3 3" fill="none" />
               </svg>
-              <p className="text-xs md:text-base text-primary font-medium text-center">Learning Over Time</p>
+              <p className="text-xs md:text-base text-primary font-medium text-center">Learning<br />Over Time</p>
             </div>
 
             {/* Card 3: On-Device Processing - with sync icon */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-between min-h-[100px] md:min-h-[180px]">
               {/* Circular sync icon */}
-              <div className="relative mb-1 md:mb-2">
+              <div className="relative flex-1 flex items-center">
                 <svg className="w-10 sm:w-14 md:w-20 h-10 sm:h-14 md:h-20" viewBox="0 0 100 100" fill="none">
                   {/* Dashed circle */}
                   <circle cx="50" cy="50" r="40" stroke="#270263" strokeWidth="2" strokeDasharray="6 4" opacity="0.4" />
@@ -437,39 +437,39 @@ export default function HowKomalWorks() {
                   <circle cx="15" cy="65" r="6" fill="#270263" opacity="0.6" />
                 </svg>
               </div>
-              <p className="text-xs md:text-base text-primary font-medium text-center">On-Device Processing</p>
+              <p className="text-xs md:text-base text-primary font-medium text-center">On-Device<br />Processing</p>
             </div>
 
             {/* Card 4: Better Every Week */}
-            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[180px]">
-              <span className="text-[28px] sm:text-[40px] md:text-[64px] font-bold text-primary mb-1 md:mb-2">∞</span>
-              <p className="text-xs md:text-base text-primary font-medium text-center">Better Every Week</p>
+            <div className="bg-[#E8E0F5] rounded-2xl md:rounded-3xl p-3 md:p-6 flex flex-col items-center justify-between min-h-[100px] md:min-h-[180px]">
+              <span className="text-[28px] sm:text-[40px] md:text-[64px] font-bold text-primary flex-1 flex items-center">∞</span>
+              <p className="text-xs md:text-base text-primary font-medium text-center">Better<br />Every Week</p>
             </div>
           </div>
 
           {/* Descriptions below cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            <div className="text-center ">
-              <h4 className="text-lg  text-center font-semibold text-primary mb-2 flex items-center justify-center md:justify-start gap-2">
+            <div className="text-center">
+              <h4 className="text-lg text-center font-semibold text-primary mb-2 flex items-center justify-center gap-2">
                 <span></span> Instant Adaptation
               </h4>
-              <p className="text-text-dim text-[15px] leading-relaxed">
+              <p className="text-text-dim text-[15px] leading-relaxed text-center">
                 When your child shows frustration, Komal adapts in less than a blink of an eye. It might slow down the activity or introduce a calming mini-game—all automatically.
               </p>
             </div>
             <div className="text-center">
-              <h4 className="text-lg  font-semibold text-primary mb-2 flex items-center justify-center md:justify-start gap-2">
+              <h4 className="text-lg text-center font-semibold text-primary mb-2 flex items-center justify-center gap-2">
                 <span></span> Learning Over Time
               </h4>
-              <p className="text-text-dim text-[15px] leading-relaxed">
+              <p className="text-text-dim text-[15px] leading-relaxed text-center">
                 Komal gets smarter about your child the more they play. It learns their unique patterns and adapts personalisation every week.
               </p>
             </div>
-            <div className="text-center md:text-left">
-              <h4 className="text-lg font-semibold text-primary mb-2 flex items-center justify-center md:justify-start gap-2">
+            <div className="text-center">
+              <h4 className="text-lg text-center font-semibold text-primary mb-2 flex items-center justify-center gap-2">
                 <span></span> Understanding, Not Data
               </h4>
-              <p className="text-text-dim text-[15px] leading-relaxed">
+              <p className="text-text-dim text-[15px] leading-relaxed text-center">
                 We translate complex <span className="font-semibold">behavioural signals</span> into simple insights. Instead of jargon, you see &quot;Your child showed strong focus today!&quot;
               </p>
             </div>
@@ -485,7 +485,7 @@ export default function HowKomalWorks() {
               Experience the App
             </h2>
             <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-              See how KOMAL creates a personalized journey for every child with intuitive interfaces and actionable insights.
+              See how KOMAL creates a personalised journey for every child with intuitive interfaces and actionable insights.
             </p>
           </div>
 
@@ -527,7 +527,7 @@ export default function HowKomalWorks() {
                 Know Your Child
               </h3>
               <p className="text-text-dim text-sm mb-4 hidden md:block">
-                Track their unique behavioral patterns.
+                Track their unique behavioural patterns.
               </p>
               {/* Phone mockup */}
               <div className="flex justify-center">
@@ -620,14 +620,12 @@ export default function HowKomalWorks() {
         <div className="max-w-[1100px] mx-auto px-6 md:px-16">
           <div className="text-center mb-10">
             <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4 inline-block">
-              🎨 Choose Your Friend
+              50+ Unique Avatar
             </span>
-            <h2 className="font-sans text-center text-[32px] md:text-[42px] font-semibold text-primary mb-4 tracking-[-0.02em]">
+            <h2 className="font-sans text-center text-[32px] md:text-[42px] font-semibold text-primary tracking-[-0.02em]">
               Choose Your Companion
             </h2>
-            <p className="text-lg text-text-dim leading-relaxed max-w-[600px] mx-auto">
-              Every child gets to pick their own unique animal friend—making learning feel personal and magical!
-            </p>
+
           </div>
 
           {/* Marquee Container */}
@@ -702,10 +700,7 @@ export default function HowKomalWorks() {
             </div>
           </div>
 
-          {/* Caption */}
-          <div className="text-center mt-4">
-            <p className="text-text-dim text-sm text-center">Hover over your favorite friend! 🎉</p>
-          </div>
+
         </div>
       </section>
 
@@ -716,9 +711,7 @@ export default function HowKomalWorks() {
             <h2 className="font-sans text-center text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em]">
               The Science, Simply Said
             </h2>
-            <p className="text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto">
-              Komal is built on research from socially assistive robotics and educational psychology. We use <span className="font-semibold">advanced AI</span> techniques, but we keep them simple for you.
-            </p>
+
           </div>
 
           {/* Bento Box Grid */}
@@ -769,7 +762,7 @@ export default function HowKomalWorks() {
 
               <p className="text-primary font-medium mb-2">Federated Learning</p>
               <p className="text-text-dim text-[15px] leading-relaxed">
-                We improve our <span className="font-semibold">advanced AI</span> by learning from many children without ever seeing their individual data. It&apos;s like learning from a crowd whilst respecting everyone&apos;s privacy.
+                We improve our <span className="font-semibold">models </span> by learning from many children without ever seeing their individual data. It&apos;s like learning from a crowd whilst respecting everyone&apos;s privacy.
               </p>
             </div>
 
@@ -804,49 +797,51 @@ export default function HowKomalWorks() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 {/* Left side: Text content */}
                 <div>
-                  <h3 className="font-sans text-[28px] md:text-[32px] font-semibold text-primary mb-4">
+                  <h3 className="font-sans text-[36px] md:text-[42px] font-semibold text-primary mb-4">
                     Fairness & Ethics
                   </h3>
                   <p className="text-text-dim leading-relaxed mb-6">
-                    We regularly check our AI to make sure it works equally well for all children, regardless of age, background, or learning style. We audit for bias and fix issues before they become problems.
+                    Komal works equally well for all children, regardless of age, background, or learning style. We audit for bias and fix issues before they become problems.
                   </p>
-                  <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-full px-6">
-                    <Link href="/privacy">Learn More</Link>
-                  </Button>
+                  <div className="flex justify-start">
+                    <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-full px-6">
+                      <Link href="/privacy">Learn More</Link>
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Right side: Nested cards grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white rounded-2xl p-4 shadow-sm aspect-[4/3] flex flex-col justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-[#E8E0F5] flex items-center justify-center">
+                <div className="flex flex-col gap-3">
+                  <div className="bg-primary rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
                       <span>⚖️</span>
                     </div>
-                    <p className="text-primary text-sm font-medium">Bias Audits</p>
+                    <p className="text-white text-base font-medium">Bias Audits</p>
                   </div>
-                  <div className="bg-[#E8E0F5] rounded-2xl p-4 aspect-[4/3] flex flex-col justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                  <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#270263" strokeWidth="2">
                         <circle cx="12" cy="12" r="10" />
                         <line x1="2" y1="12" x2="22" y2="12" />
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                       </svg>
                     </div>
-                    <p className="text-primary text-sm font-medium">Global Standards</p>
+                    <p className="text-primary text-base font-medium">Global Standards</p>
                   </div>
-                  <div className="bg-[#E8E0F5] rounded-2xl p-4 aspect-[4/3] flex flex-col justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                  <div className="bg-primary rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#270263" strokeWidth="2">
                         <circle cx="12" cy="8" r="3" />
                         <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
                       </svg>
                     </div>
-                    <p className="text-primary text-sm font-medium">Age Inclusive</p>
+                    <p className="text-white text-base font-medium">Age Inclusive</p>
                   </div>
-                  <div className="bg-white rounded-2xl p-4 shadow-sm aspect-[4/3] flex flex-col justify-between">
-                    <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                      <span className="text-white">✓</span>
+                  <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
+                      <span className="text-primary">✓</span>
                     </div>
-                    <p className="text-primary text-sm font-medium">Verified Fair</p>
+                    <p className="text-primary text-base font-medium">Verified Fair</p>
                   </div>
                 </div>
               </div>
@@ -861,8 +856,8 @@ export default function HowKomalWorks() {
         <div className="max-w-[1200px] mx-auto px-6 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - What Komal Sees */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/30">
-              <div className="flex items-center gap-3 mb-6">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/30">
+              <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-[#E8E0F5] flex items-center justify-center">
                   <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="3" />
@@ -872,37 +867,40 @@ export default function HowKomalWorks() {
                 <h3 className="text-xl font-semibold text-primary">What Komal Sees</h3>
               </div>
 
-              <p className="text-text-dim mb-6 text-[15px]">Komal pays attention to how your child interacts, not who they are:</p>
+              <p className="text-text-dim mb-3 text-[15px]">Komal reads behavioural signals in real-time:</p>
 
-              <ul className="space-y-4 mb-6">
-                <li className="flex items-start gap-3 text-text-dim">
-                  <span className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></span>
-                  <span className="text-[15px]"><strong className="text-primary">Eye gaze patterns</strong> — Where your child looks tells us about their attention and focus</span>
-                </li>
-                <li className="flex items-start gap-3 text-text-dim">
-                  <span className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></span>
-                  <span className="text-[15px]"><strong className="text-primary">Touch patterns</strong> — How they tap, swipe, and interact shows us their confidence</span>
-                </li>
-                <li className="flex items-start gap-3 text-text-dim">
-                  <span className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></span>
-                  <span className="text-[15px]"><strong className="text-primary">Emotional cues</strong> — Tiny expressions help us understand their mood</span>
-                </li>
-                <li className="flex items-start gap-3 text-text-dim">
-                  <span className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></span>
-                  <span className="text-[15px]"><strong className="text-primary">Voice tone</strong> — How they speak gives us clues about their emotional state</span>
-                </li>
-              </ul>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
+                  <h4 className="text-[15px] font-medium text-primary mb-1">Eye Gaze Patterns</h4>
+                  <p className="text-text-dim text-[13px]">Reveals their attention and focus</p>
+                </div>
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
+                  <h4 className="text-[15px] font-medium text-primary mb-1">Touch Patterns</h4>
+                  <p className="text-text-dim text-[13px]">Shows their confidence through interaction</p>
+                </div>
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
+                  <h4 className="text-[15px] font-medium text-primary mb-1">Emotional Cues</h4>
+                  <p className="text-text-dim text-[13px]">Tiny expressions reveal their mood</p>
+                </div>
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
+                  <h4 className="text-[15px] font-medium text-primary mb-1">Voice Tone</h4>
+                  <p className="text-text-dim text-[13px]">Reveals their emotional state</p>
+                </div>
+              </div>
 
-              <div className="pt-5 border-t border-border/50">
-                <p className="text-[14px] text-text-dim">
-                  <strong className="text-primary">What we don&apos;t see:</strong> No video storage without permission. No tracking across apps. No advertising use.
-                </p>
+              <div className="pt-3 border-t border-border/50">
+                <p className="text-[14px] text-text-dim mb-2">What we don&apos;t see:</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-[#E8E0F5] text-primary text-[13px] px-3 py-1.5 rounded-full">No video storage</span>
+                  <span className="bg-[#E8E0F5] text-primary text-[13px] px-3 py-1.5 rounded-full">No tracking</span>
+                  <span className="bg-[#E8E0F5] text-primary text-[13px] px-3 py-1.5 rounded-full">No ads</span>
+                </div>
               </div>
             </div>
 
             {/* Right Column - What Parents See */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/30">
-              <div className="flex items-center gap-3 mb-6">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/30">
+              <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-[#E8E0F5] flex items-center justify-center">
                   <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 12l2 2 4-4" />
@@ -912,29 +910,29 @@ export default function HowKomalWorks() {
                 <h3 className="text-xl font-semibold text-primary">What You See</h3>
               </div>
 
-              <p className="text-text-dim mb-6 text-[15px]">Every week, you get a friendly report that tells you:</p>
+              <p className="text-text-dim mb-3 text-[15px]">Every week, you get a friendly report that tells you:</p>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-[#F5F5F7] rounded-xl p-4">
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
                   <h4 className="text-[15px] font-medium text-primary mb-1">Focus Area</h4>
                   <p className="text-text-dim text-[13px]">What they worked on and their engagement level</p>
                 </div>
-                <div className="bg-[#F5F5F7] rounded-xl p-4">
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
                   <h4 className="text-[15px] font-medium text-primary mb-1">Quality Score</h4>
                   <p className="text-text-dim text-[13px]">How well they connected with activities</p>
                 </div>
-                <div className="bg-[#F5F5F7] rounded-xl p-4">
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
                   <h4 className="text-[15px] font-medium text-primary mb-1">Skills Practiced</h4>
                   <p className="text-text-dim text-[13px]">Specific learning skills developed</p>
                 </div>
-                <div className="bg-[#F5F5F7] rounded-xl p-4">
+                <div className="bg-[#F5F5F7] rounded-xl p-3">
                   <h4 className="text-[15px] font-medium text-primary mb-1">Highlights</h4>
                   <p className="text-text-dim text-[13px]">A positive moment to celebrate</p>
                 </div>
               </div>
 
-              <div className="pt-5 border-t border-border/50">
-                <p className="text-[14px] text-text-dim mb-3">Each report includes:</p>
+              <div className="pt-3 border-t border-border/50">
+                <p className="text-[14px] text-text-dim mb-2">Each report includes:</p>
                 <div className="flex flex-wrap gap-2">
                   <span className="bg-[#E8E0F5] text-primary text-[13px] px-3 py-1.5 rounded-full">What this means</span>
                   <span className="bg-[#E8E0F5] text-primary text-[13px] px-3 py-1.5 rounded-full">Try this at home</span>
@@ -959,9 +957,15 @@ export default function HowKomalWorks() {
 
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-white rounded-xl p-5 shadow-sm border border-border/50">
-              <h3 className="text-lg font-medium text-primary mb-3">
-                Privacy First, Always
-              </h3>
+              <div className="flex items-center gap-2 mb-3">
+                <svg className="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <h3 className="text-lg font-medium text-primary">
+                  Privacy First, Always
+                </h3>
+              </div>
               <p className="text-text-dim text-sm leading-relaxed mb-4">
                 <strong className="text-primary">Parental consent is mandatory.</strong> You control everything—disable camera or voice analysis anytime.
               </p>
@@ -973,9 +977,16 @@ export default function HowKomalWorks() {
             </div>
 
             <div className="bg-white rounded-xl p-5 shadow-sm border border-border/50">
-              <h3 className="text-lg font-medium text-primary mb-3">
-                Child Safety Built-In
-              </h3>
+              <div className="flex items-center gap-2 mb-3">
+                <svg className="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <circle cx="12" cy="10" r="2" />
+                  <path d="M12 12v3" />
+                </svg>
+                <h3 className="text-lg font-medium text-primary">
+                  Child Safety Built-In
+                </h3>
+              </div>
               <ul className="space-y-2 text-sm">
                 <li className="text-text-dim"><strong className="text-primary">No open chat:</strong> Only safe avatar responses</li>
                 <li className="text-text-dim"><strong className="text-primary">Bounded interactions:</strong> Scripted and safe</li>
@@ -985,9 +996,16 @@ export default function HowKomalWorks() {
             </div>
 
             <div className="bg-white rounded-xl p-5 shadow-sm border border-border/50">
-              <h3 className="text-lg font-medium text-primary mb-3">
-                Compliance &amp; Ethics
-              </h3>
+              <div className="flex items-center gap-2 mb-3">
+                <svg className="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M9 15l2 2 4-4" />
+                </svg>
+                <h3 className="text-lg font-medium text-primary">
+                  Compliance &amp; Ethics
+                </h3>
+              </div>
               <ul className="space-y-2 text-sm">
                 <li className="text-text-dim"><strong className="text-primary">COPPA compliant:</strong> US children's privacy</li>
                 <li className="text-text-dim"><strong className="text-primary">GDPR-K compliant:</strong> EU data protection</li>
@@ -1003,8 +1021,13 @@ export default function HowKomalWorks() {
       {/* The Vision */}
       <section className="py-20 md:py-28 bg-white">
         <div className="max-w-[900px] mx-auto px-6 md:px-8">
-          <h2 className="font-sans text-[32px] md:text-[42px] font-semibold text-primary mb-6 tracking-[-0.02em]">
+          <h2 className="font-sans text-[32px] md:text-[42px] font-semibold text-primary mb-6 tracking-[-0.02em] flex items-center gap-3">
             Our Bigger Vision
+            <svg className="w-8 h-8 md:w-10 md:h-10 text-primary" viewBox="0 0 24 24" fill="none">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" fill="none" />
+              <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.3" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+            </svg>
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
             We&apos;re not just building an app. We&apos;re building the foundation for how AI can understand and support children&apos;s learning. Our goal is to become the &quot;behavioural interface&quot; for childhood learning—meaning any educational tool could use Komal&apos;s understanding to better adapt to your child.

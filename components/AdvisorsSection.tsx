@@ -69,7 +69,9 @@ export default function AdvisorsSection() {
                                     height={400}
                                     className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
                                     style={{
-                                        objectPosition: 'center 15%',
+                                        objectPosition: advisor.name.includes('Shreya') ? 'center top' : 'center 15%',
+                                        transform: advisor.name.includes('Shreya') ? 'scale(1.15)' : 'none',
+                                        transformOrigin: advisor.name.includes('Shreya') ? 'center top' : 'center center',
                                     }}
                                 />
                             </div>

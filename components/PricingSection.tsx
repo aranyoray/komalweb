@@ -45,7 +45,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
       return (
         <>
           <span>{symbol}{dollars}</span>
-          {cents && <sup className="text-lg font-bold align-super">.{cents}</sup>}
+          {cents && <span className="text-sm font-bold relative -top-2">{cents}</span>}
         </>
       );
     }

@@ -40,7 +40,7 @@ export default function PricingPage() {
             name: "Thrive",
             priceDisplay: "₹299",
             priceDisplayUSD: "$14.99",
-            periodMonthlyLabel: "/month",
+            periodMonthlyLabel: "per child / month",
             tagline: "For advanced insights",
             cta: "Contact Sales",
             features: [
@@ -56,7 +56,7 @@ export default function PricingPage() {
             name: "Partner",
             priceDisplay: "₹49",
             priceDisplayUSD: "$4.99",
-            periodMonthlyLabel: "/month",
+            periodMonthlyLabel: "per child / month",
             tagline: "For therapy and intervention centers",
             cta: "Contact Sales",
             features: [

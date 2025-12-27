@@ -18,7 +18,7 @@ export default function NotFound() {
             <Link href="/" className="btn-primary">
               Go Home
             </Link>
-            <Link href="/how-komal-works" className="btn-secondary">
+            <Link href="/the-magic" className="btn-secondary">
               How It Works
             </Link>
           </div>

@@ -187,7 +187,7 @@ export default function PrivacyPolicyPage() {
             <p>Our App uses Google AdMob to display advertisements. Because Komal is a child-directed app, we configure our advertising requests to support the Google Play Families Policy and applicable children's privacy laws.</p>
             <ul>
               <li><strong>Child-directed ad requests:</strong> We request ads as child-directed (COPPA) and for users under the age of consent (TFUA) where applicable.</li>
-              <li><strong>No personalized ads:</strong> We do not allow interest-based / personalized advertising for children.</li>
+              <li><strong>No personalised ads:</strong> We do not allow interest-based / personalised advertising for children.</li>
               <li><strong>Ad content rating:</strong> We restrict ad content to be suitable for general audiences ("G").</li>
               <li><strong>Identifiers:</strong> AdMob may still process limited device/app information necessary to serve ads, prevent fraud, and measure performance.</li>
             </ul>
@@ -202,7 +202,7 @@ export default function PrivacyPolicyPage() {
             <p>We use the collected information for the following purposes:</p>
             <ul>
               <li>
-                <strong>To Provide Services:</strong> Deliver personalized therapy sessions, track progress, and generate
+                <strong>To Provide Services:</strong> Deliver personalised therapy sessions, track progress, and generate
                 reports
               </li>
               <li>
@@ -467,8 +467,8 @@ export default function PrivacyPolicyPage() {
 
             <h3>7.9 Opt-Out of Advertising</h3>
             <p>
-              You can opt out of personalized advertising through your device settings. On Android, go to Settings &gt;
-              Google &gt; Ads &gt; Opt out of Ads Personalization.
+              You can opt out of personalised advertising through your device settings. On Android, go to Settings &gt;
+              Google &gt; Ads &gt; Opt out of Ads Personalisation.
             </p>
 
             <h2>8. Permissions</h2>

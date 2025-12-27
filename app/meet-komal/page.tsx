@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Meet KOMAL - About Our Platform | KOMAL",
   description:
-    "Meet KOMAL - A comprehensive guide to our hyperpersonalized SEL platform with virtual humans, behavioral tracking, and detailed progress analytics for children ages 3-12.",
+    "Meet KOMAL - A comprehensive guide to our hyperpersonalised SEL platform with virtual humans, behavioural tracking, and detailed progress analytics for children ages 3-12.",
   robots: "index, follow",
 };
 
@@ -263,7 +263,7 @@ export default function MeetKomal() {
             <h1 className="animate-[fadeDown_0.8s_ease_forwards]">Meet KOMAL</h1>
             <p className="subtitle">Knowledge-Oriented Mental-Health & Affective Learning</p>
             <p>
-              A mobile and web-based application with hyperpersonalized virtual humans for social-emotional learning
+              A mobile and web-based application with hyperpersonalised virtual humans for social-emotional learning
               (SEL) for users aged 3 to 12. The platform features virtual avatars inspired by social robotics research
               and socially assistive technologies for children with neurodiverse conditions.
             </p>
@@ -283,9 +283,9 @@ export default function MeetKomal() {
                   </p>
                 </div>
                 <div className="feature-item">
-                  <h4>📊 Behavioral Tracking</h4>
+                  <h4>📊 Behavioural Tracking</h4>
                   <p>
-                    Allow parents/guardians to track behavioral and engagement metrics using eye-tracking, touch-tracking,
+                    Allow parents/guardians to track behavioural and engagement metrics using eye-tracking, touch-tracking,
                     and micro-expression analysis.
                   </p>
                 </div>
@@ -299,7 +299,7 @@ export default function MeetKomal() {
                 <div className="feature-item">
                   <h4>👤 Virtual Avatars</h4>
                   <p>
-                    Hyperpersonalized virtual humans that adapt to each child&apos;s learning style, emotional state, and
+                    Hyperpersonalised virtual humans that adapt to each child&apos;s learning style, emotional state, and
                     developmental needs.
                   </p>
                 </div>
@@ -319,7 +319,7 @@ export default function MeetKomal() {
                 </li>
                 <li>
                   <strong>Game Logic:</strong> Sophisticated algorithms that adjust difficulty and pacing based on
-                  behavioral signals
+                  behavioural signals
                 </li>
                 <li>
                   <strong>Parent/Guardian Dashboards:</strong> Comprehensive reporting interfaces with actionable insights
@@ -708,7 +708,7 @@ export default function MeetKomal() {
                 <li>Primary SEL Focus identification</li>
                 <li>Comprehensive analytics across all tracking parameters</li>
                 <li>Outcome Summary with human-readable insights</li>
-                <li>Recommended Home Strategies (automatically customized)</li>
+                <li>Recommended Home Strategies (automatically customised)</li>
                 <li>Clinician Review Zone with escalation flags</li>
               </ul>
             </div>

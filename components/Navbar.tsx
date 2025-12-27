@@ -39,7 +39,7 @@ export default function Navbar() {
 
   const navItems = useMemo(
     () => [
-      { label: "Our Magic", href: { type: "route", value: "/how-komal-works" } as const },
+      { label: "The Magic", href: { type: "route", value: "/the-magic" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
       { label: "Pricing", href: { type: "route", value: "/pricing" } as const },
     ],
@@ -73,17 +73,17 @@ export default function Navbar() {
           className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 transition-all duration-300 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
             }`}
         >
-          <div className="w-10 h-10 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
+          <div className="w-12 h-12 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
             <Image
               src="/komaliconnobg.png"
               alt="KOMAL Logo"
-              width={40}
-              height={40}
+              width={48}
+              height={48}
               className="object-contain"
               priority
             />
           </div>
-          <span className="hidden md:inline text-xl font-semibold">KOMAL</span>
+          <span className="hidden md:inline text-2xl font-semibold">KOMAL</span>
         </Link>
 
         {/* Desktop Navigation - Centered with flex-1 */}
