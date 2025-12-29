@@ -137,7 +137,7 @@ export default function Home() {
 
         <div className="hero-container w-full grid grid-cols-1 lg:grid-cols-2 gap-4 items-center relative z-[2] px-8 md:px-16 lg:px-24">
           {/* Left Column - Text Content */}
-          <div className="hero-content flex flex-col items-start justify-center text-left order-1 lg:order-1 pt-0 pb-4 px-4 lg:p-12">
+          <div className="hero-content flex flex-col items-center lg:items-start justify-center text-center lg:text-left order-1 lg:order-1 pt-16 lg:pt-0 pb-0 px-4 lg:p-12">
             {/* Yale Scientists Badge */}
             <style dangerouslySetInnerHTML={{
               __html: `
@@ -226,7 +226,7 @@ export default function Home() {
           </div>
 
           {/* Right Column - Hero Image */}
-          <div className="hero-image flex justify-center items-center order-2 lg:order-2 py-0 lg:py-0" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
+          <div className="hero-image flex justify-center items-center order-2 lg:order-2 pt-0 pb-0 lg:py-0" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
             <Image
               src="/heroimage.png"
               alt="Komal Learning Companion"
@@ -367,34 +367,115 @@ export default function Home() {
           </div>
         </div>
         <div className="container text-center max-w-[1240px] px-8 mx-auto relative z-10">
-          {/* Stroke text with gradient fill */}
+          {/* Text heading */}
           <div className="relative w-full mt-4 mb-6">
-            {/* Gradient fill layer - clipped to text */}
             <h2
-              className="section-title font-sans text-[16vw] sm:text-[12vw] md:text-[9vw] lg:text-[8vw] font-bold leading-[1.1] tracking-[-0.02em] text-center w-full"
-              style={{
-                backgroundImage: 'linear-gradient(to top, white, white)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                color: 'transparent',
-              }}
-              aria-hidden="true"
-            >What Parents Love</h2>
-            {/* Stroke layer - positioned on top */}
-            <h2
-              className="section-title font-sans text-[16vw] sm:text-[12vw] md:text-[9vw] lg:text-[8vw] font-bold leading-[1.1] tracking-[-0.02em] text-center w-full absolute inset-0"
-              style={{
-                WebkitTextStroke: '3px white',
-                WebkitTextFillColor: 'transparent',
-                color: 'transparent',
-              }}
+              className="section-title font-sans text-[22vw] sm:text-[12vw] md:text-[9vw] lg:text-[8vw] font-bold leading-[1.1] tracking-[-0.02em] text-center w-full text-white"
             >What Parents Love</h2>
           </div>
           <TestimonialsCarousel testimonials={testimonials} />
         </div>
       </section>
 
+
+      {/* Phone Showcase Section - HIDDEN FOR NOW
+      <section className="phone-showcase py-16 md:py-24 bg-gradient-to-b from-white to-slate-50 overflow-hidden">
+        <div className="container max-w-[1400px] px-4 mx-auto">
+          <div className="relative flex justify-center items-end h-[400px] sm:h-[500px] md:h-[600px]">
+            <div
+              className="absolute w-[160px] sm:w-[200px] md:w-[240px] h-[340px] sm:h-[420px] md:h-[500px] overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-2xl transition-transform duration-300 hover:scale-105"
+              style={{
+                left: 'calc(50% - 280px)',
+                bottom: '-80px',
+                transform: 'translateX(-50%)',
+                zIndex: 1,
+                clipPath: 'inset(0 0 25% 0)',
+              }}
+            >
+              <Image
+                src="/finaliphone.png"
+                alt="Komal App Screenshot"
+                width={400}
+                height={800}
+                className="w-full h-auto object-cover object-top"
+              />
+            </div>
+            <div
+              className="absolute w-[160px] sm:w-[200px] md:w-[240px] h-[360px] sm:h-[450px] md:h-[540px] overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-2xl transition-transform duration-300 hover:scale-105"
+              style={{
+                left: 'calc(50% - 140px)',
+                bottom: '-40px',
+                transform: 'translateX(-50%)',
+                zIndex: 3,
+                clipPath: 'inset(0 0 25% 0)',
+              }}
+            >
+              <Image
+                src="/finaliphone.png"
+                alt="Komal App Screenshot"
+                width={400}
+                height={800}
+                className="w-full h-auto object-cover object-top"
+              />
+            </div>
+            <div
+              className="absolute w-[180px] sm:w-[220px] md:w-[280px] h-[400px] sm:h-[500px] md:h-[600px] overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-2xl transition-transform duration-300 hover:scale-105"
+              style={{
+                left: '50%',
+                bottom: '0',
+                transform: 'translateX(-50%)',
+                zIndex: 5,
+                clipPath: 'inset(0 0 25% 0)',
+              }}
+            >
+              <Image
+                src="/finaliphone.png"
+                alt="Komal App Screenshot"
+                width={400}
+                height={800}
+                className="w-full h-auto object-cover object-top"
+              />
+            </div>
+            <div
+              className="absolute w-[160px] sm:w-[200px] md:w-[240px] h-[360px] sm:h-[450px] md:h-[540px] overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-2xl transition-transform duration-300 hover:scale-105"
+              style={{
+                left: 'calc(50% + 140px)',
+                bottom: '-40px',
+                transform: 'translateX(-50%)',
+                zIndex: 3,
+                clipPath: 'inset(0 0 25% 0)',
+              }}
+            >
+              <Image
+                src="/finaliphone.png"
+                alt="Komal App Screenshot"
+                width={400}
+                height={800}
+                className="w-full h-auto object-cover object-top"
+              />
+            </div>
+            <div
+              className="absolute w-[160px] sm:w-[200px] md:w-[240px] h-[340px] sm:h-[420px] md:h-[500px] overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-2xl transition-transform duration-300 hover:scale-105"
+              style={{
+                left: 'calc(50% + 280px)',
+                bottom: '-80px',
+                transform: 'translateX(-50%)',
+                zIndex: 1,
+                clipPath: 'inset(0 0 25% 0)',
+              }}
+            >
+              <Image
+                src="/finaliphone.png"
+                alt="Komal App Screenshot"
+                width={400}
+                height={800}
+                className="w-full h-auto object-cover object-top"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+      */}
 
       {/* Advisors Section */}
       <AdvisorsSection />
