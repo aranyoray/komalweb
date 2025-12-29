@@ -121,19 +121,13 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <section className="hero-section relative pt-24 md:pt-32 pb-16 px-6 md:px-16 overflow-hidden min-h-[90vh] flex flex-col justify-center">
+      <section className="hero-section relative pt-8 md:pt-12 pb-12 overflow-hidden min-h-[75vh] flex flex-col justify-center">
         {/* Floating Dots Background - Behind butterflies */}
         <div className="absolute inset-0 z-0">
           <FloatingDots />
         </div>
 
-        {/* Gradient fade overlay - fades dots to white at bottom */}
-        <div
-          className="absolute inset-0 z-[0] pointer-events-none"
-          style={{
-            background: 'linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(255,255,255,0.5) 70%, rgba(255,255,255,0.85) 85%, white 100%)'
-          }}
-        />
+
 
         {/* Floating Butterflies Background */}
         <div className="absolute inset-0 z-[1]">
@@ -141,9 +135,9 @@ export default function Home() {
         </div>
 
 
-        <div className="hero-container max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-8 items-start relative z-[2] w-full px-8 lg:px-16">
+        <div className="hero-container w-full grid grid-cols-1 lg:grid-cols-2 gap-4 items-center relative z-[2] px-8 md:px-16 lg:px-24">
           {/* Left Column - Text Content */}
-          <div className="hero-content text-center lg:text-left order-1 lg:order-1 pt-0 lg:pt-12 flex flex-col items-center lg:items-start">
+          <div className="hero-content flex flex-col items-start justify-center text-left order-1 lg:order-1 pt-0 pb-4 px-4 lg:p-12">
             {/* Yale Scientists Badge */}
             <style dangerouslySetInnerHTML={{
               __html: `
@@ -231,57 +225,16 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Column - Phone Image */}
-          <div className="hero-image flex justify-center lg:justify-center order-2 lg:order-2 mt-12 sm:mt-2 lg:-mt-12" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
-            <div className="relative">
-              {/* Purple accent blob behind phone */}
-              <div className="absolute -right-8 -bottom-8 w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-[#270263] rounded-full blur-3xl opacity-25 z-0" />
-
-              {/* Phone wrapper */}
-              <div className="relative inline-block">
-
-                <Image
-                  src="/newfloatingphone.png"
-                  alt="Komal App on Phone"
-                  width={350}
-                  height={420}
-                  className="relative z-10 w-[260px] sm:w-[280px] md:w-[300px] lg:w-[330px] xl:w-[350px] h-auto drop-shadow-2xl"
-                  priority
-                />
-              </div>
-
-              {/* Sketch Card 1 - Top Left */}
-              <div className="sketch-card absolute left-[-40px] lg:left-[-60px] top-[5%] z-30 transition-opacity duration-300 hover:opacity-0" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both" }}>
-                <div className="rounded-xl p-3 lg:p-4 -rotate-3 w-[130px] lg:w-[150px] bg-[#FFFBEB] border-2 border-dashed border-amber-300" style={{ boxShadow: "2px 2px 0px #FCD34D" }}>
-                  <h4 className="text-amber-900 font-medium text-xs lg:text-sm mb-1">they talk to it</h4>
-                  <p className="text-amber-700/90 text-[9px] lg:text-[10px] leading-snug italic">no tapping, just chatting</p>
-                </div>
-              </div>
-
-              {/* Sketch Card 2 - Top Right */}
-              <div className="sketch-card absolute right-[-55px] lg:right-[-75px] top-[18%] z-30 transition-opacity duration-300 hover:opacity-0" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s both" }}>
-                <div className="rounded-xl p-3 lg:p-4 rotate-2 w-[125px] lg:w-[145px] bg-[#FDF2F8] border-2 border-dashed border-pink-300" style={{ boxShadow: "2px 2px 0px #F9A8D4" }}>
-                  <h4 className="text-pink-900 font-medium text-xs lg:text-sm mb-1">not addictive</h4>
-                  <p className="text-pink-700/90 text-[9px] lg:text-[10px] leading-snug italic">bonds like a real buddy</p>
-                </div>
-              </div>
-
-              {/* Sketch Card 3 - Bottom Left */}
-              <div className="sketch-card absolute left-[-45px] lg:left-[-65px] bottom-[22%] z-30 transition-opacity duration-300 hover:opacity-0" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s both" }}>
-                <div className="rounded-xl p-3 lg:p-4 rotate-1 w-[135px] lg:w-[155px] bg-[#ECFDF5] border-2 border-dashed border-emerald-300" style={{ boxShadow: "2px 2px 0px #6EE7B7" }}>
-                  <h4 className="text-emerald-900 font-medium text-xs lg:text-sm mb-1">a whole village</h4>
-                  <p className="text-emerald-700/90 text-[9px] lg:text-[10px] leading-snug italic">40+ characters</p>
-                </div>
-              </div>
-
-              {/* Sketch Card 4 - Bottom Right */}
-              <div className="sketch-card absolute right-[-50px] lg:right-[-70px] bottom-[12%] z-30 transition-opacity duration-300 hover:opacity-0" style={{ animation: "cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.85s both" }}>
-                <div className="rounded-xl p-3 lg:p-4 -rotate-2 w-[130px] lg:w-[150px] bg-[#F5F3FF] border-2 border-dashed border-purple-300" style={{ boxShadow: "2px 2px 0px #C4B5FD" }}>
-                  <h4 className="text-purple-900 font-medium text-xs lg:text-sm mb-1">fewer tantrums</h4>
-                  <p className="text-purple-700/90 text-[9px] lg:text-[10px] leading-snug italic">calmer evenings</p>
-                </div>
-              </div>
-            </div>
+          {/* Right Column - Hero Image */}
+          <div className="hero-image flex justify-center items-center order-2 lg:order-2 py-0 lg:py-0" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
+            <Image
+              src="/heroimage.png"
+              alt="Komal Learning Companion"
+              width={1200}
+              height={1200}
+              className="w-full max-w-[500px] sm:max-w-[550px] md:max-w-[700px] lg:max-w-[800px] xl:max-w-[900px] h-auto"
+              priority
+            />
           </div>
         </div>
       </section>
@@ -414,7 +367,30 @@ export default function Home() {
           </div>
         </div>
         <div className="container text-center max-w-[1240px] px-8 mx-auto relative z-10">
-          <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-bold mt-4 mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center drop-shadow-lg bg-white px-6 py-3 rounded-full inline-block mx-auto">What Parents Love</h2>
+          {/* Stroke text with gradient fill */}
+          <div className="relative w-full mt-4 mb-6">
+            {/* Gradient fill layer - clipped to text */}
+            <h2
+              className="section-title font-sans text-[16vw] sm:text-[12vw] md:text-[9vw] lg:text-[8vw] font-bold leading-[1.1] tracking-[-0.02em] text-center w-full"
+              style={{
+                backgroundImage: 'linear-gradient(to top, white, white)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                color: 'transparent',
+              }}
+              aria-hidden="true"
+            >What Parents Love</h2>
+            {/* Stroke layer - positioned on top */}
+            <h2
+              className="section-title font-sans text-[16vw] sm:text-[12vw] md:text-[9vw] lg:text-[8vw] font-bold leading-[1.1] tracking-[-0.02em] text-center w-full absolute inset-0"
+              style={{
+                WebkitTextStroke: '3px white',
+                WebkitTextFillColor: 'transparent',
+                color: 'transparent',
+              }}
+            >What Parents Love</h2>
+          </div>
           <TestimonialsCarousel testimonials={testimonials} />
         </div>
       </section>

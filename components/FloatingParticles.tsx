@@ -23,11 +23,11 @@ export default function FloatingParticles({ count = 30 }: { count?: number }) {
                 id: i,
                 x: Math.random() * 100,
                 y: Math.random() * 100,
-                size: Math.random() * 3 + 1, // 1-4px (tiny sparkles)
+                size: Math.random() * 5 + 3, // 3-8px (bigger sparkles)
                 duration: Math.random() * 12 + 6, // 6-18s
                 delay: Math.random() * 5, // 0-5s delay
-                opacity: Math.random() * 0.6 + 0.4, // 0.4-1.0 opacity
-                glowSize: Math.random() * 8 + 4, // 4-12px glow radius
+                opacity: Math.random() * 0.4 + 0.6, // 0.6-1.0 opacity (brighter)
+                glowSize: Math.random() * 15 + 10, // 10-25px glow radius (bigger glow)
             });
         }
         setParticles(generatedParticles);
@@ -46,9 +46,10 @@ export default function FloatingParticles({ count = 30 }: { count?: number }) {
                         height: `${particle.size}px`,
                         background: `radial-gradient(circle, rgba(138, 43, 226, 0.9) 0%, rgba(75, 0, 130, 0.6) 50%, transparent 70%)`,
                         boxShadow: `
-                            0 0 ${particle.glowSize}px rgba(138, 43, 226, 0.8),
-                            0 0 ${particle.glowSize * 2}px rgba(138, 43, 226, 0.4),
-                            0 0 ${particle.glowSize * 3}px rgba(138, 43, 226, 0.2)
+                            0 0 ${particle.glowSize}px rgba(138, 43, 226, 0.95),
+                            0 0 ${particle.glowSize * 2}px rgba(138, 43, 226, 0.7),
+                            0 0 ${particle.glowSize * 3}px rgba(138, 43, 226, 0.4),
+                            0 0 ${particle.glowSize * 4}px rgba(138, 43, 226, 0.2)
                         `,
                         opacity: particle.opacity,
                         animation: `floatSparkle ${particle.duration}s ease-in-out ${particle.delay}s infinite, twinkle ${Math.random() * 2 + 1}s ease-in-out ${particle.delay}s infinite`,

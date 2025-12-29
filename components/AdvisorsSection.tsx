@@ -23,7 +23,7 @@ const advisors: Advisor[] = [
         title: "RESEARCH ADVISOR",
         company: "@ UC BERKELEY",
         description: "PhD in Integrative Biology from University of California, Berkeley (2001). Brings deep expertise in biological systems and research methodology.",
-        image: "/doris-vidal-dorsch-phd-technical-advisor-los-angeles.png",
+        image: "/doris.png",
     },
     {
         name: "Dr (Prof) Om Prakash Singh, MD",
@@ -40,11 +40,11 @@ const advisors: Advisor[] = [
         image: "/shreya-jain-mba-business-gtm-advisor-india.png",
     },
     {
-        name: "Dr Brian Scassellati, PhD",
+        name: "Prof Brian Scassellati, PhD",
         title: "PRINCIPAL INVESTIGATOR",
         company: "@ YALE SOCIAL ROBOTICS LAB",
         description: "Principal Investigator at Yale Social Robotics Lab and Professor of Computer Science & Engineering at Yale University. Leading expert in social robotics and human-robot interaction.",
-        image: "/briannobg.png",
+        image: "/brian2.png",
     },
 ];
 
