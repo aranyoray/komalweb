@@ -175,15 +175,15 @@ export default function TeamSection() {
                         Our Advisors
                     </h2>
 
-                    {/* Grid Layout - 3 columns */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                    {/* Grid Layout - 5 columns like landing page */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                         {advisors.map((advisor, index) => (
                             <div
                                 key={index}
                                 className="group relative"
                             >
-                                {/* Image Container with Hover Effect */}
-                                <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-white">
+                                {/* Image Container with Hover Effect - Portrait aspect ratio */}
+                                <div className="relative overflow-hidden rounded-xl mb-3 md:mb-4 aspect-[3/4] bg-white">
                                     <Image
                                         src={advisor.image}
                                         alt={advisor.name}
@@ -193,30 +193,31 @@ export default function TeamSection() {
                                             : 'object-cover'
                                             }`}
                                         style={{
-                                            objectPosition: advisor.name.includes('Brian') || advisor.name.includes('Doris')
-                                                ? 'center center'
-                                                : 'center 20%',
+                                            objectPosition: advisor.name.includes('Shreya')
+                                                ? 'center top'
+                                                : advisor.name.includes('Brian') || advisor.name.includes('Doris')
+                                                    ? 'center center'
+                                                    : 'center 15%',
+                                            transform: advisor.name.includes('Shreya') ? 'scale(1.15)' : 'none',
+                                            transformOrigin: advisor.name.includes('Shreya') ? 'center top' : 'center center',
                                         }}
                                     />
 
                                     {/* Bio Overlay on Hover */}
-                                    <div className="absolute inset-0 bg-primary/95 text-white p-6 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
-                                        <p className="text-sm font-semibold mb-2">{advisor.title}</p>
-                                        <p className="text-xs mb-3 opacity-90">{advisor.company}</p>
-                                        <p className="text-sm leading-relaxed">{advisor.description}</p>
+                                    <div className="absolute inset-0 bg-primary/95 text-white p-3 md:p-4 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
+                                        <p className="text-xs md:text-sm font-semibold mb-1 md:mb-2">{advisor.title}</p>
+                                        <p className="text-[10px] md:text-xs mb-2 md:mb-3 opacity-90">{advisor.company}</p>
+                                        <p className="text-[10px] md:text-xs leading-relaxed">{advisor.description}</p>
                                     </div>
                                 </div>
 
                                 {/* Name and Title */}
                                 <div className="text-left">
-                                    <h3 className="text-xl md:text-2xl font-bold text-primary mb-1">
+                                    <h3 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
                                         {advisor.name}
                                     </h3>
-                                    <p className="text-sm font-semibold text-primary mb-2">
-                                        {advisor.title}
-                                    </p>
-                                    <p className="text-xs text-text-dim">
-                                        {advisor.company}
+                                    <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight">
+                                        {advisor.title} {advisor.company}
                                     </p>
                                 </div>
                             </div>
