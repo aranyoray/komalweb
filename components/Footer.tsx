@@ -332,6 +332,10 @@ export default function Footer() {
             How It Works
           </Link>
           <span className="text-border">|</span>
+          <Link href="/content-safety" className="text-text-dim hover:text-text transition-colors">
+            Content Safety
+          </Link>
+          <span className="text-border">|</span>
           <Link href="/privacypolicy" className="text-text-dim hover:text-text transition-colors">
             Privacy Policy
           </Link>

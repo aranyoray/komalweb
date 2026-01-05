@@ -21,6 +21,7 @@ import KomalYourBestSection from "@/components/KomalYourBestSection";
 import SplitText from "@/components/SplitText";
 import WaitlistModal from "@/components/WaitlistModal";
 
+
 export default function Home() {
   const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
@@ -62,7 +63,7 @@ export default function Home() {
     {
       question: "What is Komal?",
       answer:
-        "Komal is a hyper-personalised learning companion for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
+        "Komal is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
     },
     {
       question: "How does Komal protect my child's privacy?",
@@ -98,6 +99,16 @@ export default function Home() {
       question: "Does Komal work offline?",
       answer: "Yes. Core learning features and real-time adaptation work offline; internet is only needed for syncing and report delivery (if you enable it).",
     },
+    {
+      question: "How does Komal filter age-inappropriate content?",
+      answer:
+        "Komal uses AI to analyze content across multiple signals—text, images, video, and audio—and matches it to age-appropriate rules. Instead of binary blocking, we use three actions: Block (not accessible), Gate (allowed with warning or approval), and Allow. This creates flexibility where educational content can be treated differently from harmful content.",
+    },
+    {
+      question: "Can I customize what content my child sees?",
+      answer:
+        "Yes. Parents can block specific interests, URLs, or keywords. You can also adjust the default rules per child profile and receive notifications when blocked content is attempted. Parent rules always override the default settings.",
+    },
   ];
 
   return (
@@ -112,7 +123,7 @@ export default function Home() {
             operatingSystem: "Web",
             applicationCategory: "EducationApplication",
             description:
-              "The world's first AI companion that reads how a child feels, not just what they click. Hyper-personalised learning platform for children ages 3-12.",
+              "The world's first AI digital guardian that reads how a child feels, not just what they click. Hyper-personalised platform for children ages 3-12.",
             screenshot: "https://komal.ai/screenshot.jpg",
             featureList:
               "Real-time behavioural AI, Personalised learning, Parent insights, Privacy-first design",
@@ -137,7 +148,7 @@ export default function Home() {
 
         <div className="hero-container w-full grid grid-cols-1 lg:grid-cols-2 gap-4 items-center relative z-[2] px-8 md:px-16 lg:px-24">
           {/* Left Column - Text Content */}
-          <div className="hero-content flex flex-col items-center lg:items-start justify-center text-center lg:text-left order-1 lg:order-1 pt-16 lg:pt-0 pb-0 px-4 lg:p-12">
+          <div className="hero-content flex flex-col items-center lg:items-start justify-center text-center lg:text-left order-1 lg:order-1 pt-16 lg:pt-0 lg:mt-24 pb-0 px-4 lg:p-12">
             {/* Yale Scientists Badge */}
             <style dangerouslySetInnerHTML={{
               __html: `
@@ -191,18 +202,29 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 className="hero-title font-sans text-[38px] sm:text-[36px] md:text-[40px] lg:text-[48px] xl:text-[56px] font-bold leading-[1.15] tracking-[-0.02em] text-primary">
-              <span className="whitespace-nowrap">The{' '}
-                <span className="font-semibold hover:animate-[wiggle_0.3s_ease-in-out] cursor-pointer hero-highlight hero-highlight-1">
-                  learning companion
-                </span></span>
-              <br />
-              <span className="whitespace-nowrap">that adapts to how</span>
-              <br />
-              <span className="whitespace-nowrap">children{' '}
-                <span className="font-semibold hover:animate-[vibrate_0.5s_ease-in-out] cursor-pointer hero-highlight hero-highlight-2">
-                  feel.
-                </span></span>
+            <h1 className="hero-title font-sans font-bold leading-[1.1] tracking-[-0.02em] text-primary flex flex-col gap-2 md:gap-4">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-semibold text-primary/80 animate-[fadeIn_0.5s_ease-out]">
+                Kids are curious.
+              </span>
+
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <span className="text-5xl sm:text-6xl md:text-7xl lg:text-[80px] leading-[0.95]">
+                  We protect
+                </span>
+                <span className="text-5xl sm:text-6xl md:text-7xl lg:text-[80px] leading-[0.95] hover:text-primary/80 transition-colors duration-300 cursor-help hero-highlight relative inline-block w-fit whitespace-nowrap">
+                  their curiosity.
+                  <span 
+                    className="absolute left-0 right-0 bottom-[0.08em] h-[0.35em] bg-primary/15 rounded-full -z-10"
+                    style={{ 
+                      background: 'linear-gradient(to right, rgba(107, 78, 113, 0.2), rgba(107, 78, 113, 0.25), rgba(107, 78, 113, 0.2))',
+                    }}
+                  />
+                </span>
+              </div>
+
+              <span className="block text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.2em] sm:tracking-[0.3em] font-medium text-primary/70 mt-4 md:mt-6 animate-[fadeIn_1s_ease-out_0.5s_both]">
+                Ethical AI that guides, not just blocks
+              </span>
             </h1>
 
             {/* CTA Buttons */}
@@ -229,7 +251,7 @@ export default function Home() {
           <div className="hero-image flex justify-center items-center order-2 lg:order-2 pt-0 pb-0 lg:py-0" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
             <Image
               src="/heroimage.png"
-              alt="Komal Learning Companion"
+              alt="Komal Digital Guardian"
               width={1200}
               height={1200}
               className="w-full max-w-[500px] sm:max-w-[550px] md:max-w-[700px] lg:max-w-[800px] xl:max-w-[900px] h-auto"
@@ -249,7 +271,7 @@ export default function Home() {
 
           {/* Tagline */}
           <p className="text-[9px] sm:text-[10px] md:text-[13px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-white/80 font-medium mb-8 text-center">
-            THE WORLD&apos;S FIRST <strong>NON-ADDICTIVE, HANDS-FREE</strong> CHILD COMPANION
+            THE WORLD&apos;S FIRST <strong>NON-ADDICTIVE, HANDS-FREE</strong> DIGITAL GUARDIAN
           </p>
 
           {/* Core Value Proposition */}
@@ -266,6 +288,99 @@ export default function Home() {
           <Button asChild size="lg" className="rounded-full px-8 bg-white text-primary hover:bg-white/90">
             <Link href="/the-magic">See How It Works</Link>
           </Button>
+        </div>
+      </section>
+
+      {/* Age-Appropriate Access Section */}
+      <section className="w-full bg-white py-12 md:py-16" id="content-safety">
+        <div className="container max-w-[1100px] px-8 mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-10">
+            <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4 inline-block">
+              Age-Appropriate Access
+            </span>
+            <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] font-bold text-primary mb-4 tracking-tight text-center leading-[1.15]">
+              Kids Need the Internet,<br />But Not All of It
+            </h2>
+            <p className="text-base sm:text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto text-center">
+              What is fine for an adult can be confusing, scary, or harmful for a child. Komal applies age-based access across content types, using clear rules and context rather than blanket bans.
+            </p>
+          </div>
+
+          {/* Three Principles */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div className="bg-[#F5F0FF] rounded-2xl p-6 text-center">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-primary mb-2">MINDFULNESS</h3>
+              <p className="text-sm text-text-dim">Context-aware filtering that understands the difference between education and harm.</p>
+            </div>
+            <div className="bg-[#E8F5E9] rounded-2xl p-6 text-center">
+              <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-primary mb-2">MODERATION</h3>
+              <p className="text-sm text-text-dim">Not binary—Block, Gate, or Allow based on age, context, and parent preferences.</p>
+            </div>
+            <div className="bg-[#FFF8E1] rounded-2xl p-6 text-center">
+              <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-primary mb-2">MEANINGFUL</h3>
+              <p className="text-sm text-text-dim">Growing access as children grow, keeping parents informed and in control.</p>
+            </div>
+          </div>
+
+          {/* Block / Gate / Allow Visual */}
+          <div className="bg-[#F5F5F7] rounded-3xl p-6 md:p-8 mb-8">
+            <h3 className="text-xl md:text-2xl font-semibold text-primary text-center mb-6">Instead of Binary Blocking</h3>
+            <div className="grid grid-cols-3 gap-3 md:gap-6">
+              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center">
+                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-red-600 text-sm md:text-base mb-1">BLOCK</h4>
+                <p className="text-xs md:text-sm text-text-dim">Content not accessible</p>
+              </div>
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 text-center">
+                <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M12 9v4" />
+                    <circle cx="12" cy="17" r="1" fill="currentColor" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-amber-600 text-sm md:text-base mb-1">GATE</h4>
+                <p className="text-xs md:text-sm text-text-dim">Warning, delay, or parent approval</p>
+              </div>
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-center">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-green-600 text-sm md:text-base mb-1">ALLOW</h4>
+                <p className="text-xs md:text-sm text-text-dim">Unrestricted access</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center">
+            <Button asChild size="lg" className="rounded-full px-8 bg-primary text-white hover:bg-primary/90">
+              <Link href="/content-safety">See Full Content Guide</Link>
+            </Button>
+          </div>
         </div>
       </section>
 

@@ -110,7 +110,7 @@ export default function HeroImageGallery() {
                 {/* Mobile: landingphone.png */}
                 <Image
                     src="/landingphone.png"
-                    alt="KOMAL - AI Learning Companion"
+                    alt="KOMAL - AI Digital Guardian"
                     width={1400}
                     height={900}
                     className="w-full h-full object-cover object-center md:hidden"
@@ -119,7 +119,7 @@ export default function HeroImageGallery() {
                 {/* Desktop/Tablet: newlanding.png */}
                 <Image
                     src="/newlanding.png"
-                    alt="KOMAL - AI Learning Companion"
+                    alt="KOMAL - AI Digital Guardian"
                     width={1400}
                     height={900}
                     className="w-full h-full object-cover object-bottom hidden md:block"

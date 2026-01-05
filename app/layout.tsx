@@ -11,19 +11,19 @@ import IntroLoader from "@/components/IntroLoader";
 
 export const metadata: Metadata = {
   title: "KOMAL: Guilt-Free Screen Time for Learning",
-  description: "The world's first non-addictive, hands-free AI companion that understands children through behavior, not buttons.",
+  description: "The world's first non-addictive, hands-free AI digital guardian that understands children through behavior, not buttons.",
   keywords: "children learning app, AI learning platform, ethical AI, child behavior, educational technology",
   authors: [{ name: "KOMAL" }],
   robots: "index, follow",
   openGraph: {
     title: "KOMAL - Frontier AI for Childhood Learning",
-    description: "The world's first AI companion that reads how a child feels, not just what they click.",
+    description: "The world's first AI digital guardian that reads how a child feels, not just what they click.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "KOMAL - Frontier AI for Childhood Learning",
-    description: "The world's first AI companion that reads how a child feels, not just what they click.",
+    description: "The world's first AI digital guardian that reads how a child feels, not just what they click.",
   },
   icons: {
     icon: [

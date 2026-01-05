@@ -340,7 +340,7 @@ export default function HowKomalWorks() {
             <div className="hidden md:block w-32 h-40 shrink-0 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E8E0F5] to-[#D4C8ED]">
               <img
                 src="/sittingelephant.png"
-                alt="KOMAL Elephant Mascot - Your child's friendly learning companion"
+                alt="KOMAL Elephant Mascot - Your child's friendly digital guardian"
                 className="w-full h-full object-cover"
               />
             </div>

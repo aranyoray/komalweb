@@ -61,7 +61,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             onClick={() => setCurrency("INR")}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${currency === "INR"
               ? "bg-primary text-white shadow-md"
-              : "text-gray-600 hover:text-primary"
+              : "text-black hover:text-primary"
               }`}
           >
             ₹ INR
@@ -70,7 +70,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
             onClick={() => setCurrency("USD")}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${currency === "USD"
               ? "bg-primary text-white shadow-md"
-              : "text-gray-600 hover:text-primary"
+              : "text-black hover:text-primary"
               }`}
           >
             $ USD

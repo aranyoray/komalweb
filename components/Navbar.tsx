@@ -39,7 +39,8 @@ export default function Navbar() {
 
   const navItems = useMemo(
     () => [
-      { label: "The Magic", href: { type: "route", value: "/the-magic" } as const },
+      { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
+      { label: "Safety", href: { type: "route", value: "/content-safety" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
       { label: "Pricing", href: { type: "route", value: "/pricing" } as const },
     ],

@@ -32,27 +32,13 @@ const coreTeam: TeamMember[] = [
     },
     {
         name: "Jvalaj Pandey",
-        role: "UI Engineer",
+        role: "Co-Founder",
         credentials: [
             "Prev SWE Intern @ Delta Air Lines, Nucor Steel",
             "University of South Florida '26",
         ],
         image: "/komaljvalaj.png",
-        bio: "Software Engineer with internship experience at Delta Air Lines and Nucor Steel. Currently pursuing studies at University of South Florida, graduating in 2026.",
-    },
-    {
-        name: "Anwesha Das",
-        role: "Research Advisor (Computational Neuroscience)",
-        credentials: ["PhD Candidate, Princeton University", "Caltech (2025)"],
-        image: "/anwesha-das-phd-princeton-research-advisor-komalkids-usa.png",
-        bio: "Research Advisor in Computational Neuroscience. PhD candidate at Princeton University with expertise from Caltech, bringing cutting-edge research insights to Komal.",
-    },
-    {
-        name: "Md Zahirul Haque",
-        role: "Senior Software Engineer",
-        credentials: ["ex-Engineer, Speech Therapy Ai"],
-        image: "/md-zahirul-haque-senior-software-engineer-komalkids-india.png",
-        bio: "Senior Software Engineer with experience in Speech Therapy AI. Brings technical expertise to Komal's development team.",
+        bio: "Co-Founder with internship experience at Delta Air Lines and Nucor Steel. Currently pursuing studies at University of South Florida, graduating in 2026.",
     },
     {
         name: "Yudhajit Ain, MS",
@@ -124,43 +110,43 @@ export default function TeamSection() {
                     Meet The Team
                 </h2>
 
-                {/* Grid Layout - 3 columns */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                {/* Centered Layout - Using Flexbox to center the 4 members perfectly, matching Advisors sizing */}
+                <div className="flex flex-wrap justify-center gap-4 md:gap-6">
                     {coreTeam.map((member, index) => (
                         <div
                             key={index}
-                            className="group relative"
+                            className="group relative w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] md:w-[calc(33.333%-16px)] lg:w-[calc(20%-20px)]"
                         >
-                            {/* Image Container with Hover Effect */}
-                            <div className="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-white">
+                            {/* Image Container with Hover Effect - Portrait aspect ratio like Advisors */}
+                            <div className="relative overflow-hidden rounded-xl mb-3 md:mb-4 aspect-[3/4] bg-white">
                                 <Image
                                     src={member.image}
                                     alt={member.name}
                                     fill
                                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                                     style={{
-                                        objectPosition: member.name.includes('Saarthak') ? 'center top' : 'center 15%',
+                                        objectPosition: 'center 15%',
                                     }}
                                 />
 
                                 {/* Bio Overlay on Hover */}
                                 {member.bio && (
-                                    <div className="absolute inset-0 bg-primary/95 text-white p-6 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
-                                        <p className="text-sm leading-relaxed">{member.bio}</p>
+                                    <div className="absolute inset-0 bg-primary/95 text-white p-3 md:p-4 flex flex-col justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-y-auto">
+                                        <p className="text-[10px] md:text-xs leading-relaxed">{member.bio}</p>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Name and Role */}
+                            {/* Name and Role - Matching Advisors styling */}
                             <div className="text-left">
-                                <h3 className="text-xl md:text-2xl font-bold text-primary mb-1">
+                                <h3 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
                                     {member.name}
                                 </h3>
-                                <p className="text-sm font-semibold text-primary mb-2">
+                                <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-1">
                                     {member.role}
                                 </p>
                                 {member.credentials.slice(0, 2).map((cred, i) => (
-                                    <p key={i} className="text-xs text-text-dim leading-relaxed">
+                                    <p key={i} className="text-[7px] sm:text-[8px] md:text-[10px] text-text-dim leading-relaxed">
                                         {cred}
                                     </p>
                                 ))}

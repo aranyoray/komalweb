@@ -19,7 +19,7 @@
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     /* #F9F9FB roughly */
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 0 0% 10%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
@@ -42,7 +42,7 @@
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 0 0% 10%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
@@ -80,7 +80,7 @@
     --color-primary-dark: #1A0142;
     --color-bg-light: #F9F9FB;
     --color-text-main: #1A1A1A;
-    --color-text-dim: #6E6E73;
+    --color-text-dim: #1A1A1A;
     --color-bg: #FFFFFF;
     --color-text: #1A1A1A;
     --color-surface: #F9F9FB;
@@ -396,7 +396,7 @@
     z-index: 1;
 }
 
-/* First highlight - "learning companion" */
+/* First highlight - "digital guardian" */
 .hero-highlight-1::after {
     animation: highlightStroke 0.4s ease-out forwards;
     animation-delay: 1.2s;
