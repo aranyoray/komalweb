@@ -132,131 +132,133 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <section className="hero-section relative pt-8 md:pt-12 pb-12 overflow-hidden min-h-[75vh] flex flex-col justify-center">
-        {/* Floating Dots Background - Behind butterflies */}
+      <section className="hero-section relative pt-24 md:pt-28 lg:pt-20 pb-12 md:pb-16 overflow-hidden min-h-[90vh] flex items-center justify-center">
+        {/* Floating Dots Background */}
         <div className="absolute inset-0 z-0">
           <FloatingDots />
         </div>
-
-
 
         {/* Floating Butterflies Background */}
         <div className="absolute inset-0 z-[1]">
           <FloatingButterflies count={25} />
         </div>
 
+        {/* Animation styles */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes marchDash {
+            to { stroke-dashoffset: -20; }
+          }
+          @keyframes spinDiamond {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          .marching-border {
+            animation: marchDash 1s linear infinite;
+          }
+          .spinning-diamond {
+            animation: spinDiamond 3s linear infinite;
+          }
+        `}} />
 
-        <div className="hero-container w-full grid grid-cols-1 lg:grid-cols-2 gap-4 items-center relative z-[2] px-8 md:px-16 lg:px-24">
-          {/* Left Column - Text Content */}
-          <div className="hero-content flex flex-col items-center lg:items-start justify-center text-center lg:text-left order-1 lg:order-1 pt-16 lg:pt-0 lg:mt-24 pb-0 px-4 lg:p-12">
-            {/* Yale Scientists Badge */}
-            <style dangerouslySetInnerHTML={{
-              __html: `
-              @keyframes marchDash {
-                to { stroke-dashoffset: -20; }
-              }
-              @keyframes spinDiamond {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-              }
-              .marching-border {
-                animation: marchDash 1s linear infinite;
-              }
-              .spinning-diamond {
-                animation: spinDiamond 3s linear infinite;
-              }
-            `}} />
-            <div className="yale-badge-wrapper relative inline-flex mb-6 animate-[fadeDown_0.8s_ease_forwards]">
-              {/* Marching Dotted Border - SVG overlay */}
-              <svg className="absolute inset-[-1px] w-[calc(100%+2px)] h-[calc(100%+2px)] pointer-events-none overflow-visible">
-                <rect
-                  className="marching-border"
-                  x="0.75"
-                  y="0.75"
-                  rx="20"
-                  ry="20"
-                  fill="none"
-                  stroke="#1e3a5f"
-                  strokeWidth="1.5"
-                  strokeDasharray="5 5"
-                  strokeLinecap="round"
-                  style={{
-                    width: 'calc(100% - 1.5px)',
-                    height: 'calc(100% - 1.5px)',
-                  }}
-                />
-              </svg>
-              <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/5">
-                {/* Spinning 4-pointed Diamond/Sparkle SVG */}
-                <svg
-                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary spinning-diamond"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
+        {/* Main Container - Constrained width, centered */}
+        <div className="hero-container w-full max-w-[1400px] mx-auto px-6 md:px-10 lg:px-12 relative z-[2]">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-6 xl:gap-10 items-center">
+            
+            {/* Left Column - Text Content */}
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left pt-6 lg:pt-0">
+              {/* Yale Badge */}
+              <div className="yale-badge-wrapper relative inline-flex mb-5 animate-[fadeDown_0.8s_ease_forwards]">
+                <svg className="absolute inset-[-1px] w-[calc(100%+2px)] h-[calc(100%+2px)] pointer-events-none overflow-visible">
+                  <rect
+                    className="marching-border"
+                    x="0.75"
+                    y="0.75"
+                    rx="20"
+                    ry="20"
+                    fill="none"
+                    stroke="#1e3a5f"
+                    strokeWidth="1.5"
+                    strokeDasharray="5 5"
+                    strokeLinecap="round"
+                    style={{
+                      width: 'calc(100% - 1.5px)',
+                      height: 'calc(100% - 1.5px)',
+                    }}
+                  />
                 </svg>
-                {/* Badge Text */}
-                <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide">
-                  Grounded in Yale Research
-                </span>
+                <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/5">
+                  <svg
+                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary spinning-diamond"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
+                  </svg>
+                  <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide">
+                    Grounded in Yale Research
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <h1 className="hero-title font-sans font-bold leading-[1.1] tracking-[-0.02em] text-primary flex flex-col gap-2 md:gap-4">
-              <span className="text-2xl sm:text-3xl md:text-4xl font-semibold text-primary/80 animate-[fadeIn_0.5s_ease-out]">
-                Kids are curious.
-              </span>
-
-              <div className="flex flex-col gap-3 sm:gap-4">
-                <span className="text-5xl sm:text-6xl md:text-7xl lg:text-[80px] leading-[0.95]">
+              {/* Hero Title */}
+              <h1 className="hero-title font-sans font-bold leading-[1.08] tracking-[-0.02em] text-primary">
+                <span className="block text-xl sm:text-2xl md:text-[1.75rem] font-semibold text-primary/80 mb-2 sm:mb-3 animate-[fadeIn_0.5s_ease-out]">
+                  Kids are curious.
+                </span>
+                <span className="block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02]">
                   We protect
                 </span>
-                <span className="text-5xl sm:text-6xl md:text-7xl lg:text-[80px] leading-[0.95] hover:text-primary/80 transition-colors duration-300 cursor-help hero-highlight relative inline-block w-fit whitespace-nowrap">
+                <span className="relative inline-block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] whitespace-nowrap hover:text-primary/80 transition-colors duration-300 cursor-help">
                   their curiosity.
                   <span 
-                    className="absolute left-0 right-0 bottom-[0.08em] h-[0.35em] bg-primary/15 rounded-full -z-10"
+                    className="absolute left-0 right-0 bottom-[0.05em] h-[0.3em] rounded-full -z-10"
                     style={{ 
-                      background: 'linear-gradient(to right, rgba(107, 78, 113, 0.2), rgba(107, 78, 113, 0.25), rgba(107, 78, 113, 0.2))',
+                      background: 'linear-gradient(to right, rgba(107, 78, 113, 0.15), rgba(107, 78, 113, 0.22), rgba(107, 78, 113, 0.15))',
                     }}
                   />
                 </span>
-              </div>
+              </h1>
 
-              <span className="block text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.2em] sm:tracking-[0.3em] font-medium text-primary/70 mt-4 md:mt-6 animate-[fadeIn_1s_ease-out_0.5s_both]">
+              {/* Tagline */}
+              <p className="text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.18em] sm:tracking-[0.22em] font-medium text-primary/60 mt-5 md:mt-6 text-center lg:text-left animate-[fadeIn_1s_ease-out_0.5s_both]">
                 Ethical AI that guides, not just blocks
-              </span>
-            </h1>
+              </p>
 
-            {/* CTA Buttons */}
-            <div className="cta-group flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-8 w-full sm:w-auto animate-[fadeDown_1s_ease_forwards]" style={{ animationDelay: "0.2s" }}>
-              <Button
-                onClick={() => setIsWaitlistOpen(true)}
-                size="lg"
-                className="bg-primary hover:bg-primary/90 hover:scale-105 text-white text-xl sm:text-lg md:text-xl lg:text-2xl px-8 py-4 sm:px-6 sm:py-3 md:px-8 md:py-4 h-auto rounded-full shadow-lg transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)] w-full sm:w-auto"
-              >
-                Join Waitlist
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-primary/30 hover:bg-primary/5 hover:scale-105 text-primary text-xl sm:text-lg md:text-xl lg:text-2xl px-8 py-4 sm:px-6 sm:py-3 md:px-8 md:py-4 h-auto rounded-full transition-all duration-300 ease-[cubic-bezier(0.19,1,0.22,1)] w-full sm:w-auto"
-              >
-                <Link href="mailto:sales@komalkids.com">Talk to Us</Link>
-              </Button>
+              {/* CTA Buttons */}
+              <div className="cta-group flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 w-full sm:w-auto animate-[fadeDown_1s_ease_forwards]" style={{ animationDelay: "0.2s" }}>
+                <Button
+                  onClick={() => setIsWaitlistOpen(true)}
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 hover:scale-[1.02] text-white text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full shadow-lg shadow-primary/20 transition-all duration-300 ease-out w-full sm:w-auto"
+                >
+                  Join Waitlist
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-primary/25 hover:bg-primary/5 hover:border-primary/40 hover:scale-[1.02] text-primary text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full transition-all duration-300 ease-out w-full sm:w-auto"
+                >
+                  <Link href="mailto:sales@komalkids.com">Talk to Us</Link>
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Right Column - Hero Image */}
-          <div className="hero-image flex justify-center items-center order-2 lg:order-2 pt-0 pb-0 lg:py-0" style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
-            <Image
-              src="/heroimage.png"
-              alt="Komal Digital Guardian"
-              width={1200}
-              height={1200}
-              className="w-full max-w-[500px] sm:max-w-[550px] md:max-w-[700px] lg:max-w-[800px] xl:max-w-[900px] h-auto"
-              priority
-            />
+            {/* Right Column - Hero Image */}
+            <div 
+              className="flex justify-center items-center"
+              style={{ animation: "phoneEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both" }}
+            >
+              <Image
+                src="/heroimage.png"
+                alt="Komal Digital Guardian"
+                width={1200}
+                height={1200}
+                className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] h-auto"
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>
