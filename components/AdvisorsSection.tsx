@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import ScrollReveal from "./ScrollReveal";
 
 interface Advisor {
     name: string;
@@ -53,44 +54,48 @@ export default function AdvisorsSection() {
         <section className="advisors-section py-8 md:py-12 bg-white" id="advisors">
             <div className="container max-w-[1240px] px-6 md:px-8 mx-auto">
                 {/* Our Advisors - Horizontal Layout */}
-                <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-bold mb-8 md:mb-12 leading-[1.15] tracking-[-0.02em] text-primary text-center">
-                    Advised by the Best
-                </h2>
+                <ScrollReveal>
+                    <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-bold mb-8 md:mb-12 leading-[1.15] tracking-[-0.02em] text-primary text-center">
+                        Advised by the Best
+                    </h2>
+                </ScrollReveal>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                     {advisors.map((advisor, index) => (
-                        <div key={index} className="advisor-card">
-                            {/* Portrait Image */}
-                            <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-white">
-                                <Image
-                                    src={advisor.image}
-                                    alt={advisor.name}
-                                    width={300}
-                                    height={400}
-                                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                                    style={{
-                                        objectPosition: advisor.name.includes('Shreya') ? 'center top' : 'center 15%',
-                                        transform: advisor.name.includes('Shreya') ? 'scale(1.15)' : 'none',
-                                        transformOrigin: advisor.name.includes('Shreya') ? 'center top' : 'center center',
-                                    }}
-                                />
+                        <ScrollReveal key={index} delay={index * 0.1} direction="up">
+                            <div className="advisor-card group">
+                                {/* Portrait Image */}
+                                <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-white rounded-lg group-hover:shadow-xl transition-all duration-500">
+                                    <Image
+                                        src={advisor.image}
+                                        alt={advisor.name}
+                                        width={300}
+                                        height={400}
+                                        className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
+                                        style={{
+                                            objectPosition: advisor.name.includes('Shreya') ? 'center top' : 'center 15%',
+                                            transform: advisor.name.includes('Shreya') ? 'scale(1.15)' : 'none',
+                                            transformOrigin: advisor.name.includes('Shreya') ? 'center top' : 'center center',
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Name */}
+                                <h4 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
+                                    {advisor.name}
+                                </h4>
+
+                                {/* Title & Company */}
+                                <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-1 md:mb-2">
+                                    {advisor.title} {advisor.company}
+                                </p>
+
+                                {/* Description - Hidden on mobile, shown on desktop */}
+                                <p className="hidden md:block text-xs text-text-dim leading-relaxed">
+                                    {advisor.description}
+                                </p>
                             </div>
-
-                            {/* Name */}
-                            <h4 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
-                                {advisor.name}
-                            </h4>
-
-                            {/* Title & Company */}
-                            <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-1 md:mb-2">
-                                {advisor.title} {advisor.company}
-                            </p>
-
-                            {/* Description - Hidden on mobile, shown on desktop */}
-                            <p className="hidden md:block text-xs text-text-dim leading-relaxed">
-                                {advisor.description}
-                            </p>
-                        </div>
+                        </ScrollReveal>
                     ))}
                 </div>
             </div>
