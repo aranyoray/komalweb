@@ -143,7 +143,7 @@ export default function TeamSection() {
                         return (
                             <div
                                 key={index}
-                                className={`group flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 py-4 md:py-6 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors duration-300 rounded-2xl px-6 md:px-12 ${isEven ? 'md:flex-row-reverse' : ''}`}
+                                className={`group flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 py-4 md:py-6 border-b border-gray-100 last:border-b-0 transition-colors duration-300 rounded-3xl px-6 md:px-12 ${isEven ? 'bg-gray-50/80 md:flex-row-reverse' : 'bg-white'}`}
                             >
                                 {/* PFP + Name Column */}
                                 <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0`}>
@@ -220,7 +220,7 @@ export default function TeamSection() {
                             return (
                                 <div
                                     key={index}
-                                    className={`group flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 py-4 md:py-6 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors duration-300 rounded-2xl px-6 md:px-12 ${isEven ? 'md:flex-row-reverse' : ''}`}
+                                    className={`group flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 py-4 md:py-6 border-b border-gray-100 last:border-b-0 transition-colors duration-300 rounded-3xl px-6 md:px-12 ${isEven ? 'bg-gray-50/80 md:flex-row-reverse' : 'bg-white'}`}
                                 >
                                     {/* PFP + Name Column */}
                                     <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0`}>
