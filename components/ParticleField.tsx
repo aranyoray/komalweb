@@ -12,13 +12,13 @@ interface Particle {
   hue: number;
 }
 
-export default function ParticleField({ 
+export default function ParticleField({
   count = 50,
   color = "270, 70%, 50%",
   speed = 0.3,
   connectDistance = 100,
   showConnections = true,
-}: { 
+}: {
   count?: number;
   color?: string;
   speed?: number;
@@ -27,7 +27,7 @@ export default function ParticleField({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const mouseRef = useRef({ x: 0, y: 0, active: false });
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function ParticleField({
           const dx = mouseRef.current.x - particle.x;
           const dy = mouseRef.current.y - particle.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          
+
           if (dist < 150) {
             const force = (150 - dist) / 150;
             particle.vx += (dx / dist) * force * 0.02;

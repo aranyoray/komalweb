@@ -8,13 +8,13 @@ interface TextShimmerProps {
   duration?: number;
 }
 
-export default function TextShimmer({ 
-  children, 
+export default function TextShimmer({
+  children,
   className = "",
-  duration = 3 
+  duration = 3
 }: TextShimmerProps) {
   return (
-    <span 
+    <span
       className={`relative inline-block ${className}`}
       style={{
         background: `linear-gradient(
@@ -32,18 +32,9 @@ export default function TextShimmer({
         animation: `shimmer ${duration}s ease-in-out infinite`,
       }}
     >
-      <style jsx>{`
-        @keyframes shimmer {
-          0% {
-            background-position: 200% center;
-          }
-          100% {
-            background-position: -200% center;
-          }
-        }
-      `}</style>
       {children}
     </span>
   );
 }
+
 

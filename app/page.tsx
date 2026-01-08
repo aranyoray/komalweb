@@ -161,28 +161,12 @@ export default function Home() {
           <FloatingButterflies count={25} />
         </div>
 
-        {/* Animation styles */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes marchDash {
-            to { stroke-dashoffset: -20; }
-          }
-          @keyframes spinDiamond {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          .marching-border {
-            animation: marchDash 1s linear infinite;
-          }
-          .spinning-diamond {
-            animation: spinDiamond 3s linear infinite;
-          }
-        `}} />
+
 
         {/* Main Container - Constrained width, centered */}
         <div className="hero-container w-full max-w-[1400px] mx-auto px-6 md:px-10 lg:px-12 relative z-[2]">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-6 xl:gap-10 items-center">
-            
+
             {/* Left Column - Text Content */}
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left pt-6 lg:pt-0">
               {/* Yale Badge */}
@@ -229,9 +213,9 @@ export default function Home() {
                 </span>
                 <span className="relative inline-block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] whitespace-nowrap hover:text-primary/80 transition-colors duration-300 cursor-help opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.5s" }}>
                   <TextShimmer duration={4}>their curiosity.</TextShimmer>
-                  <span 
+                  <span
                     className="absolute left-0 right-0 bottom-[0.05em] h-[0.3em] rounded-full -z-10"
-                    style={{ 
+                    style={{
                       background: 'linear-gradient(to right, rgba(107, 78, 113, 0.15), rgba(107, 78, 113, 0.22), rgba(107, 78, 113, 0.15))',
                     }}
                   />
@@ -264,15 +248,15 @@ export default function Home() {
             </div>
 
             {/* Right Column - Hero Image */}
-            <div 
+            <div
               className="flex justify-center items-center opacity-0"
               style={{ animation: "phoneEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards" }}
             >
               <div className="relative animate-float" style={{ animationDuration: "8s" }}>
                 {/* Subtle glow behind image */}
-                <div 
+                <div
                   className="absolute inset-0 rounded-full blur-3xl opacity-20"
-                  style={{ 
+                  style={{
                     background: "radial-gradient(circle, rgba(107, 78, 113, 0.4) 0%, transparent 70%)",
                     transform: "scale(0.8)",
                   }}
@@ -297,88 +281,9 @@ export default function Home() {
         <div className="absolute inset-0 opacity-30">
           <FloatingOrbs count={3} />
         </div>
-        
-        {/* Tapping finger animation styles */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes fingerTap {
-            0%, 100% { 
-              transform: translate(40%, 80%) rotate(-45deg);
-              opacity: 0;
-            }
-            20% {
-              transform: translate(30%, 60%) rotate(-45deg);
-              opacity: 1;
-            }
-            35%, 42% { 
-              transform: translate(0%, 20%) rotate(-45deg);
-              opacity: 1;
-            }
-            48% {
-              transform: translate(15%, 40%) rotate(-45deg);
-              opacity: 1;
-            }
-            58%, 65% {
-              transform: translate(0%, 20%) rotate(-45deg);
-              opacity: 1;
-            }
-            80% {
-              transform: translate(30%, 60%) rotate(-45deg);
-              opacity: 1;
-            }
-            90% {
-              transform: translate(40%, 80%) rotate(-45deg);
-              opacity: 0;
-            }
-          }
-          @keyframes tapRipple {
-            0%, 30% { 
-              transform: scale(0);
-              opacity: 0;
-            }
-            35%, 42% {
-              transform: scale(0.8);
-              opacity: 0.5;
-            }
-            50% {
-              transform: scale(1.5);
-              opacity: 0;
-            }
-            58%, 65% {
-              transform: scale(0.8);
-              opacity: 0.5;
-            }
-            75% {
-              transform: scale(1.5);
-              opacity: 0;
-            }
-            100% {
-              transform: scale(0);
-              opacity: 0;
-            }
-          }
-          @keyframes tapBounce {
-            0%, 30%, 52%, 80%, 100% {
-              transform: translateY(0);
-            }
-            35%, 42% {
-              transform: translateY(3px);
-            }
-            58%, 65% {
-              transform: translateY(3px);
-            }
-          }
-          .tapping-finger {
-            animation: fingerTap 3s ease-in-out infinite;
-          }
-          .tap-ripple {
-            animation: tapRipple 3s ease-out infinite;
-          }
-          .tap-bounce {
-            animation: tapBounce 3s ease-in-out infinite;
-          }
-        `}} />
-        
+
+
+
         <div className="container max-w-[900px] px-8 mx-auto text-center relative z-10">
           {/* Main Headline */}
           <ScrollReveal>
@@ -387,7 +292,7 @@ export default function Home() {
               <span className="relative inline-block">
                 <span className="tap-bounce inline-block">Tap</span>
                 {/* Pointing finger emoji */}
-                <span 
+                <span
                   className="tapping-finger absolute -right-2 -bottom-1 sm:-right-3 sm:-bottom-2 text-xl sm:text-2xl md:text-3xl pointer-events-none z-10 select-none"
                   style={{ transformOrigin: 'left top' }}
                 >
