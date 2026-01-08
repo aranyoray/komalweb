@@ -13,39 +13,39 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Richard Vidal-Dorsch, MS",
-        title: "SENIOR SOFTWARE ENGINEER",
-        company: "@ AURA",
-        description: "MS in Computer Science (2005). Technical advisor providing guidance on software architecture and engineering best practices.",
-        image: "/richard-dorsch-ms-technical-advisor-komalkids-san-francisco.png",
-    },
-    {
         name: "Doris E. V., PhD",
         title: "RESEARCH ADVISOR",
         company: "@ UC BERKELEY",
-        description: "PhD in Integrative Biology from University of California, Berkeley (2001). Brings deep expertise in biological systems and research methodology.",
+        description: "Dr. Doris holds a PhD in Integrative Biology from UC Berkeley. She brings deep expertise in biological systems and research methodology to Komal, ensuring our scientific approach is both rigorous and biologically sound.",
         image: "/doris.png",
     },
     {
-        name: "Dr (Prof) Om Prakash Singh, MD",
-        title: "CLINICAL ADVISOR",
-        company: "@ INDIAN PSYCHIATRIC SOCIETY",
-        description: "Incoming National President, Indian Psychiatric Society. Guides our clinical approach and mental health protocols.",
+        name: "Prof Brian Scassellati, PhD",
+        title: "PRINCIPAL INVESTIGATOR",
+        company: "@ YALE SOCIAL ROBOTICS LAB",
+        description: "Prof Scassellati is the Principal Investigator at Yale Social Robotics Lab and Professor at Yale University. He is a leading global expert in social robotics, guiding Komal's human-robot interaction and technology design.",
+        image: "/brian2.png",
+    },
+    {
+        name: "Prof (Dr.) Om Prakash Singh, MD, FRCP",
+        title: "EDITOR-IN-CHIEF",
+        company: "@ INDIAN JOURNAL OF PSYCHIATRY",
+        description: "Dr. Singh is a senior psychiatrist with 30 years of clinical and academic experience. He leads the Indian Journal of Psychiatry and advises Komal on de-addiction strategies and our psychosocial mental health framework.",
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
     },
     {
         name: "Shreya Jain, MBA",
         title: "GTM ADVISOR",
         company: "@ THE STACK",
-        description: "Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S. Expert in go-to-market strategy and neurodiversity initiatives.",
+        description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through strategic growth.",
         image: "/shreya-jain-mba-business-gtm-advisor-india.png",
     },
     {
-        name: "Prof Brian Scassellati, PhD",
-        title: "PRINCIPAL INVESTIGATOR",
-        company: "@ YALE SOCIAL ROBOTICS LAB",
-        description: "Principal Investigator at Yale Social Robotics Lab and Professor of Computer Science & Engineering at Yale University. Leading expert in social robotics and human-robot interaction.",
-        image: "/brian2.png",
+        name: "Bratati Sinha Ray",
+        title: "CONSULTANT PSYCHOLOGIST",
+        company: "@ APOLLO CLINIC",
+        description: "Bratati is a Consultant Psychologist at Apollo Clinic with 22+ years of experience in child psychology. A certified Trauma Healer, she specializes in clinical counseling and provides deep expertise in adolescent mental health.",
+        image: "/balaji.png",
     },
 ];
 
@@ -60,38 +60,36 @@ export default function AdvisorsSection() {
                     </h2>
                 </ScrollReveal>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8">
                     {advisors.map((advisor, index) => (
                         <ScrollReveal key={index} delay={index * 0.1} direction="up">
                             <div className="advisor-card group">
-                                {/* Portrait Image */}
-                                <div className="aspect-[3/4] w-full mb-3 md:mb-4 overflow-hidden bg-white rounded-lg group-hover:shadow-xl transition-all duration-500">
+                                {/* Square Image - Reduced height */}
+                                <div className="aspect-square w-full mb-3 md:mb-4 overflow-hidden bg-white rounded-xl group-hover:shadow-xl transition-all duration-500">
                                     <Image
                                         src={advisor.image}
                                         alt={advisor.name}
                                         width={300}
-                                        height={400}
-                                        className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
+                                        height={300}
+                                        className="w-full h-full transition-all duration-500 group-hover:scale-105 object-cover"
                                         style={{
-                                            objectPosition: advisor.name.includes('Shreya') ? 'center top' : 'center 15%',
-                                            transform: advisor.name.includes('Shreya') ? 'scale(1.15)' : 'none',
-                                            transformOrigin: advisor.name.includes('Shreya') ? 'center top' : 'center center',
+                                            objectPosition: 'center top',
                                         }}
                                     />
                                 </div>
 
                                 {/* Name */}
-                                <h4 className="text-xs sm:text-sm md:text-xl font-medium text-primary mb-1 leading-tight">
+                                <h4 className="text-xs sm:text-sm md:text-lg font-semibold text-primary mb-1 leading-tight">
                                     {advisor.name}
                                 </h4>
 
                                 {/* Title & Company */}
-                                <p className="text-[7px] sm:text-[8px] md:text-xs uppercase tracking-wide text-text-dim font-medium leading-tight mb-1 md:mb-2">
+                                <p className="text-[8px] sm:text-[9px] md:text-xs uppercase tracking-wide text-primary/70 font-medium leading-tight mb-2">
                                     {advisor.title} {advisor.company}
                                 </p>
 
-                                {/* Description - Hidden on mobile, shown on desktop */}
-                                <p className="hidden md:block text-xs text-text-dim leading-relaxed">
+                                {/* Description - Always visible */}
+                                <p className="text-[9px] sm:text-[10px] md:text-xs text-text-dim leading-relaxed line-clamp-4 md:line-clamp-none">
                                     {advisor.description}
                                 </p>
                             </div>
