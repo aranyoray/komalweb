@@ -22,7 +22,6 @@ import SplitText from "@/components/SplitText";
 import WaitlistModal from "@/components/WaitlistModal";
 
 // Premium dynamic effects
-import SpotlightCursor from "@/components/SpotlightCursor";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
 import TextShimmer from "@/components/TextShimmer";
@@ -140,7 +139,6 @@ export default function Home() {
       />
 
       {/* Global Premium Effects */}
-      <SpotlightCursor />
       <NoiseOverlay opacity={0.025} />
       <ParticleField count={35} color="263, 50%, 40%" speed={0.2} connectDistance={80} />
 
@@ -335,7 +333,7 @@ export default function Home() {
       </section>
 
       {/* Age-Appropriate Access Section */}
-      <section className="w-full bg-white py-12 md:py-16" id="content-safety">
+      <section className="w-full bg-neumorphic py-12 md:py-16" id="content-safety">
         <div className="container max-w-[1100px] px-8 mx-auto">
           {/* Section Header */}
           <ScrollReveal>
@@ -355,8 +353,8 @@ export default function Home() {
           {/* Three Principles */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <ScrollReveal delay={0}>
-              <div className="bg-[#F5F0FF] rounded-2xl p-6 text-center h-full hover:scale-[1.02] hover:shadow-lg transition-all duration-500">
-                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="neumorphic-card p-6 text-center h-full hover:scale-[1.02] transition-all duration-500">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 6v6l4 2" />
@@ -367,8 +365,8 @@ export default function Home() {
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
-              <div className="bg-[#E8F5E9] rounded-2xl p-6 text-center h-full hover:scale-[1.02] hover:shadow-lg transition-all duration-500">
-                <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="neumorphic-card p-6 text-center h-full hover:scale-[1.02] transition-all duration-500">
+                <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
                   </svg>
@@ -378,8 +376,8 @@ export default function Home() {
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
-              <div className="bg-[#FFF8E1] rounded-2xl p-6 text-center h-full hover:scale-[1.02] hover:shadow-lg transition-all duration-500">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="neumorphic-card p-6 text-center h-full hover:scale-[1.02] transition-all duration-500">
+                <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-6 h-6 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
@@ -390,12 +388,12 @@ export default function Home() {
             </ScrollReveal>
           </div>
 
-          {/* Block / Gate / Allow Visual */}
+          {/* Block / Gate / Allow Visual - COMMENTED OUT PER USER REQUEST
           <ScrollReveal delay={0.2}>
-            <div className="bg-[#F5F5F7] rounded-3xl p-6 md:p-8 mb-8">
+            <div className="neumorphic-pressed p-6 md:p-8 mb-8">
               <h3 className="text-xl md:text-2xl font-semibold text-primary text-center mb-6">Instead of Binary Blocking</h3>
               <div className="grid grid-cols-3 gap-3 md:gap-6">
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-red-200/50 transition-all duration-500 cursor-default">
+                <div className="neumorphic-card p-4 text-center hover:scale-105 transition-all duration-500 cursor-default border-red-100">
                   <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "0s" }}>
                     <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <line x1="18" y1="6" x2="6" y2="18" />
@@ -405,7 +403,7 @@ export default function Home() {
                   <h4 className="font-bold text-red-60 text-center text-sm md:text-base mb-1">BLOCK</h4>
                   <p className="text-xs md:text-sm text-center text-text-dim">Content not accessible</p>
                 </div>
-                <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-amber-200/50 transition-all duration-500 cursor-default">
+                <div className="neumorphic-card p-4 text-center hover:scale-105 transition-all duration-500 cursor-default border-amber-100">
                   <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "0.5s" }}>
                     <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M12 9v4" />
@@ -415,7 +413,7 @@ export default function Home() {
                   <h4 className="font-bold text-amber-600 text-sm md:text-base mb-1 text-center">GATE</h4>
                   <p className="text-xs md:text-sm text-text-dim text-center">Warning, delay, or parent approval</p>
                 </div>
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-green-200/50 transition-all duration-500 cursor-default">
+                <div className="neumorphic-card p-4 text-center hover:scale-105 transition-all duration-500 cursor-default border-green-100">
                   <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "1s" }}>
                     <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="20 6 9 17 4 12" />
@@ -427,6 +425,7 @@ export default function Home() {
               </div>
             </div>
           </ScrollReveal>
+          */}
 
           {/* CTA */}
           <ScrollReveal delay={0.3}>

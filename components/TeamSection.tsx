@@ -222,7 +222,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
                 </div>
 
                 <div className="relative">
-                    <p className={`text-[10px] sm:text-[11px] md:text-[13px] text-text-dim leading-relaxed ${isEven ? 'text-left' : 'text-right'} ${!isExpanded ? 'line-clamp-4 md:line-clamp-none' : ''}`}>
+                    <p className={`text-[9px] sm:text-[11px] md:text-[13px] text-text-dim leading-relaxed ${isEven ? 'text-left' : 'text-right'} ${!isExpanded ? 'line-clamp-4 md:line-clamp-none' : ''}`}>
                         {member.description}
                     </p>
                     {member.description.length > 150 && (
