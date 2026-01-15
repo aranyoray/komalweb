@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 
 interface TeamMember {
     name: string;
@@ -122,15 +123,15 @@ const advisors: Advisor[] = [
 const DecorativeElements = ({ index }: { index: number }) => {
     const elements = [
         // Zigzag lines
-        <svg key="zigzag" className="absolute -top-2 -left-4 w-8 h-8 text-primary/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg key="zigzag" className="absolute -top-2 -left-4 w-6 h-6 md:w-8 md:h-8 text-primary/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M2 12 L6 8 L10 12 L14 8 L18 12 L22 8" />
         </svg>,
         // Circle
-        <svg key="circle" className="absolute -top-1 -right-3 w-6 h-6 text-primary/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg key="circle" className="absolute -top-1 -right-3 w-4 h-4 md:w-6 md:h-6 text-primary/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="8" />
         </svg>,
         // Parenthesis
-        <svg key="paren" className="absolute top-1/2 -right-6 w-5 h-10 text-primary/50" viewBox="0 0 10 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg key="paren" className="absolute top-1/2 -right-6 w-3 h-6 md:w-5 md:h-10 text-primary/50" viewBox="0 0 10 20" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M8 2 Q2 10 8 18" />
         </svg>,
     ];
@@ -143,171 +144,128 @@ const DecorativeElements = ({ index }: { index: number }) => {
     );
 };
 
+const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index: number }) => {
+    const isEven = index % 2 === 0;
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    // Determine object position
+    const objectPos = member.name.includes('Shreya')
+        ? 'center top'
+        : member.name.includes('Doris')
+            ? 'center 15%'
+            : member.name.includes('Brian')
+                ? 'center 5%'
+                : member.name.includes('Om')
+                    ? 'center 5%'
+                    : member.name.includes('Bratati')
+                        ? 'center 5%'
+                        : 'center 10%';
+
+    return (
+        <div
+            className={`group flex flex-row items-start justify-between gap-3 md:gap-10 py-4 md:py-6 transition-colors duration-300 rounded-2xl md:rounded-3xl px-3 md:px-24 ${isEven ? 'bg-gray-200 flex-row-reverse md:flex-row-reverse' : 'bg-white'}`}
+        >
+            {/* PFP + Name Column */}
+            <div className={`flex flex-col items-center ${isEven ? 'items-end' : 'items-start'} shrink-0 w-[100px] sm:w-[160px] md:w-[220px]`}>
+                <div className="relative mb-2">
+                    {/* Decorative elements */}
+                    <div className="hidden md:block">
+                        <DecorativeElements index={index} />
+                    </div>
+
+                    {/* Image with halftone/dotted effect */}
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner bg-white p-1 md:p-2">
+                        <Image
+                            src={member.image}
+                            alt={member.name}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            style={{
+                                objectPosition: objectPos,
+                            }}
+                        />
+                        {/* Halftone overlay effect in Violet */}
+                        <div
+                            className="absolute inset-0 opacity-20 mix-blend-soft-light"
+                            style={{
+                                backgroundImage: 'radial-gradient(circle, #8b5cf6 1.2px, transparent 1.2px)',
+                                backgroundSize: '4px 4px',
+                            }}
+                        />
+                    </div>
+
+                    {/* Tagline badge (Speech bubble style) - Hidden on smallest screens to save space/clutter */}
+                    {member.tagline && (
+                        <div className={`hidden sm:block absolute -bottom-1 ${isEven ? '-right-4' : '-left-4'} bg-white px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 max-w-[140px] md:max-w-[180px] transform ${isEven ? 'rotate-2' : '-rotate-2'}`}>
+                            <p className="text-[9px] md:text-[10px] text-primary/80 font-medium italic leading-tight">
+                                &ldquo;{member.tagline}&rdquo;
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Name under image - Centered for uniformity */}
+                <h3 className="text-sm sm:text-lg md:text-2xl font-bold text-primary tracking-tight text-center leading-tight">
+                    {member.name}
+                </h3>
+            </div>
+
+            {/* Role, Credentials & Description Column */}
+            <div className={`flex flex-col justify-center flex-1 ${isEven ? 'text-left items-start' : 'text-right items-end'}`}>
+                <div className={`mb-1 flex flex-col ${isEven ? 'items-start' : 'items-end'}`}>
+                    <p className="text-[10px] sm:text-xs md:text-sm font-bold text-primary mb-0.5 uppercase tracking-wider text-wrap sm:text-nowrap">
+                        {member.role}
+                    </p>
+                    <p className={`text-[9px] sm:text-[10px] md:text-xs text-text-dim font-medium mb-1 md:mb-2 ${isEven ? 'text-left' : 'text-right'}`}>
+                        {member.credentials.join(" • ")}
+                    </p>
+                </div>
+
+                <div className="relative">
+                    <p className={`text-[10px] sm:text-[11px] md:text-[13px] text-text-dim leading-relaxed ${isEven ? 'text-left' : 'text-right'} ${!isExpanded ? 'line-clamp-4 md:line-clamp-none' : ''}`}>
+                        {member.description}
+                    </p>
+                    {member.description.length > 150 && (
+                        <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className={`md:hidden text-[10px] font-bold text-primary mt-1 hover:underline focus:outline-none ${isEven ? 'self-start' : 'self-end'}`}
+                        >
+                            {isExpanded ? 'Show Less' : 'Read More'}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function TeamSection() {
     return (
-        <section className="team-section pt-24 pb-16 md:pb-24 bg-white" id="team">
-            <div className="container max-w-[1200px] px-6 md:px-8 mx-auto">
+        <section className="team-section pt-16 md:pt-24 pb-12 md:pb-24 bg-white" id="team">
+            <div className="container max-w-[1200px] px-4 md:px-8 mx-auto">
                 {/* Core Team */}
-                <h2 className="section-title font-sans text-2xl md:text-4xl font-bold mb-10 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
+                <h2 className="section-title font-sans text-2xl md:text-4xl font-bold mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
                     Founding Team
                 </h2>
 
                 {/* Horizontal Row Layout for each member */}
                 <div className="space-y-3">
-                    {coreTeam.map((member, index) => {
-                        const isEven = index % 2 === 0;
-                        return (
-                            <div
-                                key={index}
-                                className={`group flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 md:gap-10 py-4 md:py-6 transition-colors duration-300 rounded-3xl px-10 md:px-24 ${isEven ? 'bg-gray-200 md:flex-row-reverse' : 'bg-white'}`}
-                            >
-                                {/* PFP + Name Column */}
-                                <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0 w-[200px] md:w-[220px]`}>
-                                    <div className="relative mb-2">
-                                        {/* Decorative elements */}
-                                        <DecorativeElements index={index} />
-
-                                        {/* Image with halftone/dotted effect */}
-                                        <div className="relative w-24 h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner">
-                                            <Image
-                                                src={member.image}
-                                                alt={member.name}
-                                                fill
-                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                                style={{
-                                                    objectPosition: 'center 20%',
-                                                }}
-                                            />
-                                            {/* Halftone overlay effect in Violet */}
-                                            <div
-                                                className="absolute inset-0 opacity-20 mix-blend-soft-light"
-                                                style={{
-                                                    backgroundImage: 'radial-gradient(circle, #8b5cf6 1.2px, transparent 1.2px)',
-                                                    backgroundSize: '4px 4px',
-                                                }}
-                                            />
-                                        </div>
-
-                                        {/* Tagline badge (Speech bubble style) */}
-                                        {member.tagline && (
-                                            <div className={`absolute -bottom-1 ${isEven ? '-right-4' : '-left-4'} bg-white px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 max-w-[140px] md:max-w-[180px] transform ${isEven ? 'rotate-2' : '-rotate-2'}`}>
-                                                <p className="text-[9px] md:text-[10px] text-primary/80 font-medium italic leading-tight">
-                                                    &ldquo;{member.tagline}&rdquo;
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Name under image - Centered for uniformity */}
-                                    <h3 className="text-xl md:text-2xl font-bold text-primary tracking-tight text-center">
-                                        {member.name}
-                                    </h3>
-                                </div>
-
-                                {/* Role, Credentials & Description Column */}
-                                <div className={`flex flex-col justify-center flex-1 ${isEven ? 'text-left items-start' : 'md:text-right md:items-end'}`}>
-                                    <div className={`mb-1 flex flex-col ${isEven ? 'items-start' : 'md:items-end'}`}>
-                                        <p className="text-sm md:text-base font-bold text-primary mb-0.5 uppercase tracking-wider">
-                                            {member.role}
-                                        </p>
-                                        <p className={`text-[10px] md:text-xs text-text-dim font-medium mb-2 ${isEven ? 'text-left' : 'md:text-right'}`}>
-                                            {member.credentials.join(" • ")}
-                                        </p>
-                                    </div>
-                                    <p className={`text-[11px] md:text-[13px] text-text-dim leading-relaxed ${isEven ? 'text-left' : 'md:text-right'}`}>
-                                        {member.description}
-                                    </p>
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {coreTeam.map((member, index) => (
+                        <TeamMemberCard key={index} member={member} index={index} />
+                    ))}
                 </div>
 
                 {/* Advisors Section */}
-                <div className="mt-16 md:mt-24">
-                    <h2 className="section-title font-sans text-2xl md:text-4xl font-bold mb-10 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
+                <div className="mt-12 md:mt-24">
+                    <h2 className="section-title font-sans text-2xl md:text-4xl font-bold mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
                         Our Advisors
                     </h2>
 
                     {/* Horizontal Row Layout for each advisor */}
                     <div className="space-y-3">
-                        {advisors.map((advisor, index) => {
-                            const isEven = index % 2 === 0;
-                            return (
-                                <div
-                                    key={index}
-                                    className={`group flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 md:gap-10 py-4 md:py-6 transition-colors duration-300 rounded-3xl px-10 md:px-24 ${isEven ? 'bg-gray-200 md:flex-row-reverse' : 'bg-white'}`}
-                                >
-                                    {/* PFP + Name Column */}
-                                    <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0 w-[200px] md:w-[220px]`}>
-                                        <div className="relative mb-2">
-                                            {/* Decorative elements */}
-                                            <DecorativeElements index={index + 3} />
-
-                                            {/* Image with halftone/dotted effect */}
-                                            <div className="relative w-24 h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner bg-white p-2">
-                                                <Image
-                                                    src={advisor.image}
-                                                    alt={advisor.name}
-                                                    fill
-                                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                                    style={{
-                                                        objectPosition: advisor.name.includes('Shreya')
-                                                            ? 'center top'
-                                                            : advisor.name.includes('Doris')
-                                                                ? 'center 15%'
-                                                                : advisor.name.includes('Brian')
-                                                                    ? 'center 5%'
-                                                                    : advisor.name.includes('Om')
-                                                                        ? 'center 5%'
-                                                                        : advisor.name.includes('Bratati')
-                                                                            ? 'center 5%'
-                                                                            : 'center 10%',
-                                                    }}
-                                                />
-                                                {/* Halftone overlay effect in Violet */}
-                                                <div
-                                                    className="absolute inset-0 opacity-20 mix-blend-soft-light"
-                                                    style={{
-                                                        backgroundImage: 'radial-gradient(circle, #8b5cf6 1.2px, transparent 1.2px)',
-                                                        backgroundSize: '4px 4px',
-                                                    }}
-                                                />
-                                            </div>
-
-                                            {/* Tagline badge */}
-                                            {advisor.tagline && (
-                                                <div className={`absolute -bottom-1 ${isEven ? '-right-4' : '-left-4'} bg-white px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 max-w-[140px] md:max-w-[200px] transform ${isEven ? 'rotate-2' : '-rotate-2'}`}>
-                                                    <p className="text-[9px] md:text-[10px] text-primary/80 font-medium italic leading-tight">
-                                                        &ldquo;{advisor.tagline}&rdquo;
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Name under image */}
-                                        <h3 className="text-xl md:text-2xl font-bold text-primary tracking-tight text-center">
-                                            {advisor.name}
-                                        </h3>
-                                    </div>
-
-                                    {/* Role, Credentials & Description Column */}
-                                    <div className={`flex flex-col justify-center flex-1 ${isEven ? 'text-left items-start' : 'md:text-right md:items-end'}`}>
-                                        <div className={`mb-1 flex flex-col ${isEven ? 'items-start' : 'md:items-end'}`}>
-                                            <p className="text-sm md:text-base font-bold text-primary mb-0.5 uppercase tracking-wider">
-                                                {advisor.role}
-                                            </p>
-                                            <p className={`text-[10px] md:text-xs text-text-dim font-medium mb-2 ${isEven ? 'text-left' : 'md:text-right'}`}>
-                                                {advisor.credentials.join(" • ")}
-                                            </p>
-                                        </div>
-                                        <p className={`text-[11px] md:text-[13px] text-text-dim leading-relaxed ${isEven ? 'text-left' : 'md:text-right'}`}>
-                                            {advisor.description}
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {advisors.map((advisor, index) => (
+                            <TeamMemberCard key={index} member={advisor} index={index + 3} />
+                        ))}
                     </div>
                 </div>
             </div>
