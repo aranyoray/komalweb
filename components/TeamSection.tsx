@@ -17,36 +17,44 @@ const coreTeam: TeamMember[] = [
         name: "Aranyo Ray",
         role: "Co-Founder & CEO",
         credentials: ["Wu Tsai Scholar, Yale University", "Ex-Graymatics, Commenda"],
-        image: "/aranyo-ray-yale-ceo-komalkids-india-mumbai.png",
-        description: "Aranyo has built pioneering edtech and SaaS solutions. A Wu Tsai Scholar at Yale investigating implicit bias, he won 1st Place from the APA at ISEF and is published in Harvard's Journal of Emerging Investigators.",
+        image: "/aranyowhitebg.png",
+        description: "Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. A Wu Tsai Scholar at Yale investigating implicit bias in multicultural learning, he won 1st Place from the APA at ISEF for his culturally relevant game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads overall execution and expansion.",
         tagline: "Building the future of child development",
     },
-    {
-        name: "Jvalaj Pandey",
-        role: "Co-Founder & CTO",
-        credentials: ["Ex-Delta Air Lines", "Final Year Undergrad in CS @ USF", "Green & Gold Scholar"],
-        image: "/komaljvalaj.png",
-        description: "Jvalaj previously built Grid, which garnered a 400+ user waitlist. He brings technical expertise from internships at Delta and Nucor Steel, leading the platform's core implementation. He is a Green & Gold Scholar at USF.",
-        tagline: "Engineering solutions that matter",
-    },
+    // {
+    //     name: "Jvalaj Pandey",
+    //     role: "Co-Founder & CTO",
+    //     credentials: ["Ex-Delta Air Lines", "Final Year Undergrad in CS @ USF", "Green & Gold Scholar"],
+    //     image: "/komaljvalaj.png",
+    //     description: "Jvalaj previously built Grid, which garnered a 400+ user waitlist. He brings technical expertise from internships at Delta and Nucor Steel, leading the platform's core implementation. He is a Green & Gold Scholar at USF.",
+    //     tagline: "Engineering solutions that matter",
+    // },
     {
         name: "Yudhajit Ain",
         role: "Research Lead",
         credentials: ["PhD Candidate, Internal Attention Lab, UCalgary", "IISER BS-MS Neuroscience"],
         image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
-        description: "Yudhajit is a PhD Candidate in computational psychology at UCalgary. A neuroscience Gold Medallist, he has authored 6+ papers on ADHD and mindfulness, developing novel algorithms for precision attention tracking.",
+        description: "Yudhajit is a PhD Candidate in computational psychology at the Internal Attention Lab, UCalgary, where he has developed novel algorithms for attention tracking. He is first-author on 6+ papers, including research on ADHD in the Journal of Attention Disorders and mindfulness in Psychol. Aging. A Gold Medallist from the IISER BS-MS Neuroscience program.",
         tagline: "Decoding attention, one algorithm at a time",
     },
-  
+
+    // {
+    //     name: "Dale Lee",
+    //     role: "GTM Lead",
+    //     credentials: ["US and Korea Markets"],
+    //     image: "/l.png",
+    //     description: "Dale leads Komal's go-to-market strategy for the US and Korea markets. He brings extensive expertise in cross-cultural business development and global market expansion to help Komal reach international audiences.",
+    //     tagline: "Bridging cultures, opening markets",
+    // },
     {
-        name: "Dale Lee",
-        role: "GTM Lead",
-        credentials: ["US and Korea Markets"],
-        image: "/l.png",
-        description: "Dale leads Komal's go-to-market strategy for the US and Korea markets. He brings extensive expertise in cross-cultural business development and global market expansion to help Komal reach international audiences.",
-        tagline: "Bridging cultures, opening markets",
+        name: "Saarthak Kumar",
+        role: "Policy Lead",
+        credentials: ["MPA, Columbia & LSE", "Ex-UN Advisor"],
+        image: "/sarthakwhitebg.png",
+        description: "Saarthak holds MPAs from Columbia and LSE in economic policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India at the UN, bringing expertise in international policy and development economics.",
+        tagline: "Policy expertise for global impact",
     },
-    
+
 ];
 
 // Advisory Board
@@ -69,6 +77,14 @@ const advisors: Advisor[] = [
         tagline: "Deep expertise in biological systems",
     },
     {
+        name: "Audrey Wisch",
+        role: "GTM Advisor",
+        credentials: ["Co-Founder & CEO, Curious Cardinals", "Forbes 30u30"],
+        image: "/audrey.png",
+        description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform connecting students with inspiring role models. A Forbes 30 Under 30 honoree, she brings deep expertise in education technology, youth engagement, and scaling mission-driven startups to help Komal reach families worldwide.",
+        tagline: "Empowering the next generation of learners",
+    },
+    {
         name: "Prof Brian Scassellati",
         role: "Principal Investigator",
         credentials: ["Yale Social Robotics Lab"],
@@ -81,7 +97,7 @@ const advisors: Advisor[] = [
         role: "Editor-in-Chief",
         credentials: ["Indian Journal of Psychiatry", "MD, FRCP"],
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
-        description: "Dr. Singh is a senior psychiatrist with 30 years of clinical and academic experience. He leads the Indian Journal of Psychiatry and advises Komal on de-addiction strategies and our psychosocial mental health framework.",
+        description: "Dr. Singh is a senior psychiatrist with three decades of clinical, academic, and leadership experience, shaping psychiatric education, research standards, and policy in South Asia. He specializes in child and adolescent mental health, community psychiatry, ethics, and access to care, authoring 140+ peer-reviewed articles and 2 books. He holds an MD from Lady Hardinge Medical College, is a Fellow of the Royal College of Physicians (Edinburgh) and International Distinguished Fellow of the APA, and served as President of the Indian Psychiatric Society (East Zone). At Komal, he advises our de-addiction strategy and psychosocial framework for children's digital experiences.",
         tagline: "Three decades shaping child mental health",
     },
     {
@@ -89,7 +105,7 @@ const advisors: Advisor[] = [
         role: "Consultant Psychologist",
         credentials: ["22+ years experience", "Apollo Clinic"],
         image: "/balaji.png",
-        description: "Bratati is a Consultant Psychologist at Apollo Clinic with 22+ years of experience. She specializes in child psychology and trauma healing, supporting adolescents with ADHD, learning disorders, and neurodiversity.",
+        description: "Bratati is a Consultant Psychologist and Psychotherapist at Apollo Clinic with 22+ years of experience in child psychology, working pan-India across cultural boundaries with clients aged 5-85. She specializes in supporting children and adolescents with ADHD, learning disorders, ASD, OCD, anxiety, depression, and addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counselling and Clinical Psychology, and is a certified Trauma Healer.",
         tagline: "22+ years healing young minds",
     },
     {
@@ -118,7 +134,7 @@ const DecorativeElements = ({ index }: { index: number }) => {
             <path d="M8 2 Q2 10 8 18" />
         </svg>,
     ];
-    
+
     return (
         <>
             {elements[index % 3]}
@@ -133,24 +149,24 @@ export default function TeamSection() {
             <div className="container max-w-[1200px] px-6 md:px-8 mx-auto">
                 {/* Core Team */}
                 <h2 className="section-title font-sans text-2xl md:text-4xl font-bold mb-10 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
-                    Meet The Team
+                    Founding Team
                 </h2>
 
                 {/* Horizontal Row Layout for each member */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {coreTeam.map((member, index) => {
                         const isEven = index % 2 === 0;
                         return (
                             <div
                                 key={index}
-                                className={`group flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 py-4 md:py-6 border-b border-gray-100 last:border-b-0 transition-colors duration-300 rounded-3xl px-6 md:px-12 ${isEven ? 'bg-gray-50/80 md:flex-row-reverse' : 'bg-white'}`}
+                                className={`group flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 md:gap-10 py-4 md:py-6 transition-colors duration-300 rounded-3xl px-10 md:px-24 ${isEven ? 'bg-gray-200 md:flex-row-reverse' : 'bg-white'}`}
                             >
                                 {/* PFP + Name Column */}
-                                <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0`}>
+                                <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0 w-[200px] md:w-[220px]`}>
                                     <div className="relative mb-2">
                                         {/* Decorative elements */}
                                         <DecorativeElements index={index} />
-                                        
+
                                         {/* Image with halftone/dotted effect */}
                                         <div className="relative w-24 h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner">
                                             <Image
@@ -163,7 +179,7 @@ export default function TeamSection() {
                                                 }}
                                             />
                                             {/* Halftone overlay effect in Violet */}
-                                            <div 
+                                            <div
                                                 className="absolute inset-0 opacity-20 mix-blend-soft-light"
                                                 style={{
                                                     backgroundImage: 'radial-gradient(circle, #8b5cf6 1.2px, transparent 1.2px)',
@@ -181,7 +197,7 @@ export default function TeamSection() {
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     {/* Name under image - Centered for uniformity */}
                                     <h3 className="text-xl md:text-2xl font-bold text-primary tracking-tight text-center">
                                         {member.name}
@@ -189,9 +205,9 @@ export default function TeamSection() {
                                 </div>
 
                                 {/* Role, Credentials & Description Column */}
-                                <div className={`flex flex-col justify-center max-w-[600px] ${isEven ? 'text-left items-start' : 'md:text-right md:items-end'}`}>
+                                <div className={`flex flex-col justify-center flex-1 ${isEven ? 'text-left items-start' : 'md:text-right md:items-end'}`}>
                                     <div className={`mb-1 flex flex-col ${isEven ? 'items-start' : 'md:items-end'}`}>
-                                        <p className="text-xs md:text-sm font-bold text-primary mb-0.5 uppercase tracking-wider">
+                                        <p className="text-sm md:text-base font-bold text-primary mb-0.5 uppercase tracking-wider">
                                             {member.role}
                                         </p>
                                         <p className={`text-[10px] md:text-xs text-text-dim font-medium mb-2 ${isEven ? 'text-left' : 'md:text-right'}`}>
@@ -214,39 +230,43 @@ export default function TeamSection() {
                     </h2>
 
                     {/* Horizontal Row Layout for each advisor */}
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {advisors.map((advisor, index) => {
                             const isEven = index % 2 === 0;
                             return (
                                 <div
                                     key={index}
-                                    className={`group flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 py-4 md:py-6 border-b border-gray-100 last:border-b-0 transition-colors duration-300 rounded-3xl px-6 md:px-12 ${isEven ? 'bg-gray-50/80 md:flex-row-reverse' : 'bg-white'}`}
+                                    className={`group flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 md:gap-10 py-4 md:py-6 transition-colors duration-300 rounded-3xl px-10 md:px-24 ${isEven ? 'bg-gray-200 md:flex-row-reverse' : 'bg-white'}`}
                                 >
                                     {/* PFP + Name Column */}
-                                    <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0`}>
+                                    <div className={`flex flex-col items-center ${isEven ? 'md:items-end' : 'md:items-start'} shrink-0 w-[200px] md:w-[220px]`}>
                                         <div className="relative mb-2">
                                             {/* Decorative elements */}
                                             <DecorativeElements index={index + 3} />
-                                            
+
                                             {/* Image with halftone/dotted effect */}
-                                            <div className="relative w-24 h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner">
+                                            <div className="relative w-24 h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner bg-white p-2">
                                                 <Image
                                                     src={advisor.image}
                                                     alt={advisor.name}
                                                     fill
-                                                    className={`transition-transform duration-300 group-hover:scale-105 ${
-                                                        advisor.name.includes('Brian') || advisor.name.includes('Doris')
-                                                            ? 'object-contain'
-                                                            : 'object-cover'
-                                                    }`}
+                                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                                                     style={{
-                                                        objectPosition: advisor.name.includes('Shreya') 
-                                                            ? 'center top' 
-                                                            : 'center 20%',
+                                                        objectPosition: advisor.name.includes('Shreya')
+                                                            ? 'center top'
+                                                            : advisor.name.includes('Doris')
+                                                                ? 'center 15%'
+                                                                : advisor.name.includes('Brian')
+                                                                    ? 'center 5%'
+                                                                    : advisor.name.includes('Om')
+                                                                        ? 'center 5%'
+                                                                        : advisor.name.includes('Bratati')
+                                                                            ? 'center 5%'
+                                                                            : 'center 10%',
                                                     }}
                                                 />
                                                 {/* Halftone overlay effect in Violet */}
-                                                <div 
+                                                <div
                                                     className="absolute inset-0 opacity-20 mix-blend-soft-light"
                                                     style={{
                                                         backgroundImage: 'radial-gradient(circle, #8b5cf6 1.2px, transparent 1.2px)',
@@ -264,7 +284,7 @@ export default function TeamSection() {
                                                 </div>
                                             )}
                                         </div>
-                                        
+
                                         {/* Name under image */}
                                         <h3 className="text-xl md:text-2xl font-bold text-primary tracking-tight text-center">
                                             {advisor.name}
@@ -272,9 +292,9 @@ export default function TeamSection() {
                                     </div>
 
                                     {/* Role, Credentials & Description Column */}
-                                    <div className={`flex flex-col justify-center max-w-[600px] ${isEven ? 'text-left items-start' : 'md:text-right md:items-end'}`}>
+                                    <div className={`flex flex-col justify-center flex-1 ${isEven ? 'text-left items-start' : 'md:text-right md:items-end'}`}>
                                         <div className={`mb-1 flex flex-col ${isEven ? 'items-start' : 'md:items-end'}`}>
-                                            <p className="text-xs md:text-sm font-bold text-primary mb-0.5 uppercase tracking-wider">
+                                            <p className="text-sm md:text-base font-bold text-primary mb-0.5 uppercase tracking-wider">
                                                 {advisor.role}
                                             </p>
                                             <p className={`text-[10px] md:text-xs text-text-dim font-medium mb-2 ${isEven ? 'text-left' : 'md:text-right'}`}>

@@ -211,7 +211,7 @@ export default function Home() {
                 <span className="block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.35s" }}>
                   We protect
                 </span>
-                <span className="relative inline-block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] whitespace-nowrap hover:text-primary/80 transition-colors duration-300 cursor-help opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.5s" }}>
+                <span className="relative inline-block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] whitespace-nowrap hover:text-primary/80 transition-colors duration-300 opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.5s" }}>
                   <TextShimmer duration={4}>their curiosity.</TextShimmer>
                   <span
                     className="absolute left-0 right-0 bottom-[0.05em] h-[0.3em] rounded-full -z-10"
@@ -362,8 +362,8 @@ export default function Home() {
                     <path d="M12 6v6l4 2" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-primary mb-2">MINDFULNESS</h3>
-                <p className="text-sm text-text-dim">Context-aware filtering that understands the difference between education and harm.</p>
+                <h3 className="text-lg font-bold text-primary mb-2 text-center">MINDFULNESS</h3>
+                <p className="text-sm text-text-dim text-center">Context-aware filtering that understands the difference between education and harm.</p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
@@ -373,8 +373,8 @@ export default function Home() {
                     <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-primary mb-2">MODERATION</h3>
-                <p className="text-sm text-text-dim">Not binary—Block, Gate, or Allow based on age, context, and parent preferences.</p>
+                <h3 className="text-lg font-bold text-primary mb-2 text-center">MODERATION</h3>
+                <p className="text-sm text-text-dim text-center">Not binary—Block, Gate, or Allow based on age, context, and parent preferences.</p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
@@ -384,8 +384,8 @@ export default function Home() {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-primary mb-2">MEANINGFUL</h3>
-                <p className="text-sm text-text-dim">Growing access as children grow, keeping parents informed and in control.</p>
+                <h3 className="text-lg font-bold text-primary mb-2 text-center">MEANINGFUL</h3>
+                <p className="text-sm text-text-dim text-center">Growing access as children grow, keeping parents informed and in control.</p>
               </div>
             </ScrollReveal>
           </div>
@@ -402,8 +402,8 @@ export default function Home() {
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </div>
-                  <h4 className="font-bold text-red-600 text-sm md:text-base mb-1">BLOCK</h4>
-                  <p className="text-xs md:text-sm text-text-dim">Content not accessible</p>
+                  <h4 className="font-bold text-red-60 text-center text-sm md:text-base mb-1">BLOCK</h4>
+                  <p className="text-xs md:text-sm text-center text-text-dim">Content not accessible</p>
                 </div>
                 <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-amber-200/50 transition-all duration-500 cursor-default">
                   <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "0.5s" }}>
@@ -412,8 +412,8 @@ export default function Home() {
                       <circle cx="12" cy="17" r="1" fill="currentColor" />
                     </svg>
                   </div>
-                  <h4 className="font-bold text-amber-600 text-sm md:text-base mb-1">GATE</h4>
-                  <p className="text-xs md:text-sm text-text-dim">Warning, delay, or parent approval</p>
+                  <h4 className="font-bold text-amber-600 text-sm md:text-base mb-1 text-center">GATE</h4>
+                  <p className="text-xs md:text-sm text-text-dim text-center">Warning, delay, or parent approval</p>
                 </div>
                 <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-green-200/50 transition-all duration-500 cursor-default">
                   <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "1s" }}>
@@ -421,8 +421,8 @@ export default function Home() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <h4 className="font-bold text-green-600 text-sm md:text-base mb-1">ALLOW</h4>
-                  <p className="text-xs md:text-sm text-text-dim">Unrestricted access</p>
+                  <h4 className="font-bold text-green-600 text-sm md:text-base mb-1 text-center">ALLOW</h4>
+                  <p className="text-xs md:text-sm text-text-dim text-center">Unrestricted access</p>
                 </div>
               </div>
             </div>
