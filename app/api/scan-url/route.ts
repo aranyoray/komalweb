@@ -366,17 +366,25 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
 /**
  * Convert Google Cloud Vision likelihood to numeric score
  */
-function getLikelihoodScore(likelihood: string | null | undefined): number {
-  switch (likelihood) {
+function getLikelihoodScore(likelihood: string | number | null | undefined): number {
+  // Convert to string (handles both enum and string types)
+  const likelihoodStr = String(likelihood || 'VERY_UNLIKELY');
+  
+  switch (likelihoodStr) {
     case 'VERY_UNLIKELY':
+    case '0':
       return 0;
     case 'UNLIKELY':
+    case '1':
       return 1;
     case 'POSSIBLE':
+    case '2':
       return 2;
     case 'LIKELY':
+    case '3':
       return 3;
     case 'VERY_LIKELY':
+    case '4':
       return 4;
     default:
       return 0;
