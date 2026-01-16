@@ -7,70 +7,103 @@ import { loadContentRulesFromCSV, mapToGranularCategories, parseAction, Category
 
 // Content safety rules based on komalkids.com/content-safety
 const CONTENT_RULES = {
-  ageGroups: ['<10', '10-13', '13-16', '16+'],
+  ageGroups: ['<10', '10-13', '13-18', '18+'],
   categories: {
     'Graphic Violence': {
       '<10': 'BLOCK',
       '10-13': 'BLOCK',
-      '13-16': 'BLOCK',
-      '16+': 'GATE',
+      '13-18': 'BLOCK',
+      '18+': 'GATE',
     },
     'Non-Graphic Violence': {
       '<10': 'GATE',
       '10-13': 'GATE',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
+      '13-18': 'ALLOW',
+      '18+': 'ALLOW',
     },
     'Heavy Fighting (Sports)': {
       '<10': 'GATE',
       '10-13': 'GATE',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
+      '13-18': 'ALLOW',
+      '18+': 'ALLOW',
     },
     'Horror/Jumpscares': {
       '<10': 'BLOCK',
       '10-13': 'GATE',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
+      '13-18': 'GATE',
+      '18+': 'ALLOW',
     },
     'Crime Footage': {
       '<10': 'BLOCK',
       '10-13': 'GATE',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
+      '13-18': 'GATE',
+      '18+': 'ALLOW',
     },
     'Explicit Content': {
       '<10': 'BLOCK',
       '10-13': 'BLOCK',
-      '13-16': 'BLOCK',
-      '16+': 'GATE',
+      '13-18': 'BLOCK',
+      '18+': 'GATE',
     },
     'Educational Content': {
       '<10': 'ALLOW',
       '10-13': 'ALLOW',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
+      '13-18': 'ALLOW',
+      '18+': 'ALLOW',
     },
     'Mild Language': {
       '<10': 'GATE',
       '10-13': 'GATE',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
+      '13-18': 'ALLOW',
+      '18+': 'ALLOW',
     },
     'Strong Language': {
       '<10': 'BLOCK',
       '10-13': 'GATE',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
+      '13-18': 'GATE',
+      '18+': 'ALLOW',
     },
     'Substance Use': {
       '<10': 'BLOCK',
       '10-13': 'BLOCK',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
+      '13-18': 'GATE',
+      '18+': 'ALLOW',
     },
   },
 };
+
+// Adult keywords to detect in domain names - results in immediate 0 score and BLOCK for all ages
+const ADULT_DOMAIN_KEYWORDS = [
+  'porn', 'xxx', 'sex', 'adult', 'nsfw', 'nude', 'naked', 'erotic', 'fetish',
+  'cam', 'webcam', 'livecam', 'chaturbate', 'onlyfans', 'fansly', 'manyvids',
+  'xvideos', 'xnxx', 'pornhub', 'redtube', 'youporn', 'xhamster', 'brazzers',
+  'hentai', 'rule34', 'e621', 'gelbooru', 'danbooru',
+  'escort', 'hooker', 'prostitut', 'brothel',
+  'milf', 'teen', 'anal', 'blowjob', 'cumshot', 'orgasm',
+  'stripchat', 'bongacams', 'livejasmin', 'camsoda',
+  'slutty', 'horny', 'kinky', 'bdsm', 'bondage',
+];
+
+/**
+ * Check if domain contains adult keywords
+ */
+function isAdultDomain(url: string): { isAdult: boolean; matchedKeyword?: string } {
+  try {
+    const urlObj = new URL(url);
+    const domain = urlObj.hostname.toLowerCase();
+    const pathname = urlObj.pathname.toLowerCase();
+    const fullUrl = (domain + pathname).toLowerCase();
+
+    for (const keyword of ADULT_DOMAIN_KEYWORDS) {
+      if (fullUrl.includes(keyword)) {
+        return { isAdult: true, matchedKeyword: keyword };
+      }
+    }
+    return { isAdult: false };
+  } catch {
+    return { isAdult: false };
+  }
+}
 
 interface ScanResult {
   url: string;
@@ -526,12 +559,12 @@ function calculateSafetyScore(
     [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number };
   } = {};
 
-  // Age group mapping: <10, 10-13, 13-16, 16+ -> CSV columns
+  // Age group mapping: <10, 10-13, 13-18, 18+ -> CSV columns
   const ageGroupMap: { [key: string]: keyof CategoryRule['rules'] } = {
     '<10': '<10',
     '10-13': '10-13',
-    '13-16': '13-16',
-    '16+': '16-18', // Map 16+ to 16-18 from CSV
+    '13-18': '13-16', // Map 13-18 to 13-16 from CSV
+    '18+': '16-18', // Map 18+ to 16-18 from CSV
   };
 
   Object.keys(ageGroupMap).forEach((ageGroup) => {
@@ -594,11 +627,11 @@ function calculateSafetyScore(
   });
 
   // Adjust overall score based on age group actions:
-  // If content is GATE for 13-16 age group → give half the score (max 50)
+  // If content is GATE for 13-18 age group → give half the score (max 50)
   // If content is BLOCK for 10-13 age group → give 0 score
   if (ageGroupActions['10-13']?.action === 'BLOCK') {
     overallScore = 0;
-  } else if (ageGroupActions['13-16']?.action === 'GATE') {
+  } else if (ageGroupActions['13-18']?.action === 'GATE') {
     overallScore = Math.min(overallScore, 50);
   }
 
@@ -606,9 +639,65 @@ function calculateSafetyScore(
 }
 
 /**
+ * Generate blocked result for adult domains
+ */
+function generateAdultDomainBlockedResult(url: string, matchedKeyword: string): ScanResult {
+  const blockedAgeGroupActions: { [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number } } = {};
+
+  CONTENT_RULES.ageGroups.forEach((ageGroup) => {
+    blockedAgeGroupActions[ageGroup] = {
+      action: 'BLOCK',
+      reason: `Adult content detected in domain (keyword: "${matchedKeyword}")`,
+      score: 0,
+    };
+  });
+
+  return {
+    url,
+    overallScore: 0,
+    contentAnalysis: {
+      textAnalysis: {
+        sentiment: 'Blocked',
+        keyTopics: ['Adult Content', 'Explicit Content'],
+        languageScore: 0,
+        entities: [],
+      },
+      visualAnalysis: {
+        detectedObjects: [],
+        safetyScore: 0,
+        concerns: ['Adult Content Detected'],
+        labels: ['Adult Content', 'Explicit Content'],
+      },
+      metadata: {
+        title: 'Blocked - Adult Content',
+        description: `Domain contains adult keyword: "${matchedKeyword}"`,
+        keywords: ['adult', 'blocked'],
+        imageCount: 0,
+        linkCount: 0,
+      },
+    },
+    categoryScores: {
+      'Explicit Content': { detected: true, confidence: 1.0 },
+      'Adult Domain': { detected: true, confidence: 1.0 },
+    },
+    granularCategories: {},
+    ageGroupActions: blockedAgeGroupActions,
+    timestamp: new Date().toISOString(),
+    analysisMethod: 'live',
+  };
+}
+
+/**
  * Main analysis function - uses live data when possible
  */
 async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
+  // Check for adult keywords in domain FIRST - immediate block
+  const adultCheck = isAdultDomain(url);
+  if (adultCheck.isAdult) {
+    console.log(`Adult domain detected: ${adultCheck.matchedKeyword}`);
+    return generateAdultDomainBlockedResult(url, adultCheck.matchedKeyword || 'unknown');
+  }
+
   try {
     // Fetch webpage content
     console.log('Fetching webpage content...');
@@ -691,6 +780,12 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
  * Fallback demo analysis (used when Google Cloud APIs are not available)
  */
 function generateDemoAnalysis(url: string): ScanResult {
+  // Check for adult keywords in domain FIRST - immediate block
+  const adultCheck = isAdultDomain(url);
+  if (adultCheck.isAdult) {
+    return generateAdultDomainBlockedResult(url, adultCheck.matchedKeyword || 'unknown');
+  }
+
   const urlLower = url.toLowerCase();
 
   const hasNews = urlLower.includes('news') || urlLower.includes('cnn') || urlLower.includes('bbc');
