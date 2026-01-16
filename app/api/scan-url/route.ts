@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 import puppeteer from 'puppeteer';
+import { loadContentRulesFromCSV, mapToGranularCategories, parseAction, CategoryRule } from '@/lib/content-rules';
 
 // Content safety rules based on komalkids.com/content-safety
 const CONTENT_RULES = {
@@ -99,6 +100,13 @@ interface ScanResult {
     [category: string]: {
       detected: boolean;
       confidence: number;
+    };
+  };
+  granularCategories: {
+    [category: string]: {
+      detected: boolean;
+      confidence: number;
+      matchedRule?: CategoryRule;
     };
   };
   ageGroupActions: {
@@ -464,13 +472,37 @@ function determineSafetyCategories(
     categoryScores['Substance Use'] = { detected: true, confidence: 0.7 };
   }
 
+  // Financial & Commercial Content
+  const financialKeywords = ['buy', 'purchase', 'credit card', 'payment', 'subscription', 'premium', 'deal', 'offer', 'discount', 'money', 'price', 'cost', 'fee'];
+  const financialCount = financialKeywords.filter((k) => textLower.includes(k)).length;
+  if (financialCount >= 3) {
+    categoryScores['Financial & Commercial Content'] = { detected: true, confidence: 0.75 };
+  }
+
+  // Media & Platform-Native Risks (social media, video platforms)
+  const mediaKeywords = ['social media', 'chat', 'message', 'comment', 'post', 'share', 'follow', 'like', 'subscribe'];
+  const mediaCount = mediaKeywords.filter((k) => textLower.includes(k)).length;
+  if (mediaCount >= 2) {
+    categoryScores['Media & Platform-Native Risks'] = { detected: true, confidence: 0.6 };
+  }
+
+  // Social & Cultural Topics
+  const socialKeywords = ['politics', 'religion', 'culture', 'society', 'social issue', 'controversy', 'debate'];
+  const socialCount = socialKeywords.filter((k) => textLower.includes(k)).length;
+  if (socialCount >= 2) {
+    categoryScores['Social & Cultural Topics'] = { detected: true, confidence: 0.65 };
+  }
+
   return categoryScores;
 }
 
 /**
- * Calculate overall safety score and age group actions
+ * Calculate overall safety score and age group actions using granular categories
  */
-function calculateSafetyScore(categoryScores: any) {
+function calculateSafetyScore(
+  categoryScores: any,
+  granularCategories: { [category: string]: { detected: boolean; confidence: number; matchedRule?: CategoryRule } }
+) {
   let overallScore = 85; // Start with high score
 
   // Deduct points based on detected categories
@@ -489,36 +521,66 @@ function calculateSafetyScore(categoryScores: any) {
   // Clamp to 0-100
   overallScore = Math.max(0, Math.min(100, overallScore));
 
-  // Generate age group actions
+  // Generate age group actions based on granular categories from CSV
   const ageGroupActions: {
     [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number };
   } = {};
 
-  CONTENT_RULES.ageGroups.forEach((ageGroup) => {
+  // Age group mapping: <10, 10-13, 13-16, 16+ -> CSV columns
+  const ageGroupMap: { [key: string]: keyof CategoryRule['rules'] } = {
+    '<10': '<10',
+    '10-13': '10-13',
+    '13-16': '13-16',
+    '16+': '16-18', // Map 16+ to 16-18 from CSV
+  };
+
+  Object.keys(ageGroupMap).forEach((ageGroup) => {
     let worstAction: 'BLOCK' | 'GATE' | 'ALLOW' = 'ALLOW';
     let reasons: string[] = [];
     let ageScore = 100;
 
-    Object.entries(categoryScores).forEach(([category, data]: [string, any]) => {
-      if (data.detected && data.confidence > 0.5) {
-        const rule = CONTENT_RULES.categories[category as keyof typeof CONTENT_RULES.categories];
-        if (rule) {
-          const action = rule[ageGroup as keyof typeof rule];
+    // Check granular categories first (from CSV)
+    Object.entries(granularCategories).forEach(([category, data]) => {
+      if (data.detected && data.confidence > 0.5 && data.matchedRule) {
+        const csvAgeGroup = ageGroupMap[ageGroup];
+        const actionStr = data.matchedRule.rules[csvAgeGroup] || '';
+        const action = parseAction(actionStr);
 
-          if (action === 'BLOCK') {
-            worstAction = 'BLOCK';
-            ageScore = Math.min(ageScore, 30);
-            reasons.push(`${category} detected (blocked for this age)`);
-          } else if (action === 'GATE' && worstAction !== 'BLOCK') {
-            worstAction = 'GATE';
-            ageScore = Math.min(ageScore, 60);
-            reasons.push(`${category} detected (requires parent approval)`);
-          } else if (action === 'ALLOW') {
-            ageScore = Math.min(ageScore, 85);
-          }
+        if (action === 'BLOCK') {
+          worstAction = 'BLOCK';
+          ageScore = Math.min(ageScore, 30);
+          reasons.push(`${category} detected (blocked for this age)`);
+        } else if (action === 'GATE' && worstAction !== 'BLOCK') {
+          worstAction = 'GATE';
+          ageScore = Math.min(ageScore, 60);
+          reasons.push(`${category} detected (requires parent approval)`);
+        } else if (action === 'ALLOW') {
+          ageScore = Math.min(ageScore, 85);
         }
       }
     });
+
+    // Fallback to original category scores if no granular match
+    if (worstAction === 'ALLOW') {
+      Object.entries(categoryScores).forEach(([category, data]: [string, any]) => {
+        if (data.detected && data.confidence > 0.5) {
+          const rule = CONTENT_RULES.categories[category as keyof typeof CONTENT_RULES.categories];
+          if (rule) {
+            const action = rule[ageGroup as keyof typeof rule];
+
+            if (action === 'BLOCK') {
+              worstAction = 'BLOCK';
+              ageScore = Math.min(ageScore, 30);
+              reasons.push(`${category} detected (blocked for this age)`);
+            } else if (action === 'GATE' && worstAction !== 'BLOCK') {
+              worstAction = 'GATE';
+              ageScore = Math.min(ageScore, 60);
+              reasons.push(`${category} detected (requires parent approval)`);
+            }
+          }
+        }
+      });
+    }
 
     if (reasons.length === 0) {
       reasons.push('Content appears age-appropriate');
@@ -562,8 +624,12 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
     // Determine safety categories
     const categoryScores = determineSafetyCategories(metadata, nlpResults, visionResults, metadata.textContent);
 
-    // Calculate safety scores
-    const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores);
+    // Load granular categories from CSV
+    const contentRules = loadContentRulesFromCSV();
+    const granularCategories = mapToGranularCategories(categoryScores, contentRules);
+
+    // Calculate safety scores using granular categories
+    const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, granularCategories);
 
     // Prepare result
     const result: ScanResult = {
@@ -593,6 +659,7 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
         },
       },
       categoryScores,
+      granularCategories,
       ageGroupActions,
       timestamp: new Date().toISOString(),
       analysisMethod: visionClient && languageClient ? 'live' : 'demo',
@@ -655,7 +722,11 @@ function generateDemoAnalysis(url: string): ScanResult {
     detectedCategories.push('Educational Content');
   }
 
-  const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores);
+  // Load granular categories from CSV
+  const contentRules = loadContentRulesFromCSV();
+  const granularCategories = mapToGranularCategories(categoryScores, contentRules);
+
+  const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, granularCategories);
 
   return {
     url,
@@ -682,6 +753,7 @@ function generateDemoAnalysis(url: string): ScanResult {
       },
     },
     categoryScores,
+    granularCategories,
     ageGroupActions,
     timestamp: new Date().toISOString(),
     analysisMethod: 'demo',

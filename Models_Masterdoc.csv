@@ -1,0 +1,8 @@
+Category,Rules <10,Rules 10-13,Rules 13-16,Rules 16-18
+1. Violence & Disturbing Content,Block/Gate,Block/Gate,Block/Gate,Gate
+2. Explicit & Body-Related Content,Block,Block,Block,Block
+3. Substances & Addictive Behavior,Block,Gate/Allow,Gate,Allow
+4. Financial & Commercial Content,Block,Block,Gate,Block/Gate
+5. Media & Platform-Native Risks,Block,Gate,Gate,Allow
+6. Social & Cultural Topics,Block,Block,Gate,Gate
+8. Custom Parent Controls,Block/Gate,,,

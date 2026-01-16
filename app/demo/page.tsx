@@ -37,6 +37,21 @@ interface ScanResult {
       confidence: number;
     };
   };
+  granularCategories?: {
+    [category: string]: {
+      detected: boolean;
+      confidence: number;
+      matchedRule?: {
+        category: string;
+        rules: {
+          '<10': string;
+          '10-13': string;
+          '13-16': string;
+          '16-18': string;
+        };
+      };
+    };
+  };
   ageGroupActions: {
     [ageGroup: string]: {
       action: 'BLOCK' | 'GATE' | 'ALLOW';
@@ -410,6 +425,63 @@ export default function DemoPage() {
                           </div>
                         ))}
                     </div>
+                  </div>
+                </ScrollReveal>
+              )}
+
+              {/* Granular Categories from CSV */}
+              {result.granularCategories && Object.keys(result.granularCategories).length > 0 && (
+                <ScrollReveal delay={0.55}>
+                  <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
+                    <h2 className="text-2xl font-bold text-primary mb-2">Granular Content Categorization</h2>
+                    <p className="text-sm text-text-dim mb-6">
+                      Based on Models_Masterdoc.csv classification rules
+                    </p>
+                    <div className="space-y-4">
+                      {Object.entries(result.granularCategories)
+                        .filter(([_, data]) => data.detected)
+                        .map(([category, data]) => (
+                          <div
+                            key={category}
+                            className="border-2 border-gray-200 rounded-xl p-5 bg-gradient-to-r from-gray-50 to-white"
+                          >
+                            <div className="flex items-start justify-between mb-3">
+                              <h3 className="text-lg font-bold text-primary">{category}</h3>
+                              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                                {Math.round(data.confidence * 100)}% confidence
+                              </span>
+                            </div>
+                            {data.matchedRule && (
+                              <div className="mt-4 space-y-2">
+                                <p className="text-sm font-semibold text-gray-700 mb-2">Age Group Rules:</p>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                  {Object.entries(data.matchedRule.rules).map(([ageGroup, rule]) => (
+                                    <div
+                                      key={ageGroup}
+                                      className="p-3 bg-white rounded-lg border border-gray-200"
+                                    >
+                                      <div className="text-xs font-semibold text-gray-600 mb-1">{ageGroup}</div>
+                                      <div className={`text-sm font-medium ${
+                                        rule.includes('Block') ? 'text-red-600' :
+                                        rule.includes('Gate') ? 'text-amber-600' :
+                                        'text-green-600'
+                                      }`}>
+                                        {rule || 'N/A'}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                    {Object.entries(result.granularCategories).filter(([_, data]) => data.detected).length === 0 && (
+                      <div className="text-center py-8 text-text-dim">
+                        <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500 opacity-50" />
+                        <p>No granular categories detected. Content appears safe.</p>
+                      </div>
+                    )}
                   </div>
                 </ScrollReveal>
               )}
