@@ -6,6 +6,7 @@ import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, Mess
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
+import { isBlockedForUnder16 } from "@/lib/content-rules";
 
 interface ScanResult {
   url: string;
@@ -131,6 +132,9 @@ export default function DemoPage() {
     return 'bg-red-100';
   };
 
+  const isUnder16Blocked = result ? isBlockedForUnder16(result.categoryScores) : false;
+  const displayOverallScore = result ? (isUnder16Blocked ? 0 : result.overallScore) : 0;
+
   return (
     <>
       <NoiseOverlay opacity={0.025} />
@@ -228,9 +232,9 @@ export default function DemoPage() {
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-primary">Overall Safety Score</h2>
-                    <div className={`${getScoreBackground(result.overallScore)} px-6 py-3 rounded-2xl`}>
-                      <span className={`text-3xl font-bold ${getScoreColor(result.overallScore)}`}>
-                        {result.overallScore}
+                    <div className={`${getScoreBackground(displayOverallScore)} px-6 py-3 rounded-2xl`}>
+                      <span className={`text-3xl font-bold ${getScoreColor(displayOverallScore)}`}>
+                        {displayOverallScore}
                       </span>
                       <span className="text-gray-600 text-lg">/100</span>
                     </div>
@@ -238,13 +242,13 @@ export default function DemoPage() {
                   <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-1000 ease-out ${
-                        result.overallScore >= 75
+                        displayOverallScore >= 75
                           ? 'bg-green-500'
-                          : result.overallScore >= 50
+                          : displayOverallScore >= 50
                           ? 'bg-amber-500'
                           : 'bg-red-500'
                       }`}
-                      style={{ width: `${result.overallScore}%` }}
+                      style={{ width: `${displayOverallScore}%` }}
                     />
                   </div>
                   <div className="mt-4 flex items-center gap-3 flex-wrap">
@@ -260,6 +264,11 @@ export default function DemoPage() {
                         }`}
                       >
                         {result.analysisMethod === 'live' ? '🔴 Live Analysis' : '⚡ Demo Mode'}
+                      </span>
+                    )}
+                    {isUnder16Blocked && (
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                        🚫 Flagged: Blocked for under 16
                       </span>
                     )}
                   </div>
@@ -292,19 +301,19 @@ export default function DemoPage() {
                       <div>
                         <p className="text-sm text-text-dim mb-1">Sentiment</p>
                         <p className="text-lg font-semibold text-primary">
-                          {result.contentAnalysis.textAnalysis.sentiment}
+                          {isUnder16Blocked ? 'Blocked' : result.contentAnalysis.textAnalysis.sentiment}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-text-dim mb-1">Language Safety Score</p>
-                        <p className={`text-lg font-semibold ${getScoreColor(result.contentAnalysis.textAnalysis.languageScore)}`}>
-                          {result.contentAnalysis.textAnalysis.languageScore}/100
+                        <p className={`text-lg font-semibold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.textAnalysis.languageScore)}`}>
+                          {isUnder16Blocked ? 0 : result.contentAnalysis.textAnalysis.languageScore}/100
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-text-dim mb-2">Key Topics Detected</p>
                         <div className="flex flex-wrap gap-2">
-                          {result.contentAnalysis.textAnalysis.keyTopics.map((topic, idx) => (
+                          {(isUnder16Blocked ? ['Flagged Content'] : result.contentAnalysis.textAnalysis.keyTopics).map((topic, idx) => (
                             <span
                               key={idx}
                               className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
@@ -328,14 +337,14 @@ export default function DemoPage() {
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm text-text-dim mb-1">Visual Safety Score</p>
-                        <p className={`text-lg font-semibold ${getScoreColor(result.contentAnalysis.visualAnalysis.safetyScore)}`}>
-                          {result.contentAnalysis.visualAnalysis.safetyScore}/100
+                        <p className={`text-lg font-semibold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore)}`}>
+                          {isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore}/100
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-text-dim mb-2">Detected Objects</p>
                         <div className="flex flex-wrap gap-2">
-                          {result.contentAnalysis.visualAnalysis.detectedObjects.map((obj, idx) => (
+                          {(isUnder16Blocked ? ['Flagged'] : result.contentAnalysis.visualAnalysis.detectedObjects).map((obj, idx) => (
                             <span
                               key={idx}
                               className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
@@ -368,24 +377,31 @@ export default function DemoPage() {
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                   <h2 className="text-2xl font-bold text-primary mb-6">Age-Appropriate Actions</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {Object.entries(result.ageGroupActions).map(([ageGroup, data]) => (
+                    {Object.entries(result.ageGroupActions).map(([ageGroup, data]) => {
+                      const displayAction = isUnder16Blocked ? 'BLOCK' : data.action;
+                      const displayScore = isUnder16Blocked ? 0 : data.score;
+                      const displayReason = isUnder16Blocked
+                        ? 'Flagged: content is not age-appropriate for under 16.'
+                        : data.reason;
+
+                      return (
                       <div
                         key={ageGroup}
-                        className={`border-2 rounded-2xl p-5 transition-all hover:scale-105 hover:shadow-lg ${getActionColor(data.action)}`}
+                        className={`border-2 rounded-2xl p-5 transition-all hover:scale-105 hover:shadow-lg ${getActionColor(displayAction)}`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-lg font-bold">{ageGroup}</h3>
-                          {getActionIcon(data.action)}
+                          {getActionIcon(displayAction)}
                         </div>
                         <div className="mb-3">
-                          <div className="text-2xl font-bold mb-1">{data.action}</div>
-                          <div className="text-sm opacity-75">Score: {data.score}/100</div>
+                          <div className="text-2xl font-bold mb-1">{displayAction}</div>
+                          <div className="text-sm opacity-75">Score: {displayScore}/100</div>
                         </div>
                         <p className="text-xs leading-relaxed opacity-90">
-                          {data.reason}
+                          {displayReason}
                         </p>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </div>
               </ScrollReveal>
@@ -405,7 +421,7 @@ export default function DemoPage() {
                           >
                             <span className="font-medium text-primary">{category}</span>
                             <span className="text-sm text-text-dim">
-                              {Math.round(data.confidence * 100)}% confidence
+                              {isUnder16Blocked ? '0% confidence (blocked)' : `${Math.round(data.confidence * 100)}% confidence`}
                             </span>
                           </div>
                         ))}

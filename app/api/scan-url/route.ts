@@ -3,73 +3,7 @@ import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 import puppeteer from 'puppeteer';
-
-// Content safety rules based on komalkids.com/content-safety
-const CONTENT_RULES = {
-  ageGroups: ['<10', '10-13', '13-16', '16+'],
-  categories: {
-    'Graphic Violence': {
-      '<10': 'BLOCK',
-      '10-13': 'BLOCK',
-      '13-16': 'BLOCK',
-      '16+': 'GATE',
-    },
-    'Non-Graphic Violence': {
-      '<10': 'GATE',
-      '10-13': 'GATE',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
-    },
-    'Heavy Fighting (Sports)': {
-      '<10': 'GATE',
-      '10-13': 'GATE',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
-    },
-    'Horror/Jumpscares': {
-      '<10': 'BLOCK',
-      '10-13': 'GATE',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
-    },
-    'Crime Footage': {
-      '<10': 'BLOCK',
-      '10-13': 'GATE',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
-    },
-    'Explicit Content': {
-      '<10': 'BLOCK',
-      '10-13': 'BLOCK',
-      '13-16': 'BLOCK',
-      '16+': 'GATE',
-    },
-    'Educational Content': {
-      '<10': 'ALLOW',
-      '10-13': 'ALLOW',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
-    },
-    'Mild Language': {
-      '<10': 'GATE',
-      '10-13': 'GATE',
-      '13-16': 'ALLOW',
-      '16+': 'ALLOW',
-    },
-    'Strong Language': {
-      '<10': 'BLOCK',
-      '10-13': 'GATE',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
-    },
-    'Substance Use': {
-      '<10': 'BLOCK',
-      '10-13': 'BLOCK',
-      '13-16': 'GATE',
-      '16+': 'ALLOW',
-    },
-  },
-};
+import { CONTENT_RULES } from '@/lib/content-rules';
 
 interface ScanResult {
   url: string;
