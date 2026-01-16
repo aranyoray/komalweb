@@ -55,12 +55,18 @@ export default function DemoPage() {
     setResult(null);
 
     try {
+      // Normalize URL: add https:// if no protocol is specified
+      let normalizedUrl = url.trim();
+      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = 'https://' + normalizedUrl;
+      }
+
       const response = await fetch('/api/scan-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: normalizedUrl }),
       });
 
       const data = await response.json();
@@ -169,7 +175,7 @@ export default function DemoPage() {
                         handleScan();
                       }
                     }}
-                    placeholder="https://example.com"
+                    placeholder="example.com or https://example.com"
                     className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary transition-colors"
                     disabled={loading}
                   />
