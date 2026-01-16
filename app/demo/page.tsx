@@ -484,20 +484,20 @@ export default function DemoPage() {
         </div>
       )}
 
-      <section className="min-h-screen pt-24 pb-12 md:pt-28 md:pb-16 bg-gradient-to-b from-white via-purple-50/30 to-white relative overflow-hidden">
+      <section className="min-h-screen pt-20 pb-8 md:pt-28 md:pb-16 bg-gradient-to-b from-white via-purple-50/30 to-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <FloatingOrbs count={3} />
         </div>
 
-        <div className="container max-w-[1100px] px-6 md:px-8 mx-auto relative z-10">
+        <div className="container max-w-[1100px] px-4 sm:px-6 md:px-8 mx-auto relative z-10">
           {/* Header */}
           <ScrollReveal>
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
-                <Shield className="w-4 h-4" />
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 text-primary font-medium text-xs sm:text-sm mb-4 sm:mb-6">
+                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Live URL Safety Demo</span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-4 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-primary mb-3 md:mb-4 leading-tight px-2">
                 Test Our AI-Powered
                 <br />
                 <span className="relative inline-block">
@@ -510,17 +510,17 @@ export default function DemoPage() {
                   />
                 </span>
               </h1>
-              <p className="text-lg text-text-dim max-w-[700px] mx-auto">
+              <p className="text-sm sm:text-base md:text-lg text-text-dim max-w-[700px] mx-auto px-2">
                 Enter any URL to see how our Vision AI and NLP algorithms analyze content safety
-                and provide age-appropriate recommendations based on our comprehensive content rules.
+                and provide age-appropriate recommendations.
               </p>
             </div>
           </ScrollReveal>
 
           {/* Input Section */}
           <ScrollReveal delay={0.1}>
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8 mb-8">
-              <div className="flex flex-col md:flex-row gap-4">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 <div className="flex-1">
                   <input
                     type="url"
@@ -534,8 +534,8 @@ export default function DemoPage() {
                         handleScan();
                       }
                     }}
-                    placeholder="example.com or https://example.com"
-                    className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary transition-colors"
+                    placeholder="example.com"
+                    className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:border-primary transition-colors"
                     disabled={loading}
                   />
                 </div>
@@ -543,7 +543,7 @@ export default function DemoPage() {
                   onClick={handleScan}
                   disabled={loading || !url.trim()}
                   size="lg"
-                  className="btn-primary-premium text-white px-8 py-4 h-auto rounded-2xl border-0 whitespace-nowrap"
+                  className="btn-primary-premium text-white px-6 sm:px-8 py-3 sm:py-4 h-auto rounded-xl sm:rounded-2xl border-0 whitespace-nowrap w-full sm:w-auto"
                 >
                   {loading ? (
                     <>
@@ -559,27 +559,27 @@ export default function DemoPage() {
                 </Button>
               </div>
               {error && (
-                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
                   {error}
                 </div>
               )}
-              <div className="mt-4 text-xs text-text-dim text-center">
-                Try examples: youtube.com, wikipedia.org, cnn.com, steam.com
+              <div className="mt-3 sm:mt-4 text-xs text-text-dim text-center">
+                Try: youtube.com, wikipedia.org, cnn.com
               </div>
             </div>
           </ScrollReveal>
 
           {/* Results Section */}
           {result && (
-            <div className="space-y-6" ref={reportRef}>
+            <div className="space-y-4 sm:space-y-6" ref={reportRef}>
               {/* Action Buttons */}
               <ScrollReveal delay={0.15}>
-                <div className="flex flex-wrap justify-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-2 sm:gap-3">
                   <Button
                     onClick={handleExportPDF}
                     disabled={exportingPDF}
                     variant="outline"
-                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-5 py-2.5 h-auto"
+                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
                   >
                     {exportingPDF ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -591,14 +591,14 @@ export default function DemoPage() {
                   <Button
                     onClick={() => setShowEmailModal(true)}
                     variant="outline"
-                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-5 py-2.5 h-auto"
+                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
                   >
                     <Mail className="w-4 h-4 mr-2" />
                     Send via Email
                   </Button>
                   <Button
                     onClick={() => setShowBookDemoModal(true)}
-                    className="btn-primary-premium text-white rounded-xl px-5 py-2.5 h-auto border-0"
+                    className="btn-primary-premium text-white rounded-xl px-4 sm:px-5 py-2.5 h-auto border-0 text-sm sm:text-base"
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     Book a Demo
@@ -608,17 +608,17 @@ export default function DemoPage() {
 
               {/* Overall Score */}
               <ScrollReveal delay={0.2}>
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-primary">Overall Safety Score</h2>
-                    <div className={`${getScoreBackground(result.overallScore)} px-6 py-3 rounded-2xl`}>
-                      <span className={`text-3xl font-bold ${getScoreColor(result.overallScore)}`}>
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary">Overall Safety Score</h2>
+                    <div className={`${getScoreBackground(result.overallScore)} px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl self-start sm:self-auto`}>
+                      <span className={`text-2xl sm:text-3xl font-bold ${getScoreColor(result.overallScore)}`}>
                         {result.overallScore}
                       </span>
-                      <span className="text-gray-600 text-lg">/100</span>
+                      <span className="text-gray-600 text-base sm:text-lg">/100</span>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div className="w-full bg-gray-200 rounded-full h-3 sm:h-4 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-1000 ease-out ${
                         result.overallScore >= 75
@@ -630,13 +630,13 @@ export default function DemoPage() {
                       style={{ width: `${result.overallScore}%` }}
                     />
                   </div>
-                  <div className="mt-4 flex items-center gap-3 flex-wrap">
-                    <p className="text-sm text-text-dim">
+                  <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <p className="text-xs sm:text-sm text-text-dim break-all">
                       Scanned: <span className="font-mono text-primary">{result.url}</span>
                     </p>
                     {result.analysisMethod && (
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium self-start sm:self-auto ${
                           result.analysisMethod === 'live'
                             ? 'bg-green-100 text-green-700'
                             : 'bg-amber-100 text-amber-700'
@@ -649,12 +649,12 @@ export default function DemoPage() {
                   {result.contentAnalysis.metadata && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-xl text-xs space-y-1">
                       {result.contentAnalysis.metadata.title && (
-                        <p><span className="font-semibold">Title:</span> {result.contentAnalysis.metadata.title}</p>
+                        <p className="break-words"><span className="font-semibold">Title:</span> {result.contentAnalysis.metadata.title}</p>
                       )}
                       {result.contentAnalysis.metadata.description && (
-                        <p><span className="font-semibold">Description:</span> {result.contentAnalysis.metadata.description.substring(0, 150)}...</p>
+                        <p className="break-words"><span className="font-semibold">Description:</span> {result.contentAnalysis.metadata.description.substring(0, 100)}...</p>
                       )}
-                      <p><span className="font-semibold">Page Stats:</span> {result.contentAnalysis.metadata.imageCount} images, {result.contentAnalysis.metadata.linkCount} links</p>
+                      <p><span className="font-semibold">Stats:</span> {result.contentAnalysis.metadata.imageCount} images, {result.contentAnalysis.metadata.linkCount} links</p>
                     </div>
                   )}
                 </div>
@@ -662,14 +662,14 @@ export default function DemoPage() {
 
               {/* AI Analysis */}
               <ScrollReveal delay={0.3}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* NLP Text Analysis */}
-                  <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <MessageSquare className="w-5 h-5 text-blue-600" />
+                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       </div>
-                      <h3 className="text-xl font-bold text-primary">NLP Text Analysis</h3>
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">NLP Text Analysis</h3>
                     </div>
                     <div className="space-y-3">
                       <div>
@@ -722,12 +722,12 @@ export default function DemoPage() {
                   </div>
 
                   {/* Vision AI Analysis */}
-                  <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                        <Eye className="w-5 h-5 text-purple-600" />
+                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
+                        <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                       </div>
-                      <h3 className="text-xl font-bold text-primary">Vision AI Analysis</h3>
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">Vision AI Analysis</h3>
                     </div>
                     <div className="space-y-3">
                       <div>
@@ -788,23 +788,23 @@ export default function DemoPage() {
 
               {/* Age Group Actions */}
               <ScrollReveal delay={0.4}>
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-                  <h2 className="text-2xl font-bold text-primary mb-6">Age-Appropriate Actions</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-4 sm:mb-6">Age-Appropriate Actions</h2>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                     {Object.entries(result.ageGroupActions).map(([ageGroup, data]) => (
                       <div
                         key={ageGroup}
-                        className={`border-2 rounded-2xl p-5 transition-all hover:scale-105 hover:shadow-lg ${getActionColor(data.action)}`}
+                        className={`border-2 rounded-xl sm:rounded-2xl p-3 sm:p-5 transition-all hover:scale-105 hover:shadow-lg ${getActionColor(data.action)}`}
                       >
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="text-lg font-bold">{ageGroup}</h3>
-                          {getActionIcon(data.action)}
+                        <div className="flex items-center justify-between mb-2 sm:mb-3">
+                          <h3 className="text-sm sm:text-lg font-bold">{ageGroup}</h3>
+                          <div className="hidden sm:block">{getActionIcon(data.action)}</div>
                         </div>
-                        <div className="mb-3">
-                          <div className="text-2xl font-bold mb-1">{data.action}</div>
-                          <div className="text-sm opacity-75">Score: {data.score}/100</div>
+                        <div className="mb-2 sm:mb-3">
+                          <div className="text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1">{data.action}</div>
+                          <div className="text-xs sm:text-sm opacity-75">Score: {data.score}/100</div>
                         </div>
-                        <p className="text-xs leading-relaxed opacity-90">
+                        <p className="text-[10px] sm:text-xs leading-relaxed opacity-90 line-clamp-2 sm:line-clamp-none">
                           {data.reason}
                         </p>
                       </div>
@@ -816,19 +816,19 @@ export default function DemoPage() {
               {/* Detected Categories */}
               {Object.keys(result.categoryScores).length > 0 && (
                 <ScrollReveal delay={0.5}>
-                  <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-                    <h2 className="text-2xl font-bold text-primary mb-6">Content Categories Detected</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-4 sm:mb-6">Content Categories Detected</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                       {Object.entries(result.categoryScores)
                         .filter(([_, data]) => data.detected)
                         .map(([category, data]) => (
                           <div
                             key={category}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200"
+                            className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200"
                           >
-                            <span className="font-medium text-primary">{category}</span>
-                            <span className="text-sm text-text-dim">
-                              {Math.round(data.confidence * 100)}% confidence
+                            <span className="font-medium text-primary text-sm sm:text-base">{category}</span>
+                            <span className="text-xs sm:text-sm text-text-dim">
+                              {Math.round(data.confidence * 100)}%
                             </span>
                           </div>
                         ))}
@@ -839,16 +839,16 @@ export default function DemoPage() {
 
               {/* Info Footer */}
               <ScrollReveal delay={0.6}>
-                <div className="bg-primary/5 rounded-3xl p-6 text-center">
-                  <p className="text-sm text-text-dim">
-                    This analysis uses Vision AI and NLP to evaluate content safety based on{' '}
+                <div className="bg-primary/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center">
+                  <p className="text-xs sm:text-sm text-text-dim">
+                    This analysis uses Vision AI and NLP based on{' '}
                     <a
                       href="https://komalkids.com/content-safety"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary font-medium hover:underline"
                     >
-                      our comprehensive content safety rules
+                      our content safety rules
                     </a>
                     .
                   </p>
@@ -860,46 +860,52 @@ export default function DemoPage() {
           {/* How It Works */}
           {!result && !loading && (
             <ScrollReveal delay={0.3}>
-              <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-primary mb-6 text-center">How It Works</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Search className="w-8 h-8 text-blue-600" />
+              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-4 sm:mb-6 text-center">How It Works</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="text-center flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 sm:mx-auto sm:mb-4">
+                      <Search className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                     </div>
-                    <h3 className="font-bold text-primary mb-2">1. Enter URL</h3>
-                    <p className="text-sm text-text-dim">
-                      Provide any website URL you want to analyze for content safety
-                    </p>
+                    <div className="text-left sm:text-center">
+                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">1. Enter URL</h3>
+                      <p className="text-xs sm:text-sm text-text-dim">
+                        Provide any website URL to analyze
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Shield className="w-8 h-8 text-purple-600" />
+                  <div className="text-center flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 sm:mx-auto sm:mb-4">
+                      <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
                     </div>
-                    <h3 className="font-bold text-primary mb-2">2. AI Analysis</h3>
-                    <p className="text-sm text-text-dim">
-                      Vision AI and NLP scan content across multiple signals
-                    </p>
+                    <div className="text-left sm:text-center">
+                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">2. AI Analysis</h3>
+                      <p className="text-xs sm:text-sm text-text-dim">
+                        Vision AI and NLP scan content
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
+                  <div className="text-center flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 sm:mx-auto sm:mb-4">
+                      <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                     </div>
-                    <h3 className="font-bold text-primary mb-2">3. Get Results</h3>
-                    <p className="text-sm text-text-dim">
-                      Receive age-appropriate actions and detailed safety scores
-                    </p>
+                    <div className="text-left sm:text-center">
+                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">3. Get Results</h3>
+                      <p className="text-xs sm:text-sm text-text-dim">
+                        Receive age-appropriate actions
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Book Demo CTA */}
-                <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                  <p className="text-text-dim mb-4">Want to see more? Get a personalized demo of KOMAL.</p>
+                <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-100 text-center">
+                  <p className="text-text-dim text-sm mb-3 sm:mb-4">Want to see more? Get a personalized demo.</p>
                   <Button
                     onClick={() => setShowBookDemoModal(true)}
-                    className="btn-primary-premium text-white rounded-xl px-6 py-3 h-auto border-0"
+                    className="btn-primary-premium text-white rounded-xl px-5 sm:px-6 py-2.5 sm:py-3 h-auto border-0 text-sm sm:text-base"
                   >
-                    <Calendar className="w-5 h-5 mr-2" />
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Book a Demo
                   </Button>
                 </div>

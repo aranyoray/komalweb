@@ -18,18 +18,31 @@ export default function Navbar() {
 
   // Scroll-based: flat at top, pill on scroll
   useEffect(() => {
+    let rafId: number;
+    let timeoutId: NodeJS.Timeout;
+
     const handleScroll = () => {
-      const shouldScroll = window.scrollY > 50;
-      if (shouldScroll !== isScrolled) {
-        setIsTransitioning(true);
-        setIsScrolled(shouldScroll);
-        setTimeout(() => setIsTransitioning(false), 700);
-      }
+      // Use requestAnimationFrame for smoother updates
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const shouldScroll = window.scrollY > 50;
+        if (shouldScroll !== isScrolled) {
+          setIsTransitioning(true);
+          setIsScrolled(shouldScroll);
+          // Match timeout to actual transition duration
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => setIsTransitioning(false), 600);
+        }
+      });
     };
 
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
+    };
   }, [isScrolled]);
 
   // Close mobile menu on route change
@@ -52,27 +65,38 @@ export default function Navbar() {
     return pathname === "/" ? item.href.value : `/${item.href.value}`;
   };
 
-  const gentleEase = "cubic-bezier(0.25, 0.1, 0.25, 1)";
+  // Smooth easing for natural feel - ease-out-quart
+  const smoothEase = "cubic-bezier(0.165, 0.84, 0.44, 1)";
 
   return (
     <>
       <nav
-        className={`fixed z-[100] h-[64px] flex items-center transition-all duration-500 ${isScrolled
-          ? "left-1/2 top-4 rounded-full border backdrop-blur-xl bg-black/50 shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-3 md:px-6"
+        className={`fixed z-[100] h-[64px] flex items-center ${isScrolled
+          ? "left-1/2 top-4 rounded-full border border-white/10 backdrop-blur-xl bg-black/60 shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-3 md:px-6"
           : "left-0 right-0 top-0 bg-white border-b border-gray-100 px-3 md:px-10"
           }`}
         style={{
-          width: isScrolled ? "min(90%, 72rem)" : "100%",
-          transform: isScrolled ? "translateX(-50%)" : "none",
-          transition: `all 550ms ${gentleEase}`,
-          willChange: isTransitioning ? "width, transform" : "auto",
+          width: isScrolled ? "min(92%, 72rem)" : "100%",
+          transform: isScrolled ? "translateX(-50%)" : "translateX(0)",
+          transition: `
+            width 600ms ${smoothEase},
+            transform 600ms ${smoothEase},
+            top 500ms ${smoothEase},
+            background-color 400ms ease,
+            border-radius 500ms ${smoothEase},
+            box-shadow 500ms ease,
+            border-color 400ms ease,
+            padding 400ms ${smoothEase}
+          `,
+          willChange: isTransitioning ? "width, transform, top" : "auto",
         }}
       >
         {/* Logo Section - Left */}
         <Link
           href="/"
-          className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 transition-all duration-300 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
+          className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
             }`}
+          style={{ transition: "color 400ms ease" }}
         >
           <div className="w-12 h-12 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
             <Image
@@ -93,8 +117,9 @@ export default function Navbar() {
             <Link
               key={item.label}
               href={resolveHref(item)}
-              className={`font-medium text-[14px] hover:opacity-100 transition-all duration-300 ${isScrolled ? "text-white/85 hover:text-white" : "text-primary/80 hover:text-primary"
+              className={`font-medium text-[14px] hover:opacity-100 ${isScrolled ? "text-white/85 hover:text-white" : "text-primary/80 hover:text-primary"
                 }`}
+              style={{ transition: "color 400ms ease, opacity 300ms ease" }}
             >
               {item.label}
             </Link>
@@ -109,6 +134,7 @@ export default function Navbar() {
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
+            style={{ transition: "background-color 400ms ease, color 400ms ease" }}
           >
             Get Started
             <ArrowUpRight className="w-4 h-4" />
@@ -117,10 +143,11 @@ export default function Navbar() {
           {/* Hamburger Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`p-2 rounded-full transition-colors ${isScrolled
+            className={`p-2 rounded-full ${isScrolled
               ? "text-white hover:bg-white/10"
               : "text-primary hover:bg-primary/10"
               }`}
+            style={{ transition: "color 400ms ease, background-color 300ms ease" }}
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
@@ -135,10 +162,11 @@ export default function Navbar() {
         <div className="hidden md:block shrink-0">
           <Button
             onClick={() => setIsWaitlistOpen(true)}
-            className={`h-9 px-5 rounded-full border-0 font-medium text-sm transition-all duration-300 flex items-center gap-1.5 ${isScrolled
+            className={`h-9 px-5 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
+            style={{ transition: "background-color 400ms ease, color 400ms ease" }}
           >
             Get Started
             <ArrowUpRight className="w-4 h-4" />
@@ -148,19 +176,29 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       <div
-        className={`fixed inset-x-0 z-[99] md:hidden transition-all duration-300 ease-out ${isScrolled ? "top-[80px]" : "top-[64px]"} ${isMobileMenuOpen
+        className={`fixed inset-x-0 z-[99] md:hidden ${isMobileMenuOpen
           ? "opacity-100 translate-y-0 pointer-events-auto"
-          : "opacity-0 -translate-y-4 pointer-events-none"
+          : "opacity-0 -translate-y-2 pointer-events-none"
           }`}
+        style={{
+          top: isScrolled ? "80px" : "64px",
+          transition: `opacity 250ms ease, transform 300ms cubic-bezier(0.165, 0.84, 0.44, 1), top 500ms cubic-bezier(0.165, 0.84, 0.44, 1)`,
+        }}
       >
         <div className="mx-4 mt-2 rounded-2xl bg-white border border-gray-200 shadow-xl overflow-hidden">
           <div className="flex flex-col py-2">
-            {navItems.map((item) => (
+            {navItems.map((item, index) => (
               <Link
                 key={item.label}
                 href={resolveHref(item)}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 transition-colors border-b border-gray-100 last:border-0"
+                className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100 last:border-0"
+                style={{
+                  transition: "background-color 200ms ease",
+                  opacity: isMobileMenuOpen ? 1 : 0,
+                  transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                  transitionDelay: isMobileMenuOpen ? `${index * 50}ms` : "0ms",
+                }}
               >
                 {item.label}
               </Link>
