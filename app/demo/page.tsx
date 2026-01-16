@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare } from "lucide-react";
+import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Download, Mail, Calendar, X } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
@@ -69,6 +69,18 @@ export default function DemoPage() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState('');
 
+  // Modal states
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showBookDemoModal, setShowBookDemoModal] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [demoForm, setDemoForm] = useState({ name: '', email: '', organization: '' });
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [submittingDemo, setSubmittingDemo] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
+  const [modalMessage, setModalMessage] = useState({ type: '', text: '' });
+
+  const reportRef = useRef<HTMLDivElement>(null);
+
   const handleScan = async () => {
     if (!url.trim()) {
       setError('Please enter a URL');
@@ -80,7 +92,6 @@ export default function DemoPage() {
     setResult(null);
 
     try {
-      // Normalize URL: add https:// if no protocol is specified
       let normalizedUrl = url.trim();
       if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
         normalizedUrl = 'https://' + normalizedUrl;
@@ -105,6 +116,175 @@ export default function DemoPage() {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Export PDF functionality
+  const handleExportPDF = async () => {
+    if (!result) return;
+
+    setExportingPDF(true);
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+
+      // Create a temporary div for PDF content
+      const pdfContent = document.createElement('div');
+      pdfContent.style.padding = '40px';
+      pdfContent.style.background = 'white';
+      pdfContent.style.width = '800px';
+      pdfContent.style.fontFamily = 'Arial, sans-serif';
+
+      const getScoreColor = (score: number) => {
+        if (score >= 75) return '#22c55e';
+        if (score >= 50) return '#f59e0b';
+        return '#ef4444';
+      };
+
+      const getActionColor = (action: string) => {
+        if (action === 'BLOCK') return '#ef4444';
+        if (action === 'GATE') return '#f59e0b';
+        return '#22c55e';
+      };
+
+      pdfContent.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #1e3a5f; font-size: 32px; margin: 0;">KOMAL</h1>
+          <p style="color: #666; font-size: 14px; margin: 8px 0 0 0;">URL Safety Analysis Report</p>
+        </div>
+
+        <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+          <p style="margin: 0; font-size: 12px; color: #666;">Analyzed URL</p>
+          <p style="margin: 8px 0 0 0; font-size: 14px; color: #1e3a5f; word-break: break-all;">${result.url}</p>
+        </div>
+
+        <div style="background: ${getScoreColor(result.overallScore)}20; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Overall Safety Score</p>
+          <div style="font-size: 48px; font-weight: 700; color: ${getScoreColor(result.overallScore)};">${result.overallScore}<span style="font-size: 24px; color: #666;">/100</span></div>
+        </div>
+
+        <h2 style="color: #1e3a5f; font-size: 18px; margin: 24px 0 16px 0;">Age-Appropriate Actions</h2>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          ${Object.entries(result.ageGroupActions).map(([age, data]) => `
+            <div style="flex: 1; min-width: 120px; background: ${getActionColor(data.action)}15; border: 2px solid ${getActionColor(data.action)}40; border-radius: 12px; padding: 16px; text-align: center;">
+              <div style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">${age}</div>
+              <div style="font-size: 20px; font-weight: 700; color: ${getActionColor(data.action)};">${data.action}</div>
+              <div style="font-size: 11px; color: #666; margin-top: 4px;">Score: ${data.score}/100</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <h2 style="color: #1e3a5f; font-size: 18px; margin: 24px 0 16px 0;">Analysis Summary</h2>
+        <div style="background: #f5f5f7; border-radius: 12px; padding: 20px;">
+          <p style="margin: 0 0 8px 0;"><strong>Sentiment:</strong> ${result.contentAnalysis.textAnalysis.sentiment}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Language Score:</strong> ${result.contentAnalysis.textAnalysis.languageScore}/100</p>
+          <p style="margin: 0 0 8px 0;"><strong>Visual Safety:</strong> ${result.contentAnalysis.visualAnalysis.safetyScore}/100</p>
+          ${result.contentAnalysis.textAnalysis.keyTopics.length > 0 ? `<p style="margin: 0;"><strong>Key Topics:</strong> ${result.contentAnalysis.textAnalysis.keyTopics.join(', ')}</p>` : ''}
+        </div>
+
+        <div style="margin-top: 32px; text-align: center; color: #999; font-size: 12px;">
+          <p>Report generated on ${new Date(result.timestamp).toLocaleString()}</p>
+          <p style="margin-top: 4px;">Powered by KOMAL - komalkids.com</p>
+        </div>
+      `;
+
+      document.body.appendChild(pdfContent);
+
+      const canvas = await html2canvas(pdfContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      document.body.removeChild(pdfContent);
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`komal-safety-report-${new Date().toISOString().split('T')[0]}.pdf`);
+
+    } catch (err) {
+      console.error('Error exporting PDF:', err);
+      alert('Failed to export PDF. Please try again.');
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
+  // Send email functionality
+  const handleSendEmail = async () => {
+    if (!emailInput.trim() || !result) return;
+
+    setSendingEmail(true);
+    setModalMessage({ type: '', text: '' });
+
+    try {
+      const response = await fetch('/api/send-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: emailInput.trim(),
+          report: result,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email');
+      }
+
+      setModalMessage({ type: 'success', text: 'Report sent successfully!' });
+      setTimeout(() => {
+        setShowEmailModal(false);
+        setEmailInput('');
+        setModalMessage({ type: '', text: '' });
+      }, 2000);
+    } catch (err) {
+      setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to send email' });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  // Book demo functionality
+  const handleBookDemo = async () => {
+    if (!demoForm.name.trim() || !demoForm.email.trim()) return;
+
+    setSubmittingDemo(true);
+    setModalMessage({ type: '', text: '' });
+
+    try {
+      const response = await fetch('/api/book-demo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(demoForm),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit');
+      }
+
+      setModalMessage({ type: 'success', text: 'Demo request submitted! Check your email.' });
+      setTimeout(() => {
+        setShowBookDemoModal(false);
+        setDemoForm({ name: '', email: '', organization: '' });
+        setModalMessage({ type: '', text: '' });
+      }, 2500);
+    } catch (err) {
+      setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to submit' });
+    } finally {
+      setSubmittingDemo(false);
     }
   };
 
@@ -149,6 +329,160 @@ export default function DemoPage() {
   return (
     <>
       <NoiseOverlay opacity={0.025} />
+
+      {/* Email Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => { setShowEmailModal(false); setModalMessage({ type: '', text: '' }); }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-primary">Send Report via Email</h3>
+              <p className="text-sm text-text-dim mt-2">We'll send the full safety report to your email</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              {modalMessage.text && (
+                <div className={`p-3 rounded-xl text-sm ${
+                  modalMessage.type === 'success'
+                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {modalMessage.text}
+                </div>
+              )}
+
+              <Button
+                onClick={handleSendEmail}
+                disabled={sendingEmail || !emailInput.trim()}
+                className="w-full btn-primary-premium text-white py-3 h-auto rounded-xl border-0"
+              >
+                {sendingEmail ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-5 h-5 mr-2" />
+                    Send Report
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Book Demo Modal */}
+      {showBookDemoModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => { setShowBookDemoModal(false); setModalMessage({ type: '', text: '' }); }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-primary">Book a Demo</h3>
+              <p className="text-sm text-text-dim mt-2">See how KOMAL can protect your children online</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={demoForm.name}
+                  onChange={(e) => setDemoForm({ ...demoForm, name: e.target.value })}
+                  placeholder="Your name"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={demoForm.email}
+                  onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
+                  placeholder="your@email.com"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Organization <span className="text-gray-400">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={demoForm.organization}
+                  onChange={(e) => setDemoForm({ ...demoForm, organization: e.target.value })}
+                  placeholder="Company or school name"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              {modalMessage.text && (
+                <div className={`p-3 rounded-xl text-sm ${
+                  modalMessage.type === 'success'
+                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {modalMessage.text}
+                </div>
+              )}
+
+              <Button
+                onClick={handleBookDemo}
+                disabled={submittingDemo || !demoForm.name.trim() || !demoForm.email.trim()}
+                className="w-full btn-primary-premium text-white py-3 h-auto rounded-xl border-0"
+              >
+                {submittingDemo ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Request Demo
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="min-h-screen pt-24 pb-12 md:pt-28 md:pb-16 bg-gradient-to-b from-white via-purple-50/30 to-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
@@ -237,7 +571,41 @@ export default function DemoPage() {
 
           {/* Results Section */}
           {result && (
-            <div className="space-y-6">
+            <div className="space-y-6" ref={reportRef}>
+              {/* Action Buttons */}
+              <ScrollReveal delay={0.15}>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Button
+                    onClick={handleExportPDF}
+                    disabled={exportingPDF}
+                    variant="outline"
+                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-5 py-2.5 h-auto"
+                  >
+                    {exportingPDF ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Export PDF
+                  </Button>
+                  <Button
+                    onClick={() => setShowEmailModal(true)}
+                    variant="outline"
+                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-5 py-2.5 h-auto"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send via Email
+                  </Button>
+                  <Button
+                    onClick={() => setShowBookDemoModal(true)}
+                    className="btn-primary-premium text-white rounded-xl px-5 py-2.5 h-auto border-0"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Book a Demo
+                  </Button>
+                </div>
+              </ScrollReveal>
+
               {/* Overall Score */}
               <ScrollReveal delay={0.2}>
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
@@ -274,7 +642,7 @@ export default function DemoPage() {
                             : 'bg-amber-100 text-amber-700'
                         }`}
                       >
-                        {result.analysisMethod === 'live' ? '🔴 Live Analysis' : '⚡ Demo Mode'}
+                        {result.analysisMethod === 'live' ? 'Live Analysis' : 'Demo Mode'}
                       </span>
                     )}
                   </div>
@@ -469,63 +837,6 @@ export default function DemoPage() {
                 </ScrollReveal>
               )}
 
-              {/* Granular Categories from CSV */}
-              {result.granularCategories && Object.keys(result.granularCategories).length > 0 && (
-                <ScrollReveal delay={0.55}>
-                  <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-                    <h2 className="text-2xl font-bold text-primary mb-2">Granular Content Categorization</h2>
-                    <p className="text-sm text-text-dim mb-6">
-                      Based on Models_Masterdoc.csv classification rules
-                    </p>
-                    <div className="space-y-4">
-                      {Object.entries(result.granularCategories)
-                        .filter(([_, data]) => data.detected)
-                        .map(([category, data]) => (
-                          <div
-                            key={category}
-                            className="border-2 border-gray-200 rounded-xl p-5 bg-gradient-to-r from-gray-50 to-white"
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <h3 className="text-lg font-bold text-primary">{category}</h3>
-                              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                                {Math.round(data.confidence * 100)}% confidence
-                              </span>
-                            </div>
-                            {data.matchedRule && (
-                              <div className="mt-4 space-y-2">
-                                <p className="text-sm font-semibold text-gray-700 mb-2">Age Group Rules:</p>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                  {Object.entries(data.matchedRule.rules).map(([ageGroup, rule]) => (
-                                    <div
-                                      key={ageGroup}
-                                      className="p-3 bg-white rounded-lg border border-gray-200"
-                                    >
-                                      <div className="text-xs font-semibold text-gray-600 mb-1">{ageGroup}</div>
-                                      <div className={`text-sm font-medium ${
-                                        rule.includes('Block') ? 'text-red-600' :
-                                        rule.includes('Gate') ? 'text-amber-600' :
-                                        'text-green-600'
-                                      }`}>
-                                        {rule || 'N/A'}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                    </div>
-                    {Object.entries(result.granularCategories).filter(([_, data]) => data.detected).length === 0 && (
-                      <div className="text-center py-8 text-text-dim">
-                        <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500 opacity-50" />
-                        <p>No granular categories detected. Content appears safe.</p>
-                      </div>
-                    )}
-                  </div>
-                </ScrollReveal>
-              )}
-
               {/* Info Footer */}
               <ScrollReveal delay={0.6}>
                 <div className="bg-primary/5 rounded-3xl p-6 text-center">
@@ -539,7 +850,7 @@ export default function DemoPage() {
                     >
                       our comprehensive content safety rules
                     </a>
-                    . Results are generated in real-time using AI models (demo mode with placeholder API key).
+                    .
                   </p>
                 </div>
               </ScrollReveal>
@@ -579,6 +890,18 @@ export default function DemoPage() {
                       Receive age-appropriate actions and detailed safety scores
                     </p>
                   </div>
+                </div>
+
+                {/* Book Demo CTA */}
+                <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                  <p className="text-text-dim mb-4">Want to see more? Get a personalized demo of KOMAL.</p>
+                  <Button
+                    onClick={() => setShowBookDemoModal(true)}
+                    className="btn-primary-premium text-white rounded-xl px-6 py-3 h-auto border-0"
+                  >
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Book a Demo
+                  </Button>
                 </div>
               </div>
             </ScrollReveal>
