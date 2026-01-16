@@ -18,29 +18,40 @@ export default function Navbar() {
 
   // Scroll-based: flat at top, pill on scroll
   useEffect(() => {
-    let rafId: number;
     let timeoutId: NodeJS.Timeout;
+    let lastScrollY = window.scrollY;
+    let ticking = false;
 
     const handleScroll = () => {
-      // Use requestAnimationFrame for smoother updates
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        const shouldScroll = window.scrollY > 50;
-        if (shouldScroll !== isScrolled) {
-          setIsTransitioning(true);
-          setIsScrolled(shouldScroll);
-          // Match timeout to actual transition duration
-          clearTimeout(timeoutId);
-          timeoutId = setTimeout(() => setIsTransitioning(false), 600);
-        }
-      });
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const shouldScroll = currentScrollY > 50;
+          
+          // Only update if state actually changed
+          if (shouldScroll !== isScrolled) {
+            setIsTransitioning(true);
+            setIsScrolled(shouldScroll);
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => setIsTransitioning(false), 500);
+          }
+          
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    handleScroll();
+    // Initial check
+    const initialShouldScroll = window.scrollY > 50;
+    if (initialShouldScroll !== isScrolled) {
+      setIsScrolled(initialShouldScroll);
+    }
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (rafId) cancelAnimationFrame(rafId);
       clearTimeout(timeoutId);
     };
   }, [isScrolled]);
@@ -65,8 +76,12 @@ export default function Navbar() {
     return pathname === "/" ? item.href.value : `/${item.href.value}`;
   };
 
-  // Smooth easing for natural feel - ease-out-quart
-  const smoothEase = "cubic-bezier(0.165, 0.84, 0.44, 1)";
+  // Smooth easing - optimized for performance
+  const smoothEase = "cubic-bezier(0.4, 0, 0.2, 1)"; // Material Design ease-in-out
+
+  // Calculate width using CSS custom property for better performance
+  const maxWidth = "72rem";
+  const scrolledWidth = "min(92%, 72rem)";
 
   return (
     <>
@@ -76,27 +91,26 @@ export default function Navbar() {
           : "left-0 right-0 top-0 bg-white border-b border-gray-100 px-3 md:px-10"
           }`}
         style={{
-          width: isScrolled ? "min(92%, 72rem)" : "100%",
+          width: isScrolled ? scrolledWidth : "100%",
+          maxWidth: isScrolled ? maxWidth : "none",
           transform: isScrolled ? "translateX(-50%)" : "translateX(0)",
-          transition: `
-            width 600ms ${smoothEase},
-            transform 600ms ${smoothEase},
-            top 500ms ${smoothEase},
-            background-color 400ms ease,
-            border-radius 500ms ${smoothEase},
-            box-shadow 500ms ease,
-            border-color 400ms ease,
-            padding 400ms ${smoothEase}
-          `,
-          willChange: isTransitioning ? "width, transform, top" : "auto",
-        }}
+          transitionProperty: "width, max-width, transform, top, background-color, border-radius, box-shadow, border-color, padding-left, padding-right, backdrop-filter",
+          transitionDuration: "400ms",
+          transitionTimingFunction: smoothEase,
+          willChange: isTransitioning ? "transform, width" : "auto",
+          contain: "layout style paint",
+        } as React.CSSProperties}
       >
         {/* Logo Section - Left */}
         <Link
           href="/"
           className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
             }`}
-          style={{ transition: "color 400ms ease" }}
+          style={{ 
+            transitionProperty: "color",
+            transitionDuration: "400ms",
+            transitionTimingFunction: smoothEase,
+          }}
         >
           <div className="w-12 h-12 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
             <Image
@@ -119,7 +133,11 @@ export default function Navbar() {
               href={resolveHref(item)}
               className={`font-medium text-[14px] hover:opacity-100 ${isScrolled ? "text-white/85 hover:text-white" : "text-primary/80 hover:text-primary"
                 }`}
-              style={{ transition: "color 400ms ease, opacity 300ms ease" }}
+              style={{ 
+                transitionProperty: "color, opacity",
+                transitionDuration: "400ms",
+                transitionTimingFunction: smoothEase,
+              }}
             >
               {item.label}
             </Link>
@@ -134,7 +152,11 @@ export default function Navbar() {
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
-            style={{ transition: "background-color 400ms ease, color 400ms ease" }}
+            style={{ 
+              transitionProperty: "background-color, color",
+              transitionDuration: "400ms",
+              transitionTimingFunction: smoothEase,
+            }}
           >
             Get Started
             <ArrowUpRight className="w-4 h-4" />
@@ -147,7 +169,11 @@ export default function Navbar() {
               ? "text-white hover:bg-white/10"
               : "text-primary hover:bg-primary/10"
               }`}
-            style={{ transition: "color 400ms ease, background-color 300ms ease" }}
+            style={{ 
+              transitionProperty: "color, background-color",
+              transitionDuration: "400ms",
+              transitionTimingFunction: smoothEase,
+            }}
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
@@ -166,7 +192,11 @@ export default function Navbar() {
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
-            style={{ transition: "background-color 400ms ease, color 400ms ease" }}
+            style={{ 
+              transitionProperty: "background-color, color",
+              transitionDuration: "400ms",
+              transitionTimingFunction: smoothEase,
+            }}
           >
             Get Started
             <ArrowUpRight className="w-4 h-4" />
@@ -182,7 +212,10 @@ export default function Navbar() {
           }`}
         style={{
           top: isScrolled ? "80px" : "64px",
-          transition: `opacity 250ms ease, transform 300ms cubic-bezier(0.165, 0.84, 0.44, 1), top 500ms cubic-bezier(0.165, 0.84, 0.44, 1)`,
+          transitionProperty: "opacity, transform, top",
+          transitionDuration: "400ms",
+          transitionTimingFunction: smoothEase,
+          willChange: isMobileMenuOpen ? "opacity, transform" : "auto",
         }}
       >
         <div className="mx-4 mt-2 rounded-2xl bg-white border border-gray-200 shadow-xl overflow-hidden">
@@ -194,10 +227,12 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100 last:border-0"
                 style={{
-                  transition: "background-color 200ms ease",
+                  transitionProperty: "background-color, opacity, transform",
+                  transitionDuration: "400ms",
+                  transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  transitionDelay: isMobileMenuOpen ? `${index * 50}ms` : "0ms",
                   opacity: isMobileMenuOpen ? 1 : 0,
                   transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
-                  transitionDelay: isMobileMenuOpen ? `${index * 50}ms` : "0ms",
                 }}
               >
                 {item.label}

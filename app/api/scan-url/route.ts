@@ -3,7 +3,14 @@ import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 import puppeteer from 'puppeteer';
-import { loadContentRulesFromCSV, mapToGranularCategories, parseAction, CategoryRule } from '@/lib/content-rules';
+import { loadContentRulesFromCSV, parseAction, CategoryRule } from '@/lib/content-rules';
+import {
+  loadAndVectorizeKeywords,
+  extractWordFrequencies,
+  findSimilarKeywords,
+  generateSimilarityReport,
+  SimilarityMatch,
+} from '@/lib/keyword-vectorization';
 
 // Content safety rules based on komalkids.com/content-safety
 const CONTENT_RULES = {
@@ -135,19 +142,19 @@ interface ScanResult {
       confidence: number;
     };
   };
-  granularCategories: {
-    [category: string]: {
-      detected: boolean;
-      confidence: number;
-      matchedRule?: CategoryRule;
-    };
-  };
   ageGroupActions: {
     [ageGroup: string]: {
       action: 'BLOCK' | 'GATE' | 'ALLOW';
       reason: string;
       score: number;
     };
+  };
+  keywordSimilarityReport?: {
+    topCategories: Array<{ category: string; matchCount: number; avgScore: number }>;
+    topKeywords: SimilarityMatch[];
+    topWords: Array<{ word: string; frequency: number }>;
+    summary: string;
+    totalMatches: number;
   };
   timestamp: string;
   analysisMethod: 'live' | 'demo';
@@ -169,6 +176,18 @@ try {
   }
 } catch (error) {
   console.warn('Google Cloud APIs not configured, using demo mode:', error);
+}
+
+// Cache vectorized keywords (load once, reuse for all requests)
+let cachedCategoryKeywords: ReturnType<typeof loadAndVectorizeKeywords> | null = null;
+
+function getVectorizedKeywords() {
+  if (!cachedCategoryKeywords) {
+    console.log('Loading and vectorizing keywords from CSV...');
+    cachedCategoryKeywords = loadAndVectorizeKeywords();
+    console.log(`Loaded ${cachedCategoryKeywords.length} categories with keywords`);
+  }
+  return cachedCategoryKeywords;
 }
 
 /**
@@ -433,120 +452,208 @@ function getLikelihoodScore(likelihood: string | number | null | undefined): num
 }
 
 /**
- * Analyze content and determine safety categories
+ * Map CSV category names to internal category names
+ */
+function mapCsvCategoryToInternalCategory(csvCategory: string): string[] {
+  const categoryMap: { [key: string]: string[] } = {
+    '1. Violence & Disturbing Content': ['Graphic Violence', 'Non-Graphic Violence', 'Heavy Fighting (Sports)', 'Horror/Jumpscares', 'Crime Footage'],
+    '2. Explicit & Body-Related Content': ['Explicit Content'],
+    '3. Substances & Addictive Behavior': ['Substance Use'],
+    '4. Financial & Commercial Content': ['Financial & Commercial Content'],
+    '5. Media & Platform-Native Risks': ['Media & Platform-Native Risks', 'Strong Language', 'Mild Language'],
+    '6. Social & Cultural Topics': ['Social & Cultural Topics'],
+  };
+
+  return categoryMap[csvCategory] || [];
+}
+
+/**
+ * Analyze content and determine safety categories using keyword vectorization
  */
 function determineSafetyCategories(
   metadata: any,
   nlpResults: any,
   visionResults: any,
-  textContent: string
+  textContent: string,
+  similarityMatches?: SimilarityMatch[]
 ): { [key: string]: { detected: boolean; confidence: number } } {
   const categoryScores: { [key: string]: { detected: boolean; confidence: number } } = {};
 
-  // Analyze based on text content and NLP results
-  const textLower = (textContent + ' ' + metadata.title + ' ' + metadata.description).toLowerCase();
+  // If we have similarity matches, use them to determine categories
+  if (similarityMatches && similarityMatches.length > 0) {
+    // Group matches by CSV category
+    const categoryMatchGroups = new Map<string, SimilarityMatch[]>();
+    
+    for (const match of similarityMatches) {
+      const existing = categoryMatchGroups.get(match.category) || [];
+      existing.push(match);
+      categoryMatchGroups.set(match.category, existing);
+    }
 
-  // Violence detection
-  const violenceKeywords = ['violence', 'violent', 'kill', 'murder', 'shooting', 'weapon', 'blood', 'gore', 'fight'];
-  const violenceCount = violenceKeywords.filter((k) => textLower.includes(k)).length;
+    // Process each CSV category and map to internal categories
+    for (const [csvCategory, matches] of categoryMatchGroups.entries()) {
+      const internalCategories = mapCsvCategoryToInternalCategory(csvCategory);
+      
+      if (internalCategories.length === 0) continue;
 
-  if (visionResults?.safeSearchAnnotation?.violence >= 3 || violenceCount >= 3) {
-    categoryScores['Graphic Violence'] = { detected: true, confidence: 0.8 };
-  } else if (visionResults?.safeSearchAnnotation?.violence >= 2 || violenceCount >= 1) {
-    categoryScores['Non-Graphic Violence'] = { detected: true, confidence: 0.6 };
+      // Calculate confidence based on match scores
+      // Use average similarity and match count
+      const avgSimilarity = matches.reduce((sum, m) => sum + m.similarity, 0) / matches.length;
+      const totalScore = matches.reduce((sum, m) => sum + m.score, 0);
+      const matchCount = matches.length;
+      
+      // Confidence is based on average similarity, match count, and total score
+      // Higher similarity, more matches, and higher scores = higher confidence
+      const baseConfidence = Math.min(0.95, avgSimilarity * 0.7 + Math.min(matchCount / 10, 0.3));
+      const confidence = Math.min(0.95, baseConfidence + (totalScore / 100) * 0.1);
+
+      // Apply to all mapped internal categories
+      for (const internalCategory of internalCategories) {
+        // If category already exists, take the higher confidence
+        if (!categoryScores[internalCategory] || categoryScores[internalCategory].confidence < confidence) {
+          categoryScores[internalCategory] = {
+            detected: true,
+            confidence: confidence,
+          };
+        }
+      }
+
+      // Special handling for violence categories based on match strength
+      if (csvCategory === '1. Violence & Disturbing Content') {
+        // If high similarity matches (>0.8) or many matches, mark as Graphic Violence
+        const highConfidenceMatches = matches.filter(m => m.similarity > 0.8);
+        if (highConfidenceMatches.length >= 3 || totalScore > 50) {
+          categoryScores['Graphic Violence'] = {
+            detected: true,
+            confidence: Math.min(0.95, confidence + 0.1),
+          };
+        } else if (matches.length >= 2) {
+          categoryScores['Non-Graphic Violence'] = {
+            detected: true,
+            confidence: confidence,
+          };
+        }
+      }
+    }
   }
 
-  // Sports/Fighting
-  const sportsKeywords = ['boxing', 'mma', 'wrestling', 'fighting', 'combat sport'];
-  if (sportsKeywords.some((k) => textLower.includes(k))) {
-    categoryScores['Heavy Fighting (Sports)'] = { detected: true, confidence: 0.7 };
-  }
-
-  // Horror
-  const horrorKeywords = ['horror', 'scary', 'creepy', 'nightmare', 'haunted', 'terror'];
-  if (horrorKeywords.some((k) => textLower.includes(k))) {
-    categoryScores['Horror/Jumpscares'] = { detected: true, confidence: 0.65 };
-  }
-
-  // Crime
-  const crimeKeywords = ['crime', 'criminal', 'arrest', 'police', 'investigation', 'theft'];
-  if (crimeKeywords.some((k) => textLower.includes(k))) {
-    categoryScores['Crime Footage'] = { detected: true, confidence: 0.6 };
-  }
-
-  // Explicit content
+  // Still use vision results for explicit content detection (visual analysis)
   if (visionResults?.safeSearchAnnotation?.adult >= 3 || visionResults?.safeSearchAnnotation?.racy >= 3) {
-    categoryScores['Explicit Content'] = { detected: true, confidence: 0.9 };
+    categoryScores['Explicit Content'] = {
+      detected: true,
+      confidence: Math.max(
+        categoryScores['Explicit Content']?.confidence || 0,
+        0.9
+      ),
+    };
   }
 
-  // Educational content
-  const eduKeywords = ['education', 'learn', 'tutorial', 'course', 'study', 'academic', 'university', 'school'];
-  const eduCount = eduKeywords.filter((k) => textLower.includes(k)).length;
-  if (eduCount >= 2 || nlpResults?.categories?.some((c: string) => c.includes('Education'))) {
+  // Use vision results for violence detection as additional signal
+  if (visionResults?.safeSearchAnnotation?.violence >= 3) {
+    if (!categoryScores['Graphic Violence']) {
+      categoryScores['Graphic Violence'] = { detected: true, confidence: 0.8 };
+    } else {
+      categoryScores['Graphic Violence'].confidence = Math.max(
+        categoryScores['Graphic Violence'].confidence,
+        0.8
+      );
+    }
+  } else if (visionResults?.safeSearchAnnotation?.violence >= 2) {
+    if (!categoryScores['Non-Graphic Violence']) {
+      categoryScores['Non-Graphic Violence'] = { detected: true, confidence: 0.6 };
+    }
+  }
+
+  // Check for educational content using NLP (if available)
+  if (nlpResults?.categories?.some((c: string) => c.includes('Education'))) {
     categoryScores['Educational Content'] = { detected: true, confidence: 0.85 };
-  }
-
-  // Language detection
-  const mildProfanity = ['damn', 'hell', 'crap', 'stupid'];
-  const strongProfanity = ['fuck', 'shit', 'bitch', 'ass', 'bastard'];
-  const mildCount = mildProfanity.filter((k) => textLower.includes(k)).length;
-  const strongCount = strongProfanity.filter((k) => textLower.includes(k)).length;
-
-  if (strongCount > 0) {
-    categoryScores['Strong Language'] = { detected: true, confidence: Math.min(0.5 + strongCount * 0.1, 0.95) };
-  } else if (mildCount > 0) {
-    categoryScores['Mild Language'] = { detected: true, confidence: Math.min(0.4 + mildCount * 0.1, 0.8) };
-  }
-
-  // Substance use
-  const substanceKeywords = ['alcohol', 'drug', 'marijuana', 'smoking', 'tobacco', 'beer', 'wine'];
-  const substanceCount = substanceKeywords.filter((k) => textLower.includes(k)).length;
-  if (substanceCount >= 2) {
-    categoryScores['Substance Use'] = { detected: true, confidence: 0.7 };
-  }
-
-  // Financial & Commercial Content
-  const financialKeywords = ['buy', 'purchase', 'credit card', 'payment', 'subscription', 'premium', 'deal', 'offer', 'discount', 'money', 'price', 'cost', 'fee'];
-  const financialCount = financialKeywords.filter((k) => textLower.includes(k)).length;
-  if (financialCount >= 3) {
-    categoryScores['Financial & Commercial Content'] = { detected: true, confidence: 0.75 };
-  }
-
-  // Media & Platform-Native Risks (social media, video platforms)
-  const mediaKeywords = ['social media', 'chat', 'message', 'comment', 'post', 'share', 'follow', 'like', 'subscribe'];
-  const mediaCount = mediaKeywords.filter((k) => textLower.includes(k)).length;
-  if (mediaCount >= 2) {
-    categoryScores['Media & Platform-Native Risks'] = { detected: true, confidence: 0.6 };
-  }
-
-  // Social & Cultural Topics
-  const socialKeywords = ['politics', 'religion', 'culture', 'society', 'social issue', 'controversy', 'debate'];
-  const socialCount = socialKeywords.filter((k) => textLower.includes(k)).length;
-  if (socialCount >= 2) {
-    categoryScores['Social & Cultural Topics'] = { detected: true, confidence: 0.65 };
   }
 
   return categoryScores;
 }
 
 /**
- * Calculate overall safety score and age group actions using granular categories
+ * Calculate overall safety score and age group actions using keyword matches only
  */
 function calculateSafetyScore(
   categoryScores: any,
-  granularCategories: { [category: string]: { detected: boolean; confidence: number; matchedRule?: CategoryRule } }
+  similarityMatches?: SimilarityMatch[]
 ) {
   let overallScore = 85; // Start with high score
 
-  // Deduct points based on detected categories
-  if (categoryScores['Graphic Violence']?.detected) overallScore -= 40;
-  if (categoryScores['Explicit Content']?.detected) overallScore -= 50;
-  if (categoryScores['Horror/Jumpscares']?.detected) overallScore -= 20;
-  if (categoryScores['Crime Footage']?.detected) overallScore -= 15;
-  if (categoryScores['Non-Graphic Violence']?.detected) overallScore -= 10;
-  if (categoryScores['Strong Language']?.detected) overallScore -= 15;
-  if (categoryScores['Mild Language']?.detected) overallScore -= 5;
-  if (categoryScores['Substance Use']?.detected) overallScore -= 20;
+  // If we have keyword matches, prioritize non-child-safe keywords
+  if (similarityMatches && similarityMatches.length > 0) {
+    // Separate matches into high-priority (non-child-safe) and low-priority (safe/neutral)
+    const highPriorityMatches = similarityMatches.filter(m => m.priority >= 5.0);
+    const lowPriorityMatches = similarityMatches.filter(m => m.priority < 5.0);
+    
+    // Group matches by category and calculate impact
+    const categoryImpact = new Map<string, { totalScore: number; matchCount: number; maxSimilarity: number; avgPriority: number }>();
+    
+    // Process high-priority matches first (non-child-safe keywords)
+    for (const match of highPriorityMatches) {
+      const existing = categoryImpact.get(match.category) || { totalScore: 0, matchCount: 0, maxSimilarity: 0, avgPriority: 0 };
+      categoryImpact.set(match.category, {
+        totalScore: existing.totalScore + match.score,
+        matchCount: existing.matchCount + 1,
+        maxSimilarity: Math.max(existing.maxSimilarity, match.similarity),
+        avgPriority: (existing.avgPriority * existing.matchCount + match.priority) / (existing.matchCount + 1),
+      });
+    }
+    
+    // Process low-priority matches with minimal impact (only if no high-priority matches exist)
+    if (highPriorityMatches.length === 0) {
+      for (const match of lowPriorityMatches) {
+        const existing = categoryImpact.get(match.category) || { totalScore: 0, matchCount: 0, maxSimilarity: 0, avgPriority: 0 };
+        categoryImpact.set(match.category, {
+          totalScore: existing.totalScore + (match.score * 0.1), // Reduce impact by 90%
+          matchCount: existing.matchCount + 1,
+          maxSimilarity: Math.max(existing.maxSimilarity, match.similarity),
+          avgPriority: (existing.avgPriority * existing.matchCount + match.priority) / (existing.matchCount + 1),
+        });
+      }
+    }
+
+    // Calculate score deductions - prioritize non-child-safe categories heavily
+    for (const [csvCategory, impact] of categoryImpact.entries()) {
+      const priorityWeight = impact.avgPriority / 10.0; // Normalize to 0-1 scale
+      
+      // Non-child-safe categories get much higher deductions based on priority
+      if (csvCategory === '1. Violence & Disturbing Content') {
+        // Highest priority - severe deductions
+        if (impact.maxSimilarity > 0.8 || impact.totalScore > 50) {
+          overallScore -= Math.min(60, 40 + (impact.totalScore / 8) * priorityWeight); // Graphic violence
+        } else {
+          overallScore -= Math.min(35, 20 + (impact.totalScore / 12) * priorityWeight); // Non-graphic violence
+        }
+      } else if (csvCategory === '2. Explicit & Body-Related Content') {
+        // Very high priority - severe deductions
+        overallScore -= Math.min(60, 40 + (impact.totalScore / 6) * priorityWeight); // Explicit content
+      } else if (csvCategory === '3. Substances & Addictive Behavior') {
+        // High priority - significant deductions
+        overallScore -= Math.min(35, 20 + (impact.totalScore / 10) * priorityWeight); // Substance use
+      } else if (csvCategory === '4. Financial & Commercial Content') {
+        // Medium-high priority - moderate deductions
+        overallScore -= Math.min(20, 10 + (impact.totalScore / 15) * priorityWeight); // Financial content
+      } else if (csvCategory === '5. Media & Platform-Native Risks') {
+        // Medium priority - moderate deductions
+        overallScore -= Math.min(25, 12 + (impact.totalScore / 12) * priorityWeight); // Media risks
+      } else if (csvCategory === '6. Social & Cultural Topics') {
+        // Lower priority - minimal deductions
+        overallScore -= Math.min(12, 5 + (impact.totalScore / 20) * priorityWeight); // Social topics
+      }
+    }
+  } else {
+    // Fallback to category-based scoring if no keyword matches
+    if (categoryScores['Graphic Violence']?.detected) overallScore -= 40;
+    if (categoryScores['Explicit Content']?.detected) overallScore -= 50;
+    if (categoryScores['Horror/Jumpscares']?.detected) overallScore -= 20;
+    if (categoryScores['Crime Footage']?.detected) overallScore -= 15;
+    if (categoryScores['Non-Graphic Violence']?.detected) overallScore -= 10;
+    if (categoryScores['Strong Language']?.detected) overallScore -= 15;
+    if (categoryScores['Mild Language']?.detected) overallScore -= 5;
+    if (categoryScores['Substance Use']?.detected) overallScore -= 20;
+  }
 
   // Add points for educational content
   if (categoryScores['Educational Content']?.detected) overallScore += 15;
@@ -572,47 +679,76 @@ function calculateSafetyScore(
     let reasons: string[] = [];
     let ageScore = 100;
 
-    // Check granular categories first (from CSV)
-    Object.entries(granularCategories).forEach(([category, data]) => {
-      if (data.detected && data.confidence > 0.5 && data.matchedRule) {
-        const csvAgeGroup = ageGroupMap[ageGroup];
-        const actionStr = data.matchedRule.rules[csvAgeGroup] || '';
-        const action = parseAction(actionStr);
-
-        if (action === 'BLOCK') {
-          worstAction = 'BLOCK';
-          ageScore = Math.min(ageScore, 30);
-          reasons.push(`${category} detected (blocked for this age)`);
-        } else if (action === 'GATE' && worstAction !== 'BLOCK') {
-          worstAction = 'GATE';
-          ageScore = Math.min(ageScore, 60);
-          reasons.push(`${category} detected (requires parent approval)`);
-        } else if (action === 'ALLOW') {
-          ageScore = Math.min(ageScore, 85);
-        }
+    // Prioritize keyword matches for age group actions - focus on non-child-safe keywords
+    if (similarityMatches && similarityMatches.length > 0) {
+      // Separate high-priority (non-child-safe) and low-priority matches
+      const highPriorityMatches = similarityMatches.filter(m => m.priority >= 5.0);
+      const matchesToProcess = highPriorityMatches.length > 0 ? highPriorityMatches : similarityMatches;
+      
+      // Group matches by CSV category
+      const categoryMatches = new Map<string, SimilarityMatch[]>();
+      for (const match of matchesToProcess) {
+        const existing = categoryMatches.get(match.category) || [];
+        existing.push(match);
+        categoryMatches.set(match.category, existing);
       }
-    });
 
-    // Fallback to original category scores if no granular match
-    if (worstAction === 'ALLOW') {
-      Object.entries(categoryScores).forEach(([category, data]: [string, any]) => {
-        if (data.detected && data.confidence > 0.5) {
-          const rule = CONTENT_RULES.categories[category as keyof typeof CONTENT_RULES.categories];
-          if (rule) {
-            const action = rule[ageGroup as keyof typeof rule];
+      // Process each category with matches
+      for (const [csvCategory, matches] of categoryMatches.entries()) {
+        // Load content rules to get age group actions
+        const contentRules = loadContentRulesFromCSV();
+        const matchedRule = contentRules.find(r => r.category === csvCategory);
+        
+        if (matchedRule) {
+          const csvAgeGroup = ageGroupMap[ageGroup];
+          const actionStr = matchedRule.rules[csvAgeGroup] || '';
+          const action = parseAction(actionStr);
+          
+          // Calculate match strength with priority weighting
+          const avgSimilarity = matches.reduce((sum, m) => sum + m.similarity, 0) / matches.length;
+          const totalScore = matches.reduce((sum, m) => sum + m.score, 0);
+          const matchCount = matches.length;
+          const avgPriority = matches.reduce((sum, m) => sum + m.priority, 0) / matches.length;
+          const priorityWeight = avgPriority / 10.0; // Normalize priority to 0-1
+          
+          // Match strength calculation - prioritize non-child-safe keywords
+          // Higher priority categories get boosted match strength
+          const baseMatchStrength = avgSimilarity * 0.5 + (Math.min(totalScore / 100, 1)) * 0.3 + (Math.min(matchCount / 20, 1)) * 0.2;
+          const matchStrength = baseMatchStrength * (0.7 + priorityWeight * 0.3); // Boost by priority
 
+          // Lower threshold for high-priority (non-child-safe) matches, higher for low-priority
+          const threshold = avgPriority >= 5.0 ? 0.2 : 0.4; // Non-child-safe: 0.2, Safe: 0.4
+          
+          if (matchStrength > threshold) {
             if (action === 'BLOCK') {
               worstAction = 'BLOCK';
-              ageScore = Math.min(ageScore, 30);
-              reasons.push(`${category} detected (blocked for this age)`);
+              ageScore = Math.min(ageScore, Math.max(0, 30 - (matchStrength * 20)));
+              const topKeywords = matches
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3)
+                .map(m => m.keyword.length > 30 ? m.keyword.substring(0, 30) + '...' : m.keyword)
+                .join(', ');
+              reasons.push(`${csvCategory} detected via keywords (${matchCount} matches): ${topKeywords} (blocked for this age)`);
             } else if (action === 'GATE' && worstAction !== 'BLOCK') {
               worstAction = 'GATE';
-              ageScore = Math.min(ageScore, 60);
-              reasons.push(`${category} detected (requires parent approval)`);
+              ageScore = Math.min(ageScore, Math.max(30, 60 - (matchStrength * 15)));
+              const topKeywords = matches
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3)
+                .map(m => m.keyword.length > 30 ? m.keyword.substring(0, 30) + '...' : m.keyword)
+                .join(', ');
+              reasons.push(`${csvCategory} detected via keywords (${matchCount} matches): ${topKeywords} (requires parent approval)`);
+            } else if (action === 'ALLOW') {
+              ageScore = Math.min(ageScore, 85);
             }
           }
         }
-      });
+      }
+    }
+
+    // If no keyword matches, default to ALLOW
+    if (similarityMatches && similarityMatches.length === 0) {
+      // No keyword matches found - content appears safe
     }
 
     if (reasons.length === 0) {
@@ -679,7 +815,6 @@ function generateNoContentResult(url: string, reason: string): ScanResult {
     categoryScores: {
       'Unknown Content': { detected: true, confidence: 1.0 },
     },
-    granularCategories: {},
     ageGroupActions: gatedAgeGroupActions,
     timestamp: new Date().toISOString(),
     analysisMethod: 'live',
@@ -728,7 +863,6 @@ function generateAdultDomainBlockedResult(url: string, matchedKeyword: string): 
       'Explicit Content': { detected: true, confidence: 1.0 },
       'Adult Domain': { detected: true, confidence: 1.0 },
     },
-    granularCategories: {},
     ageGroupActions: blockedAgeGroupActions,
     timestamp: new Date().toISOString(),
     analysisMethod: 'live',
@@ -779,15 +913,62 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
     console.log('Analyzing images with Vision API...');
     const visionResults = await analyzeImagesWithVision(metadata.imageUrls, screenshot);
 
-    // Determine safety categories
-    const categoryScores = determineSafetyCategories(metadata, nlpResults, visionResults, metadata.textContent);
+    // Perform keyword vectorization and similarity search FIRST
+    let similarityMatches: SimilarityMatch[] = [];
+    let keywordSimilarityReport: ScanResult['keywordSimilarityReport'] | undefined;
+    
+    try {
+      console.log('Performing keyword similarity analysis...');
+      const categoryKeywords = getVectorizedKeywords();
+      
+      if (categoryKeywords && categoryKeywords.length > 0) {
+        // Combine all text content for analysis
+        const combinedText = [
+          metadata.title,
+          metadata.description,
+          metadata.textContent,
+          ...(metadata.keywords || []),
+        ].filter(Boolean).join(' ');
 
-    // Load granular categories from CSV
-    const contentRules = loadContentRulesFromCSV();
-    const granularCategories = mapToGranularCategories(categoryScores, contentRules);
+        // Extract word frequencies from URL content
+        const wordFrequencies = extractWordFrequencies(combinedText);
+        
+        if (wordFrequencies.length > 0) {
+          // Find similar keywords
+          similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50);
+          
+          if (similarityMatches.length > 0) {
+            // Generate similarity report
+            const report = generateSimilarityReport(similarityMatches, wordFrequencies);
+            
+            keywordSimilarityReport = {
+              topCategories: report.topCategories,
+              topKeywords: report.topKeywords,
+              topWords: report.topWords,
+              summary: report.summary,
+              totalMatches: similarityMatches.length,
+            };
+            
+            console.log(`Found ${similarityMatches.length} keyword matches`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in keyword similarity analysis:', error);
+      // Continue without keyword matches if it fails
+    }
 
-    // Calculate safety scores using granular categories
-    const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, granularCategories);
+    // Determine safety categories using keyword vectorization results
+    const categoryScores = determineSafetyCategories(
+      metadata,
+      nlpResults,
+      visionResults,
+      metadata.textContent,
+      similarityMatches
+    );
+
+    // Calculate safety scores using keyword matches only
+    const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, similarityMatches);
 
     // Extract detected category names for display
     const detectedCategoryNames = Object.keys(categoryScores).filter(
@@ -822,8 +1003,8 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
         },
       },
       categoryScores,
-      granularCategories,
       ageGroupActions,
+      keywordSimilarityReport,
       timestamp: new Date().toISOString(),
       analysisMethod: visionClient && languageClient ? 'live' : 'demo',
     };
@@ -847,56 +1028,53 @@ function generateDemoAnalysis(url: string): ScanResult {
     return generateAdultDomainBlockedResult(url, adultCheck.matchedKeyword || 'unknown');
   }
 
-  const urlLower = url.toLowerCase();
-
-  const hasNews = urlLower.includes('news') || urlLower.includes('cnn') || urlLower.includes('bbc');
-  const hasGaming = urlLower.includes('game') || urlLower.includes('steam') || urlLower.includes('xbox');
-  const hasEducational = urlLower.includes('edu') || urlLower.includes('learn') || urlLower.includes('wiki');
-  const hasSocial = urlLower.includes('facebook') || urlLower.includes('instagram') || urlLower.includes('tiktok');
-  const hasVideo = urlLower.includes('youtube') || urlLower.includes('video') || urlLower.includes('vimeo');
-
-  const categoryScores: { [key: string]: { detected: boolean; confidence: number } } = {};
-  let detectedCategories: string[] = [];
-
-  if (hasNews) {
-    categoryScores['Crime Footage'] = { detected: true, confidence: 0.65 };
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.45 };
-    detectedCategories.push('Crime Footage', 'Mild Language');
+  // Perform keyword vectorization and similarity search FIRST
+  let similarityMatches: SimilarityMatch[] = [];
+  let keywordSimilarityReport: ScanResult['keywordSimilarityReport'] | undefined;
+  
+  try {
+    const categoryKeywords = getVectorizedKeywords();
+    
+    if (categoryKeywords && categoryKeywords.length > 0) {
+      // Use URL for analysis in demo mode
+      const wordFrequencies = extractWordFrequencies(url);
+      
+      if (wordFrequencies.length > 0) {
+        similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50);
+        
+        if (similarityMatches.length > 0) {
+          const report = generateSimilarityReport(similarityMatches, wordFrequencies);
+          
+          keywordSimilarityReport = {
+            topCategories: report.topCategories,
+            topKeywords: report.topKeywords,
+            topWords: report.topWords,
+            summary: report.summary,
+            totalMatches: similarityMatches.length,
+          };
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in keyword similarity analysis (demo):', error);
   }
 
-  if (hasGaming) {
-    categoryScores['Non-Graphic Violence'] = { detected: true, confidence: 0.72 };
-    categoryScores['Heavy Fighting (Sports)'] = { detected: true, confidence: 0.58 };
-    detectedCategories.push('Non-Graphic Violence');
-  }
+  // Determine safety categories using keyword vectorization results
+  const categoryScores = determineSafetyCategories(
+    { title: '', description: '', keywords: [], textContent: url, imageCount: 0, linkCount: 0 },
+    null,
+    null,
+    url,
+    similarityMatches
+  );
 
-  if (hasEducational) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.95 };
-    detectedCategories.push('Educational Content');
-  }
+  // Calculate safety scores using keyword matches only
+  const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, similarityMatches);
 
-  if (hasSocial) {
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.55 };
-    categoryScores['Strong Language'] = { detected: true, confidence: 0.35 };
-    detectedCategories.push('Mild Language');
-  }
-
-  if (hasVideo) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.40 };
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.50 };
-  }
-
-  if (detectedCategories.length === 0) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.70 };
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.30 };
-    detectedCategories.push('Educational Content');
-  }
-
-  // Load granular categories from CSV
-  const contentRules = loadContentRulesFromCSV();
-  const granularCategories = mapToGranularCategories(categoryScores, contentRules);
-
-  const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, granularCategories);
+  // Extract detected category names for display
+  const detectedCategories = Object.keys(categoryScores).filter(
+    (key) => categoryScores[key]?.detected && categoryScores[key]?.confidence > 0.5
+  );
 
   return {
     url,
@@ -924,8 +1102,8 @@ function generateDemoAnalysis(url: string): ScanResult {
       },
     },
     categoryScores,
-    granularCategories,
     ageGroupActions,
+    keywordSimilarityReport,
     timestamp: new Date().toISOString(),
     analysisMethod: 'demo',
   };
