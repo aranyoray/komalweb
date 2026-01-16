@@ -593,6 +593,15 @@ function calculateSafetyScore(
     };
   });
 
+  // Adjust overall score based on age group actions:
+  // If content is GATE for 13-16 age group → give half the score (max 50)
+  // If content is BLOCK for 10-13 age group → give 0 score
+  if (ageGroupActions['10-13']?.action === 'BLOCK') {
+    overallScore = 0;
+  } else if (ageGroupActions['13-16']?.action === 'GATE') {
+    overallScore = Math.min(overallScore, 50);
+  }
+
   return { overallScore, ageGroupActions };
 }
 
