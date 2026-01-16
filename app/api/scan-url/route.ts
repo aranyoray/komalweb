@@ -667,6 +667,7 @@ function calculateSafetyScore(
   } = {};
 
   // Age group mapping: <10, 10-13, 13-18, 18+ -> CSV columns
+  // Process in order from youngest to oldest for cascading effect
   const ageGroupMap: { [key: string]: keyof CategoryRule['rules'] } = {
     '<10': '<10',
     '10-13': '10-13',
@@ -674,13 +675,36 @@ function calculateSafetyScore(
     '18+': '16-18', // Map 18+ to 16-18 from CSV
   };
 
-  Object.keys(ageGroupMap).forEach((ageGroup) => {
+  const ageGroupOrder = ['<10', '10-13', '13-18', '18+']; // Process from youngest to oldest
+
+  // Process each age group in order (youngest to oldest)
+  ageGroupOrder.forEach((ageGroup) => {
     let worstAction: 'BLOCK' | 'GATE' | 'ALLOW' = 'ALLOW';
     let reasons: string[] = [];
     let ageScore = 100;
 
-    // Prioritize keyword matches for age group actions - focus on non-child-safe keywords
-    if (similarityMatches && similarityMatches.length > 0) {
+    // Check if a lower age group already marked this as ALLOW (cascade effect)
+    const currentIndex = ageGroupOrder.indexOf(ageGroup);
+    let cascadedFromYounger = false;
+    
+    if (currentIndex > 0) {
+      // Check all previous (younger) age groups
+      for (let i = 0; i < currentIndex; i++) {
+        const youngerAgeGroup = ageGroupOrder[i];
+        const youngerAction = ageGroupActions[youngerAgeGroup];
+        if (youngerAction && youngerAction.action === 'ALLOW') {
+          // If younger age group is ALLOW, automatically ALLOW for older groups
+          worstAction = 'ALLOW';
+          ageScore = youngerAction.score; // Use the score from the younger age group
+          reasons.push(`Content is age-appropriate for ${youngerAgeGroup}, automatically approved for ${ageGroup}`);
+          cascadedFromYounger = true;
+          break; // Stop checking once we find an ALLOW
+        }
+      }
+    }
+
+    // Only process keyword matches if not already cascaded from younger age group
+    if (!cascadedFromYounger && similarityMatches && similarityMatches.length > 0) {
       // Separate high-priority (non-child-safe) and low-priority matches
       const highPriorityMatches = similarityMatches.filter(m => m.priority >= 5.0);
       const matchesToProcess = highPriorityMatches.length > 0 ? highPriorityMatches : similarityMatches;
@@ -746,11 +770,15 @@ function calculateSafetyScore(
       }
     }
 
-    // If no keyword matches, default to ALLOW
-    if (similarityMatches && similarityMatches.length === 0) {
+    // If no keyword matches and not cascaded, default to ALLOW
+    if (!cascadedFromYounger && (!similarityMatches || similarityMatches.length === 0)) {
       // No keyword matches found - content appears safe
+      if (reasons.length === 0) {
+        reasons.push('Content appears age-appropriate');
+      }
     }
-
+    
+    // Ensure we have at least one reason
     if (reasons.length === 0) {
       reasons.push('Content appears age-appropriate');
     }
@@ -762,14 +790,14 @@ function calculateSafetyScore(
     };
   });
 
-  // Adjust overall score based on age group actions:
-  // If content is GATE for 13-18 age group → give half the score (max 50)
-  // If content is BLOCK for 10-13 age group → give 0 score
-  if (ageGroupActions['10-13']?.action === 'BLOCK') {
-    overallScore = 0;
-  } else if (ageGroupActions['13-18']?.action === 'GATE') {
-    overallScore = Math.min(overallScore, 50);
+  // Calculate overall score as average of all age group scores
+  const ageGroupScores = Object.values(ageGroupActions).map(action => action.score);
+  if (ageGroupScores.length > 0) {
+    overallScore = Math.round(ageGroupScores.reduce((sum, score) => sum + score, 0) / ageGroupScores.length);
   }
+
+  // Clamp to 0-100
+  overallScore = Math.max(0, Math.min(100, overallScore));
 
   return { overallScore, ageGroupActions };
 }
