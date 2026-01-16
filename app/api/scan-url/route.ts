@@ -639,6 +639,54 @@ function calculateSafetyScore(
 }
 
 /**
+ * Generate gated result when no content could be fetched or analyzed
+ */
+function generateNoContentResult(url: string, reason: string): ScanResult {
+  const gatedAgeGroupActions: { [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number } } = {};
+
+  CONTENT_RULES.ageGroups.forEach((ageGroup) => {
+    gatedAgeGroupActions[ageGroup] = {
+      action: 'GATE',
+      reason: `Unable to analyze content: ${reason}`,
+      score: 0,
+    };
+  });
+
+  return {
+    url,
+    overallScore: 0,
+    contentAnalysis: {
+      textAnalysis: {
+        sentiment: 'Unknown',
+        keyTopics: ['Unable to Analyze'],
+        languageScore: 0,
+        entities: [],
+      },
+      visualAnalysis: {
+        detectedObjects: [],
+        safetyScore: 0,
+        concerns: ['Content could not be analyzed'],
+        labels: ['Unknown Content'],
+      },
+      metadata: {
+        title: 'Unable to Fetch Content',
+        description: reason,
+        keywords: [],
+        imageCount: 0,
+        linkCount: 0,
+      },
+    },
+    categoryScores: {
+      'Unknown Content': { detected: true, confidence: 1.0 },
+    },
+    granularCategories: {},
+    ageGroupActions: gatedAgeGroupActions,
+    timestamp: new Date().toISOString(),
+    analysisMethod: 'live',
+  };
+}
+
+/**
  * Generate blocked result for adult domains
  */
 function generateAdultDomainBlockedResult(url: string, matchedKeyword: string): ScanResult {
@@ -703,9 +751,21 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
     console.log('Fetching webpage content...');
     const html = await fetchWebpageContent(url);
 
+    // Check if we got any content
+    if (!html || html.trim().length === 0) {
+      console.log('No HTML content received');
+      return generateNoContentResult(url, 'No content could be fetched from this URL');
+    }
+
     // Parse HTML and extract metadata
     console.log('Parsing HTML and extracting metadata...');
     const metadata = parseHTMLMetadata(html, url);
+
+    // Check if we got any meaningful content
+    if (!metadata.textContent || metadata.textContent.trim().length < 50) {
+      console.log('Insufficient text content for analysis');
+      return generateNoContentResult(url, 'Insufficient content for safety analysis');
+    }
 
     // Capture screenshot
     console.log('Capturing screenshot...');
@@ -770,9 +830,10 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
 
     return result;
   } catch (error) {
-    console.error('Error in live analysis, falling back to demo mode:', error);
-    // Fallback to demo mode if live analysis fails
-    return generateDemoAnalysis(url);
+    console.error('Error in live analysis:', error);
+    // Return gated result when fetch/analysis fails - 0 score, GATE for all ages
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return generateNoContentResult(url, `Failed to analyze: ${errorMessage}`);
   }
 }
 
