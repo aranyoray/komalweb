@@ -1086,7 +1086,7 @@ function generateDemoAnalysis(url: string): ScanResult {
         languageScore: Math.floor(overallScore * 0.8 + Math.random() * 15),
       },
       visualAnalysis: {
-        detectedObjects: hasVideo ? ['people', 'text', 'indoor scene'] : ['webpage', 'text', 'images'],
+        detectedObjects: ['webpage', 'text', 'images'],
         safetyScore: Math.floor(overallScore * 0.85 + Math.random() * 10),
         concerns: detectedCategories.filter((c) =>
           c.includes('Violence') || c.includes('Horror') || c.includes('Crime') || c.includes('Explicit')
