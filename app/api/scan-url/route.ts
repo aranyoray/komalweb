@@ -4,6 +4,7 @@ import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 import puppeteer from 'puppeteer';
 import { CONTENT_RULES } from '@/lib/content-rules';
+import type { protos } from '@google-cloud/vision';
 
 interface ScanResult {
   url: string;
@@ -300,7 +301,9 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
 /**
  * Convert Google Cloud Vision likelihood to numeric score
  */
-function getLikelihoodScore(likelihood: string | null | undefined): number {
+function getLikelihoodScore(
+  likelihood: protos.google.cloud.vision.v1.Likelihood | string | null | undefined
+): number {
   switch (likelihood) {
     case 'VERY_UNLIKELY':
       return 0;
