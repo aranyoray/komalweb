@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
+import type { protos } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 import puppeteer from 'puppeteer';
 
@@ -366,8 +367,22 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
 /**
  * Convert Google Cloud Vision likelihood to numeric score
  */
-function getLikelihoodScore(likelihood: string | null | undefined): number {
-  switch (likelihood) {
+type LikelihoodValue = protos.google.cloud.vision.v1.Likelihood | string | null | undefined;
+
+function normalizeLikelihood(likelihood: LikelihoodValue): string | null | undefined {
+  if (likelihood === null || likelihood === undefined) {
+    return likelihood;
+  }
+
+  if (typeof likelihood === 'number') {
+    return protos.google.cloud.vision.v1.Likelihood[likelihood] ?? 'UNKNOWN';
+  }
+
+  return likelihood;
+}
+
+function getLikelihoodScore(likelihood: LikelihoodValue): number {
+  switch (normalizeLikelihood(likelihood)) {
     case 'VERY_UNLIKELY':
       return 0;
     case 'UNLIKELY':
