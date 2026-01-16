@@ -160,7 +160,7 @@ const generateReportHTML = (report: ReportData): string => {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, report } = body;
+    const { email, report, senderEmail } = body;
 
     if (!email || !report) {
       return NextResponse.json(
@@ -178,11 +178,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const transporter = createTransporter();
+    // Use senderEmail from demo page as SMTP_USER if provided, otherwise use env variable
+    const smtpUser = senderEmail && emailRegex.test(senderEmail) 
+      ? senderEmail 
+      : process.env.SMTP_USER;
+
+    if (!smtpUser) {
+      return NextResponse.json(
+        { error: 'SMTP user email is required. Please provide sender email or configure SMTP_USER in environment variables.' },
+        { status: 400 }
+      );
+    }
+
+    // Create transporter with dynamic SMTP_USER
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: smtpUser,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
     const htmlContent = generateReportHTML(report);
 
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"KOMAL Safety" <noreply@komalkids.com>',
+      from: process.env.SMTP_FROM || `"KOMAL Safety" <${smtpUser}>`,
       to: email,
       subject: `URL Safety Report: ${report.url}`,
       html: htmlContent,

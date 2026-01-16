@@ -231,6 +231,7 @@ export default function DemoPage() {
         body: JSON.stringify({
           email: emailInput.trim(),
           report: result,
+          senderEmail: emailInput.trim(), // Use email input as SMTP_USER
         }),
       });
 
