@@ -319,16 +319,37 @@ export default function DemoPage() {
                       <div>
                         <p className="text-sm text-text-dim mb-2">Key Topics Detected</p>
                         <div className="flex flex-wrap gap-2">
-                          {result.contentAnalysis.textAnalysis.keyTopics.map((topic, idx) => (
-                            <span
-                              key={idx}
-                              className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                            >
-                              {topic}
+                          {result.contentAnalysis.textAnalysis.keyTopics.length > 0 ? (
+                            result.contentAnalysis.textAnalysis.keyTopics.map((topic, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                              >
+                                {topic}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded-full text-sm">
+                              No specific topics detected
                             </span>
-                          ))}
+                          )}
                         </div>
                       </div>
+                      {result.contentAnalysis.textAnalysis.entities && result.contentAnalysis.textAnalysis.entities.length > 0 && (
+                        <div>
+                          <p className="text-sm text-text-dim mb-2">Entities Detected</p>
+                          <div className="flex flex-wrap gap-2">
+                            {result.contentAnalysis.textAnalysis.entities.map((entity, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"
+                              >
+                                {entity}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -350,16 +371,35 @@ export default function DemoPage() {
                       <div>
                         <p className="text-sm text-text-dim mb-2">Detected Objects</p>
                         <div className="flex flex-wrap gap-2">
-                          {result.contentAnalysis.visualAnalysis.detectedObjects.map((obj, idx) => (
-                            <span
-                              key={idx}
-                              className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
-                            >
-                              {obj}
-                            </span>
-                          ))}
+                          {result.contentAnalysis.visualAnalysis.detectedObjects.length > 0 ? (
+                            result.contentAnalysis.visualAnalysis.detectedObjects.map((obj, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
+                              >
+                                {obj}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-sm text-text-dim">No objects detected</span>
+                          )}
                         </div>
                       </div>
+                      {result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 && (
+                        <div>
+                          <p className="text-sm text-text-dim mb-2">Image Labels</p>
+                          <div className="flex flex-wrap gap-2">
+                            {result.contentAnalysis.visualAnalysis.labels.map((label, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {result.contentAnalysis.visualAnalysis.concerns.length > 0 && (
                         <div>
                           <p className="text-sm text-text-dim mb-2">Safety Concerns</p>

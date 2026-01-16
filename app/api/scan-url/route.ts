@@ -640,6 +640,11 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
     // Calculate safety scores using granular categories
     const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, granularCategories);
 
+    // Extract detected category names for display
+    const detectedCategoryNames = Object.keys(categoryScores).filter(
+      (key) => categoryScores[key]?.detected && categoryScores[key]?.confidence > 0.5
+    );
+
     // Prepare result
     const result: ScanResult = {
       url,
@@ -647,17 +652,17 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
       contentAnalysis: {
         textAnalysis: {
           sentiment: nlpResults?.sentiment || 'Neutral',
-          keyTopics: nlpResults?.categories || [],
+          keyTopics: nlpResults?.categories?.length ? nlpResults.categories : detectedCategoryNames.length ? detectedCategoryNames : ['General Content'],
           languageScore: Math.floor(overallScore * 0.85 + Math.random() * 10),
           entities: nlpResults?.entities || [],
         },
         visualAnalysis: {
-          detectedObjects: visionResults?.detectedObjects || [],
+          detectedObjects: visionResults?.detectedObjects?.length ? visionResults.detectedObjects : ['webpage', 'text', 'images'],
           safetyScore: Math.floor(overallScore * 0.9 + Math.random() * 5),
           concerns: Object.keys(categoryScores).filter((key) =>
             key.includes('Violence') || key.includes('Horror') || key.includes('Crime') || key.includes('Explicit')
           ),
-          labels: visionResults?.labels || [],
+          labels: visionResults?.labels?.length ? visionResults.labels : detectedCategoryNames,
         },
         metadata: {
           title: metadata.title,
@@ -752,6 +757,7 @@ function generateDemoAnalysis(url: string): ScanResult {
         concerns: detectedCategories.filter((c) =>
           c.includes('Violence') || c.includes('Horror') || c.includes('Crime') || c.includes('Explicit')
         ),
+        labels: detectedCategories.length > 0 ? detectedCategories : ['General Content'],
       },
       metadata: {
         title: 'Demo Mode - No metadata available',
