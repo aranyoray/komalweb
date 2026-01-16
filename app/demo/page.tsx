@@ -15,11 +15,20 @@ interface ScanResult {
       sentiment: string;
       keyTopics: string[];
       languageScore: number;
+      entities?: string[];
     };
     visualAnalysis: {
       detectedObjects: string[];
       safetyScore: number;
       concerns: string[];
+      labels?: string[];
+    };
+    metadata?: {
+      title?: string;
+      description?: string;
+      keywords?: string[];
+      imageCount: number;
+      linkCount: number;
     };
   };
   categoryScores: {
@@ -36,6 +45,7 @@ interface ScanResult {
     };
   };
   timestamp: string;
+  analysisMethod?: 'live' | 'demo';
 }
 
 export default function DemoPage() {
@@ -237,9 +247,33 @@ export default function DemoPage() {
                       style={{ width: `${result.overallScore}%` }}
                     />
                   </div>
-                  <p className="mt-4 text-sm text-text-dim">
-                    Scanned: <span className="font-mono text-primary">{result.url}</span>
-                  </p>
+                  <div className="mt-4 flex items-center gap-3 flex-wrap">
+                    <p className="text-sm text-text-dim">
+                      Scanned: <span className="font-mono text-primary">{result.url}</span>
+                    </p>
+                    {result.analysisMethod && (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          result.analysisMethod === 'live'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {result.analysisMethod === 'live' ? '🔴 Live Analysis' : '⚡ Demo Mode'}
+                      </span>
+                    )}
+                  </div>
+                  {result.contentAnalysis.metadata && (
+                    <div className="mt-3 p-3 bg-gray-50 rounded-xl text-xs space-y-1">
+                      {result.contentAnalysis.metadata.title && (
+                        <p><span className="font-semibold">Title:</span> {result.contentAnalysis.metadata.title}</p>
+                      )}
+                      {result.contentAnalysis.metadata.description && (
+                        <p><span className="font-semibold">Description:</span> {result.contentAnalysis.metadata.description.substring(0, 150)}...</p>
+                      )}
+                      <p><span className="font-semibold">Page Stats:</span> {result.contentAnalysis.metadata.imageCount} images, {result.contentAnalysis.metadata.linkCount} links</p>
+                    </div>
+                  )}
                 </div>
               </ScrollReveal>
 
