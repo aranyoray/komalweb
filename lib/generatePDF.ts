@@ -64,7 +64,7 @@ interface ScanResult {
   usedSearchFallback?: boolean;
 }
 
-// Colors
+// Colors - Using purple theme (no black colors)
 const COLORS = {
   primary: [107, 78, 113] as [number, number, number],
   green: [34, 197, 94] as [number, number, number],
@@ -73,8 +73,8 @@ const COLORS = {
   gray: [107, 114, 128] as [number, number, number],
   lightGray: [243, 244, 246] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
-  text: [31, 41, 55] as [number, number, number],
-  textDim: [107, 114, 128] as [number, number, number],
+  text: [107, 78, 113] as [number, number, number], // Changed from black to purple
+  textDim: [139, 115, 145] as [number, number, number], // Lighter purple for dim text
 };
 
 const PAGE_WIDTH = 210; // A4 width in mm
@@ -101,7 +101,7 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
   const addHeader = () => {
     // White background for logo area
     doc.setFillColor(...COLORS.white);
-    doc.rect(MARGIN, MARGIN, 25, 10, 'F');
+    doc.rect(MARGIN, MARGIN, 60, 10, 'F');
 
     // Add logo
     if (logoBase64) {
@@ -113,6 +113,12 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.primary);
     doc.text('KOMAL', MARGIN + 12, MARGIN + 6);
+
+    // Add komalkids.com URL next to KOMAL text (16px = ~5.6mm in PDF)
+    doc.setFontSize(16 * 0.352778); // Convert 16px to mm (approximately 5.6pt)
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.primary);
+    doc.text('komalkids.com', MARGIN + 30, MARGIN + 6);
 
     // Add report title
     doc.setFontSize(8);
