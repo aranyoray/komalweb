@@ -59,6 +59,21 @@ interface ScanResult {
       score: number;
     };
   };
+  keywordSimilarityReport?: {
+    topCategories: Array<{ category: string; matchCount: number; avgScore: number }>;
+    topKeywords: Array<{
+      keyword: string;
+      category: string;
+      similarity: number;
+      distance: number;
+      frequency: number;
+      score: number;
+      priority: number;
+    }>;
+    topWords: Array<{ word: string; frequency: number }>;
+    summary: string;
+    totalMatches: number;
+  };
   timestamp: string;
   analysisMethod?: 'live' | 'demo';
 }
@@ -129,12 +144,16 @@ export default function DemoPage() {
       const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
 
-      // Create a temporary div for PDF content
+      // Create a temporary div for PDF content with homepage-inspired design
       const pdfContent = document.createElement('div');
-      pdfContent.style.padding = '40px';
-      pdfContent.style.background = 'white';
+      pdfContent.style.padding = '0';
+      pdfContent.style.background = '#ffffff';
       pdfContent.style.width = '800px';
-      pdfContent.style.fontFamily = 'Arial, sans-serif';
+      pdfContent.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+      pdfContent.style.color = '#1a1a1a';
+      pdfContent.style.position = 'absolute';
+      pdfContent.style.left = '-9999px';
+      pdfContent.style.top = '0';
 
       const getScoreColor = (score: number) => {
         if (score >= 75) return '#22c55e';
@@ -148,63 +167,219 @@ export default function DemoPage() {
         return '#22c55e';
       };
 
+      // Primary color from homepage
+      const primaryColor = '#270263';
+      const primaryLight = 'rgba(39, 2, 99, 0.1)';
+      const purpleGradient = 'linear-gradient(135deg, #270263 0%, #6b4e71 100%)';
+
       pdfContent.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #1e3a5f; font-size: 32px; margin: 0;">KOMAL</h1>
-          <p style="color: #666; font-size: 14px; margin: 8px 0 0 0;">URL Safety Analysis Report</p>
+        <!-- Header -->
+        <div style="background: ${primaryColor}; padding: 40px; text-align: center;">
+          <h1 style="color: white; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: -0.02em;">KOMAL</h1>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">URL Safety Analysis Report</p>
         </div>
 
-        <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-          <p style="margin: 0; font-size: 12px; color: #666;">Analyzed URL</p>
-          <p style="margin: 8px 0 0 0; font-size: 14px; color: #1e3a5f; word-break: break-all;">${result.url}</p>
-        </div>
-
-        <div style="background: ${getScoreColor(result.overallScore)}20; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-          <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Overall Safety Score</p>
-          <div style="font-size: 48px; font-weight: 700; color: ${getScoreColor(result.overallScore)};">${result.overallScore}<span style="font-size: 24px; color: #666;">/100</span></div>
-        </div>
-
-        <h2 style="color: #1e3a5f; font-size: 18px; margin: 24px 0 16px 0;">Age-Appropriate Actions</h2>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          ${Object.entries(result.ageGroupActions).map(([age, data]) => `
-            <div style="flex: 1; min-width: 120px; background: ${getActionColor(data.action)}15; border: 2px solid ${getActionColor(data.action)}40; border-radius: 12px; padding: 16px; text-align: center;">
-              <div style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">${age}</div>
-              <div style="font-size: 20px; font-weight: 700; color: ${getActionColor(data.action)};">${data.action}</div>
-              <div style="font-size: 11px; color: #666; margin-top: 4px;">Score: ${data.score}/100</div>
+        <!-- Main Content -->
+        <div style="padding: 32px; background: white;">
+          <!-- URL and Metadata -->
+          <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; margin-bottom: 24px; border: 1px solid rgba(39, 2, 99, 0.1);">
+            <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Analyzed URL</p>
+            <p style="margin: 0 0 12px 0; font-size: 13px; color: ${primaryColor}; word-break: break-all; font-family: monospace; font-weight: 500;">${result.url}</p>
+            ${result.contentAnalysis.metadata ? `
+            <div style="border-top: 1px solid rgba(39, 2, 99, 0.1); padding-top: 12px; margin-top: 12px;">
+              ${result.contentAnalysis.metadata.title ? `<p style="margin: 0 0 4px 0; font-size: 11px; color: #333;"><strong>Title:</strong> ${result.contentAnalysis.metadata.title}</p>` : ''}
+              ${result.contentAnalysis.metadata.description ? `<p style="margin: 4px 0; font-size: 11px; color: #333; line-height: 1.4;"><strong>Description:</strong> ${result.contentAnalysis.metadata.description.substring(0, 150)}${result.contentAnalysis.metadata.description.length > 150 ? '...' : ''}</p>` : ''}
+              <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;"><strong>Stats:</strong> ${result.contentAnalysis.metadata.imageCount} images, ${result.contentAnalysis.metadata.linkCount} links</p>
             </div>
-          `).join('')}
-        </div>
+            ` : ''}
+            ${result.analysisMethod ? `
+            <div style="margin-top: 8px;">
+              <span style="background: ${result.analysisMethod === 'live' ? '#dcfce7' : '#fef3c7'}; color: ${result.analysisMethod === 'live' ? '#166534' : '#92400e'}; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">
+                ${result.analysisMethod === 'live' ? 'Live Analysis' : 'Demo Mode'}
+              </span>
+            </div>
+            ` : ''}
+          </div>
 
-        <h2 style="color: #1e3a5f; font-size: 18px; margin: 24px 0 16px 0;">Analysis Summary</h2>
-        <div style="background: #f5f5f7; border-radius: 12px; padding: 20px;">
-          <p style="margin: 0 0 8px 0;"><strong>Sentiment:</strong> ${result.contentAnalysis.textAnalysis.sentiment}</p>
-          <p style="margin: 0 0 8px 0;"><strong>Language Score:</strong> ${result.contentAnalysis.textAnalysis.languageScore}/100</p>
-          <p style="margin: 0 0 8px 0;"><strong>Visual Safety:</strong> ${result.contentAnalysis.visualAnalysis.safetyScore}/100</p>
-          ${result.contentAnalysis.textAnalysis.keyTopics.length > 0 ? `<p style="margin: 0;"><strong>Key Topics:</strong> ${result.contentAnalysis.textAnalysis.keyTopics.join(', ')}</p>` : ''}
-        </div>
+          <!-- Overall Score -->
+          <div style="background: ${getScoreColor(result.overallScore)}15; border: 2px solid ${getScoreColor(result.overallScore)}40; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
+            <p style="margin: 0 0 8px 0; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Overall Safety Score</p>
+            <div style="font-size: 56px; font-weight: 700; color: ${getScoreColor(result.overallScore)}; line-height: 1; margin-bottom: 12px;">
+              ${result.overallScore}<span style="font-size: 28px; color: #666; font-weight: 500;">/100</span>
+            </div>
+            <div style="background: #e5e5e5; border-radius: 6px; height: 8px; overflow: hidden;">
+              <div style="background: ${getScoreColor(result.overallScore)}; height: 100%; width: ${result.overallScore}%; border-radius: 6px;"></div>
+            </div>
+          </div>
 
-        <div style="margin-top: 32px; text-align: center; color: #999; font-size: 12px;">
-          <p>Report generated on ${new Date(result.timestamp).toLocaleString()}</p>
-          <p style="margin-top: 4px;">Powered by KOMAL - komalkids.com</p>
+          <!-- Age Group Actions -->
+          <div style="margin-bottom: 24px;">
+            <h2 style="color: ${primaryColor}; font-size: 18px; font-weight: 700; margin: 0 0 16px 0;">Age-Appropriate Actions</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+              ${Object.entries(result.ageGroupActions).map(([age, data]) => `
+                <div style="background: ${getActionColor(data.action)}15; border: 2px solid ${getActionColor(data.action)}40; border-radius: 12px; padding: 16px;">
+                  <div style="font-size: 11px; font-weight: 600; color: ${primaryColor}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">${age}</div>
+                  <div style="font-size: 24px; font-weight: 700; color: ${getActionColor(data.action)}; margin-bottom: 6px;">${data.action}</div>
+                  <div style="font-size: 11px; color: #666; margin-bottom: 8px; font-weight: 500;">Score: ${data.score}/100</div>
+                  ${data.reason ? `<div style="font-size: 9px; color: #666; line-height: 1.3; padding-top: 8px; border-top: 1px solid ${getActionColor(data.action)}20;">${data.reason}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- AI Analysis Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+            <!-- NLP Text Analysis -->
+            <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; border: 1px solid rgba(39, 2, 99, 0.1);">
+              <h3 style="color: ${primaryColor}; font-size: 14px; font-weight: 700; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
+                <span style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; display: inline-block;"></span>
+                NLP Text Analysis
+              </h3>
+              <div style="space-y: 8px;">
+                <div style="margin-bottom: 10px;">
+                  <p style="margin: 0 0 4px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Sentiment</p>
+                  <p style="margin: 0; font-size: 13px; font-weight: 600; color: ${primaryColor};">${result.contentAnalysis.textAnalysis.sentiment}</p>
+                </div>
+                <div style="margin-bottom: 10px;">
+                  <p style="margin: 0 0 4px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Language Score</p>
+                  <p style="margin: 0; font-size: 13px; font-weight: 600; color: ${getScoreColor(result.contentAnalysis.textAnalysis.languageScore)};">${result.contentAnalysis.textAnalysis.languageScore}/100</p>
+                </div>
+                ${result.contentAnalysis.textAnalysis.keyTopics.length > 0 ? `
+                <div style="margin-bottom: 10px;">
+                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Key Topics</p>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${result.contentAnalysis.textAnalysis.keyTopics.map((topic: string) => `
+                      <span style="background: ${primaryLight}; color: ${primaryColor}; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${topic}</span>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
+                ${result.contentAnalysis.textAnalysis.entities && result.contentAnalysis.textAnalysis.entities.length > 0 ? `
+                <div>
+                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Entities</p>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${result.contentAnalysis.textAnalysis.entities.slice(0, 5).map((entity: string) => `
+                      <span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${entity}</span>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Vision AI Analysis -->
+            <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; border: 1px solid rgba(39, 2, 99, 0.1);">
+              <h3 style="color: ${primaryColor}; font-size: 14px; font-weight: 700; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
+                <span style="width: 8px; height: 8px; background: #9333ea; border-radius: 50%; display: inline-block;"></span>
+                Vision AI Analysis
+              </h3>
+              <div style="space-y: 8px;">
+                <div style="margin-bottom: 10px;">
+                  <p style="margin: 0 0 4px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Visual Safety Score</p>
+                  <p style="margin: 0; font-size: 13px; font-weight: 600; color: ${getScoreColor(result.contentAnalysis.visualAnalysis.safetyScore)};">${result.contentAnalysis.visualAnalysis.safetyScore}/100</p>
+                </div>
+                ${result.contentAnalysis.visualAnalysis.detectedObjects.length > 0 ? `
+                <div style="margin-bottom: 10px;">
+                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Detected Objects</p>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${result.contentAnalysis.visualAnalysis.detectedObjects.slice(0, 7).map((obj: string) => `
+                      <span style="background: #f3e8ff; color: #7c3aed; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${obj}</span>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
+                ${result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 ? `
+                <div>
+                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Image Labels</p>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${result.contentAnalysis.visualAnalysis.labels.slice(0, 8).map((label: string) => `
+                      <span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${label}</span>
+                    `).join('')}
+                  </div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+
+          ${result.keywordSimilarityReport ? `
+          <!-- Keyword Analysis -->
+          <div style="margin-bottom: 24px;">
+            <h2 style="color: ${primaryColor}; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Keyword Analysis</h2>
+            <div style="background: ${primaryLight}; border-radius: 12px; padding: 16px; border: 1px solid rgba(39, 2, 99, 0.2);">
+              <p style="margin: 0 0 12px 0; font-size: 11px; color: ${primaryColor}; font-weight: 500; line-height: 1.5;">${result.keywordSimilarityReport.summary}</p>
+              ${result.keywordSimilarityReport.topCategories.length > 0 ? `
+              <div>
+                <p style="margin: 0 0 8px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Top Categories</p>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  ${result.keywordSimilarityReport.topCategories.slice(0, 5).map((cat: { category: string; matchCount: number; avgScore: number }) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; border-radius: 6px;">
+                      <span style="font-size: 11px; color: ${primaryColor}; font-weight: 500;">${cat.category}</span>
+                      <span style="font-size: 10px; color: #666;">${cat.matchCount} matches</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Footer -->
+          <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(39, 2, 99, 0.1); text-align: center;">
+            <p style="margin: 0; font-size: 10px; color: #999; font-weight: 500;">Report generated on ${new Date(result.timestamp).toLocaleString()}</p>
+            <p style="margin: 6px 0 0 0; font-size: 12px; font-weight: 700; color: ${primaryColor};">
+              Powered by KOMAL - Digital Guardian for Kids
+            </p>
+            <p style="margin: 2px 0 0 0; font-size: 10px; color: #999;">
+              komalkids.com
+            </p>
+          </div>
         </div>
       `;
 
       document.body.appendChild(pdfContent);
 
+      // Wait a bit for fonts and styles to render
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const canvas = await html2canvas(pdfContent, {
         scale: 2,
         useCORS: true,
         logging: false,
+        backgroundColor: '#ffffff',
+        allowTaint: true,
+        windowWidth: 800,
+        windowHeight: pdfContent.scrollHeight,
       });
 
       document.body.removeChild(pdfContent);
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      // Handle multi-page PDF if content is too tall
+      if (imgHeight > pdfHeight) {
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
+      } else {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      }
+
       pdf.save(`komal-safety-report-${new Date().toISOString().split('T')[0]}.pdf`);
 
     } catch (err) {
@@ -708,7 +883,7 @@ export default function DemoPage() {
                         <div>
                           <p className="text-sm text-text-dim mb-2">Entities Detected</p>
                           <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.textAnalysis.entities.map((entity, idx) => (
+                            {result.contentAnalysis.textAnalysis.entities.slice(0, 5).map((entity, idx) => (
                               <span
                                 key={idx}
                                 className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"
@@ -741,7 +916,7 @@ export default function DemoPage() {
                         <p className="text-sm text-text-dim mb-2">Detected Objects</p>
                         <div className="flex flex-wrap gap-2">
                           {result.contentAnalysis.visualAnalysis.detectedObjects.length > 0 ? (
-                            result.contentAnalysis.visualAnalysis.detectedObjects.map((obj, idx) => (
+                            result.contentAnalysis.visualAnalysis.detectedObjects.slice(0, 7).map((obj, idx) => (
                               <span
                                 key={idx}
                                 className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
@@ -765,19 +940,6 @@ export default function DemoPage() {
                               >
                                 {label}
                               </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {result.contentAnalysis.visualAnalysis.concerns.length > 0 && (
-                        <div>
-                          <p className="text-sm text-text-dim mb-2">Safety Concerns</p>
-                          <div className="space-y-1">
-                            {result.contentAnalysis.visualAnalysis.concerns.map((concern, idx) => (
-                              <div key={idx} className="flex items-center gap-2 text-sm text-red-600">
-                                <AlertTriangle className="w-4 h-4" />
-                                <span>{concern}</span>
-                              </div>
                             ))}
                           </div>
                         </div>
@@ -813,30 +975,6 @@ export default function DemoPage() {
                   </div>
                 </div>
               </ScrollReveal>
-
-              {/* Detected Categories */}
-              {Object.keys(result.categoryScores).length > 0 && (
-                <ScrollReveal delay={0.5}>
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-4 sm:mb-6">Content Categories Detected</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                      {Object.entries(result.categoryScores)
-                        .filter(([_, data]) => data.detected)
-                        .map(([category, data]) => (
-                          <div
-                            key={category}
-                            className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200"
-                          >
-                            <span className="font-medium text-primary text-sm sm:text-base">{category}</span>
-                            <span className="text-xs sm:text-sm text-text-dim">
-                              {Math.round(data.confidence * 100)}%
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </ScrollReveal>
-              )}
 
               {/* Info Footer */}
               <ScrollReveal delay={0.6}>
