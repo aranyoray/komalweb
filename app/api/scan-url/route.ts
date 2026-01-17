@@ -4,6 +4,335 @@ import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 
 // ============================================================================
+// GOOGLE CUSTOM SEARCH API CONFIGURATION
+// ============================================================================
+
+const GOOGLE_CUSTOM_SEARCH_API_KEY = process.env.GOOGLE_CUSTOM_SEARCH_API_KEY;
+const GOOGLE_CUSTOM_SEARCH_ENGINE_ID = process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_ID;
+
+interface GoogleSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  pagemap?: {
+    cse_image?: { src: string }[];
+    cse_thumbnail?: { src: string }[];
+    metatags?: { [key: string]: string }[];
+  };
+}
+
+interface GoogleSearchResponse {
+  items?: GoogleSearchResult[];
+  searchInformation?: {
+    totalResults: string;
+    searchTime: number;
+  };
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
+interface GoogleImageResult {
+  title: string;
+  link: string;
+  image: {
+    contextLink: string;
+    thumbnailLink: string;
+    thumbnailHeight: number;
+    thumbnailWidth: number;
+  };
+}
+
+interface GoogleImageSearchResponse {
+  items?: GoogleImageResult[];
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
+/**
+ * Check if Google Custom Search API is configured
+ */
+function isGoogleSearchConfigured(): boolean {
+  return !!(GOOGLE_CUSTOM_SEARCH_API_KEY && GOOGLE_CUSTOM_SEARCH_ENGINE_ID);
+}
+
+/**
+ * Search for text results using Google Custom Search API
+ */
+async function googleCustomSearch(query: string, numResults: number = 10): Promise<GoogleSearchResult[]> {
+  if (!isGoogleSearchConfigured()) {
+    console.log('⚠️ [GOOGLE SEARCH] API not configured, skipping');
+    return [];
+  }
+
+  try {
+    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_CUSTOM_SEARCH_API_KEY}&cx=${GOOGLE_CUSTOM_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&num=${Math.min(numResults, 10)}&safe=off`;
+
+    console.log(`🔍 [GOOGLE SEARCH] Searching for: "${query}"`);
+
+    const response = await fetch(searchUrl, {
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ [GOOGLE SEARCH] API error: ${response.status} - ${errorText}`);
+      return [];
+    }
+
+    const data: GoogleSearchResponse = await response.json();
+
+    if (data.error) {
+      console.error(`❌ [GOOGLE SEARCH] API error: ${data.error.message}`);
+      return [];
+    }
+
+    console.log(`✅ [GOOGLE SEARCH] Found ${data.items?.length || 0} results in ${data.searchInformation?.searchTime || 0}s`);
+
+    return data.items || [];
+  } catch (error) {
+    console.error(`❌ [GOOGLE SEARCH] Error:`, error instanceof Error ? error.message : error);
+    return [];
+  }
+}
+
+/**
+ * Search for images using Google Custom Search API
+ */
+async function googleImageSearch(query: string, numResults: number = 10): Promise<string[]> {
+  if (!isGoogleSearchConfigured()) {
+    console.log('⚠️ [GOOGLE IMAGE SEARCH] API not configured, skipping');
+    return [];
+  }
+
+  try {
+    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_CUSTOM_SEARCH_API_KEY}&cx=${GOOGLE_CUSTOM_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&searchType=image&num=${Math.min(numResults, 10)}&safe=off`;
+
+    console.log(`🖼️ [GOOGLE IMAGE SEARCH] Searching images for: "${query}"`);
+
+    const response = await fetch(searchUrl, {
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ [GOOGLE IMAGE SEARCH] API error: ${response.status} - ${errorText}`);
+      return [];
+    }
+
+    const data: GoogleImageSearchResponse = await response.json();
+
+    if (data.error) {
+      console.error(`❌ [GOOGLE IMAGE SEARCH] API error: ${data.error.message}`);
+      return [];
+    }
+
+    const imageUrls = data.items?.map(item => item.link).filter(Boolean) || [];
+    console.log(`✅ [GOOGLE IMAGE SEARCH] Found ${imageUrls.length} images`);
+
+    return imageUrls;
+  } catch (error) {
+    console.error(`❌ [GOOGLE IMAGE SEARCH] Error:`, error instanceof Error ? error.message : error);
+    return [];
+  }
+}
+
+/**
+ * Perform comprehensive keyword search using Google Custom Search API
+ * Falls back to pattern matching if API is not configured or fails
+ */
+async function searchKeywordWithGoogle(keyword: string): Promise<{
+  searchResults: { title: string; snippet: string; link: string }[];
+  imageUrls: string[];
+  combinedText: string;
+  siteName: string;
+  siteDescription: string;
+  usedGoogleSearch: boolean;
+}> {
+  const keywordLower = keyword.toLowerCase();
+
+  // Pattern matching for immediate safety assessment (always run this first)
+  const dangerousPatterns = [
+    { pattern: /porn|xxx|nsfw|adult\s*content|explicit/i, category: 'explicit', severity: 'critical' },
+    { pattern: /nude|naked|sex|erotic|fetish/i, category: 'explicit', severity: 'high' },
+    { pattern: /gore|blood|violent|murder|kill|torture|brutal/i, category: 'violence', severity: 'high' },
+    { pattern: /drug|cocaine|heroin|meth|weed|marijuana|cannabis|opioid/i, category: 'substances', severity: 'high' },
+    { pattern: /gambling|casino|betting|poker|slots/i, category: 'gambling', severity: 'high' },
+    { pattern: /suicide|self.?harm|cutting|overdose/i, category: 'self-harm', severity: 'critical' },
+    { pattern: /hate|racist|nazi|supremacist|extremist/i, category: 'hate', severity: 'high' },
+    { pattern: /predator|grooming|pedophil|trafficking/i, category: 'predatory', severity: 'critical' },
+    { pattern: /weapon|gun|bomb|explosive|firearm/i, category: 'weapons', severity: 'medium' },
+    { pattern: /alcohol|beer|wine|vodka|whiskey|drunk/i, category: 'alcohol', severity: 'medium' },
+  ];
+
+  const safePatterns = [
+    { pattern: /education|learn|school|study|tutorial|lesson/i, category: 'educational' },
+    { pattern: /kids|children|family|parents|child.?friendly/i, category: 'family-friendly' },
+    { pattern: /science|math|history|geography|reading/i, category: 'educational' },
+    { pattern: /cartoon|animation|disney|pixar|nickelodeon/i, category: 'entertainment' },
+    { pattern: /nature|animals|wildlife|environment/i, category: 'nature' },
+    { pattern: /safe|appropriate|wholesome|pbs|sesame/i, category: 'safe-content' },
+    { pattern: /news|article|blog|review|guide/i, category: 'informational' },
+    { pattern: /game|play|fun|entertainment|hobby/i, category: 'entertainment' },
+  ];
+
+  // Check patterns
+  const foundDangerous: string[] = [];
+  for (const { pattern, category } of dangerousPatterns) {
+    if (pattern.test(keywordLower)) {
+      foundDangerous.push(category);
+    }
+  }
+
+  const foundSafe: string[] = [];
+  for (const { pattern, category } of safePatterns) {
+    if (pattern.test(keywordLower)) {
+      foundSafe.push(category);
+    }
+  }
+
+  // If Google Search is not configured, use pattern matching only
+  if (!isGoogleSearchConfigured()) {
+    console.log(`📝 [KEYWORD ANALYSIS] Google Search not configured, using pattern matching only`);
+
+    let combinedText = `${keyword}`;
+    let siteDescription = '';
+
+    if (foundDangerous.length > 0) {
+      combinedText += ` ${foundDangerous.join(' ')} content detected`;
+      siteDescription = `Keyword "${keyword}" may relate to ${foundDangerous.join(', ')} content. Parental review recommended.`;
+    } else if (foundSafe.length > 0) {
+      combinedText += ` ${foundSafe.join(' ')} content`;
+      siteDescription = `Keyword "${keyword}" appears to relate to ${foundSafe.join(', ')} content.`;
+    } else {
+      siteDescription = `Keyword "${keyword}" analyzed using pattern matching. Configure Google Custom Search API for enhanced analysis.`;
+    }
+
+    return {
+      searchResults: [],
+      imageUrls: [],
+      combinedText,
+      siteName: `Keyword Analysis: ${keyword}`,
+      siteDescription,
+      usedGoogleSearch: false,
+    };
+  }
+
+  // Try Google Custom Search API
+  console.log(`🔍 [KEYWORD ANALYSIS] Using Google Custom Search for: "${keyword}"`);
+
+  try {
+    // Fetch text results and images in parallel
+    const [textResults, imageUrls] = await Promise.all([
+      googleCustomSearch(keyword, 10),
+      googleImageSearch(keyword, 5),
+    ]);
+
+    if (textResults.length === 0 && imageUrls.length === 0) {
+      // Google search returned no results, fall back to pattern matching
+      console.log(`⚠️ [KEYWORD ANALYSIS] Google Search returned no results, falling back to pattern matching`);
+
+      let combinedText = `${keyword}`;
+      let siteDescription = '';
+
+      if (foundDangerous.length > 0) {
+        combinedText += ` ${foundDangerous.join(' ')} content detected`;
+        siteDescription = `Keyword "${keyword}" may relate to ${foundDangerous.join(', ')} content. Parental review recommended.`;
+      } else if (foundSafe.length > 0) {
+        combinedText += ` ${foundSafe.join(' ')} content`;
+        siteDescription = `Keyword "${keyword}" appears to relate to ${foundSafe.join(', ')} content.`;
+      } else {
+        siteDescription = `Keyword "${keyword}" analyzed. No specific safety concerns detected from keyword alone.`;
+      }
+
+      return {
+        searchResults: [],
+        imageUrls: [],
+        combinedText,
+        siteName: `Keyword Analysis: ${keyword}`,
+        siteDescription,
+        usedGoogleSearch: false,
+      };
+    }
+
+    // Process Google search results
+    const searchResults = textResults.map(result => ({
+      title: result.title,
+      snippet: result.snippet,
+      link: result.link,
+    }));
+
+    // Build combined text from search results for NLP analysis
+    let combinedText = keyword + ' ';
+    combinedText += textResults.map(r => `${r.title} ${r.snippet}`).join(' ');
+
+    // Extract additional images from search results
+    const additionalImages: string[] = [];
+    textResults.forEach(result => {
+      if (result.pagemap?.cse_image?.[0]?.src) {
+        additionalImages.push(result.pagemap.cse_image[0].src);
+      }
+      if (result.pagemap?.cse_thumbnail?.[0]?.src) {
+        additionalImages.push(result.pagemap.cse_thumbnail[0].src);
+      }
+    });
+
+    // Combine all image URLs (direct image search + extracted from results)
+    const allImageUrls = [...new Set([...imageUrls, ...additionalImages])].slice(0, 10);
+
+    // Generate description based on search results
+    let siteDescription = `Found ${textResults.length} articles and ${allImageUrls.length} images related to "${keyword}".`;
+
+    // Add pattern-based context to description
+    if (foundDangerous.length > 0) {
+      siteDescription += ` Warning: Keyword matches ${foundDangerous.join(', ')} patterns.`;
+    } else if (foundSafe.length > 0) {
+      siteDescription += ` Content appears related to ${foundSafe.join(', ')}.`;
+    }
+
+    console.log(`✅ [KEYWORD ANALYSIS] Google Search complete: ${searchResults.length} articles, ${allImageUrls.length} images`);
+
+    return {
+      searchResults,
+      imageUrls: allImageUrls,
+      combinedText: combinedText.slice(0, 15000), // Limit text for processing
+      siteName: `Search Results: ${keyword}`,
+      siteDescription,
+      usedGoogleSearch: true,
+    };
+
+  } catch (error) {
+    console.error(`❌ [KEYWORD ANALYSIS] Google Search failed, falling back to pattern matching:`, error);
+
+    // Fallback to pattern matching
+    let combinedText = `${keyword}`;
+    let siteDescription = '';
+
+    if (foundDangerous.length > 0) {
+      combinedText += ` ${foundDangerous.join(' ')} content detected`;
+      siteDescription = `Keyword "${keyword}" may relate to ${foundDangerous.join(', ')} content. Parental review recommended.`;
+    } else if (foundSafe.length > 0) {
+      combinedText += ` ${foundSafe.join(' ')} content`;
+      siteDescription = `Keyword "${keyword}" appears to relate to ${foundSafe.join(', ')} content.`;
+    } else {
+      siteDescription = `Keyword "${keyword}" analyzed using pattern matching (Google Search unavailable).`;
+    }
+
+    return {
+      searchResults: [],
+      imageUrls: [],
+      combinedText,
+      siteName: `Keyword Analysis: ${keyword}`,
+      siteDescription,
+      usedGoogleSearch: false,
+    };
+  }
+}
+
+// ============================================================================
 // OPTIMIZED CHILD SAFETY SCORING SYSTEM
 // ============================================================================
 
@@ -1275,7 +1604,32 @@ interface SerpApiResponse {
 
 async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = false): Promise<SearchAnalysisData> {
   console.log(`🔎 [SEARCH FALLBACK] Searching for info about: ${targetUrl}`);
-  
+
+  // ========== KEYWORD SEARCH: Use Google Custom Search API ==========
+  // For keyword searches, prioritize Google Custom Search API with pattern matching fallback
+  if (isKeywordSearch) {
+    console.log(`📝 [KEYWORD SEARCH] Using Google Custom Search for: "${targetUrl}"`);
+
+    const googleResult = await searchKeywordWithGoogle(targetUrl);
+
+    // If we got results from Google Search or pattern matching identified something
+    if (googleResult.usedGoogleSearch || googleResult.combinedText.length > targetUrl.length + 10) {
+      console.log(`✅ [KEYWORD SEARCH] Complete. Google Search: ${googleResult.usedGoogleSearch}, Results: ${googleResult.searchResults.length}, Images: ${googleResult.imageUrls.length}`);
+
+      return {
+        searchResults: googleResult.searchResults,
+        imageUrls: googleResult.imageUrls.slice(0, 5),
+        combinedText: googleResult.combinedText.slice(0, 10000),
+        siteName: googleResult.siteName,
+        siteDescription: googleResult.siteDescription,
+      };
+    }
+
+    // Google Search not configured and pattern matching didn't find much
+    // Fall through to try other search methods (SerpAPI, DuckDuckGo, etc.)
+    console.log(`⚠️ [KEYWORD SEARCH] Google Search not available or no results, trying fallback methods`);
+  }
+
   const searchResults: SearchResult[] = [];
   const imageUrls: string[] = [];
   let combinedText = '';
@@ -1283,11 +1637,13 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
   let siteDescription = '';
   let keywordFallbackName = '';
   let keywordFallbackDescription = '';
-  
+
   // For keyword search, use the keyword directly; for URLs, extract domain
   let searchTerm: string;
   if (isKeywordSearch) {
     searchTerm = targetUrl; // targetUrl is actually a keyword in this case
+    keywordFallbackName = `Keyword Analysis: ${searchTerm}`;
+    keywordFallbackDescription = `Analysis of keyword "${searchTerm}" using available search methods.`;
   } else {
     try {
       const urlObj = new URL(targetUrl);
@@ -1296,77 +1652,9 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
       searchTerm = targetUrl;
     }
   }
-  
-  // ========== KEYWORD-BASED ANALYSIS (Seed content before external search) ==========
-  // For keyword searches, analyze the keyword itself against our safety database
-  // Then enrich with external search so the workflow matches URL analysis.
-  
-  if (isKeywordSearch) {
-    console.log(`📝 [KEYWORD ANALYSIS] Analyzing keyword directly: "${searchTerm}"`);
-    
-    // Generate analysis based on keyword content itself
-    const keywordLower = searchTerm.toLowerCase();
-    
-    // Check against dangerous patterns directly
-    const dangerousPatterns = [
-      { pattern: /porn|xxx|nsfw|adult\s*content|explicit/i, category: 'explicit', severity: 'critical' },
-      { pattern: /nude|naked|sex|erotic|fetish/i, category: 'explicit', severity: 'high' },
-      { pattern: /gore|blood|violent|murder|kill|torture|brutal/i, category: 'violence', severity: 'high' },
-      { pattern: /drug|cocaine|heroin|meth|weed|marijuana|cannabis|opioid/i, category: 'substances', severity: 'high' },
-      { pattern: /gambling|casino|betting|poker|slots/i, category: 'gambling', severity: 'high' },
-      { pattern: /suicide|self.?harm|cutting|overdose/i, category: 'self-harm', severity: 'critical' },
-      { pattern: /hate|racist|nazi|supremacist|extremist/i, category: 'hate', severity: 'high' },
-      { pattern: /predator|grooming|pedophil|trafficking/i, category: 'predatory', severity: 'critical' },
-      { pattern: /weapon|gun|bomb|explosive|firearm/i, category: 'weapons', severity: 'medium' },
-      { pattern: /alcohol|beer|wine|vodka|whiskey|drunk/i, category: 'alcohol', severity: 'medium' },
-    ];
-    
-    const safePatterns = [
-      { pattern: /education|learn|school|study|tutorial|lesson/i, category: 'educational' },
-      { pattern: /kids|children|family|parents|child.?friendly/i, category: 'family-friendly' },
-      { pattern: /science|math|history|geography|reading/i, category: 'educational' },
-      { pattern: /cartoon|animation|disney|pixar|nickelodeon/i, category: 'entertainment' },
-      { pattern: /nature|animals|wildlife|environment/i, category: 'nature' },
-      { pattern: /safe|appropriate|wholesome|pbs|sesame/i, category: 'safe-content' },
-      { pattern: /news|article|blog|review|guide/i, category: 'informational' },
-      { pattern: /game|play|fun|entertainment|hobby/i, category: 'entertainment' },
-    ];
-    
-    // Check for dangerous content
-    const foundDangerous: string[] = [];
-    for (const { pattern, category } of dangerousPatterns) {
-      if (pattern.test(keywordLower)) {
-        foundDangerous.push(category);
-        combinedText += ` ${category} content detected`;
-      }
-    }
-    
-    // Check for safe content
-    const foundSafe: string[] = [];
-    for (const { pattern, category } of safePatterns) {
-      if (pattern.test(keywordLower)) {
-        foundSafe.push(category);
-        combinedText += ` ${category} content`;
-      }
-    }
-    
-    // Generate description based on analysis
-    if (foundDangerous.length > 0) {
-      keywordFallbackDescription = `Keyword "${searchTerm}" may relate to ${foundDangerous.join(', ')} content. Parental review recommended.`;
-    } else if (foundSafe.length > 0) {
-      keywordFallbackDescription = `Keyword "${searchTerm}" appears to relate to ${foundSafe.join(', ')} content.`;
-    } else {
-      keywordFallbackDescription = `Keyword "${searchTerm}" requires content analysis. No immediate safety concerns detected from keyword alone.`;
-    }
-    
-    keywordFallbackName = `Keyword Analysis: ${searchTerm}`;
-    combinedText = `${searchTerm} ${keywordFallbackDescription} ${combinedText}`;
-    
-    console.log(`✅ [KEYWORD ANALYSIS] Direct analysis complete. Dangerous: ${foundDangerous.length}, Safe: ${foundSafe.length}`);
-  }
-  
+
   // ========== EXTERNAL SEARCH (External APIs) ==========
-  // Used for URL analysis fallback or keyword enrichment
+  // Used for URL analysis fallback or keyword enrichment when Google Custom Search unavailable
 
   const serpApiKey = process.env.SERPAPI_API_KEY;
   const serpApiEngines = isKeywordSearch ? ['google', 'bing'] : ['google'];
@@ -1431,7 +1719,7 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
       console.error(`❌ [SEARCH] SerpAPI (${serpImageEngine}) error:`, error instanceof Error ? error.message : error);
     }
   }
-  
+
   const hasSerpData = searchResults.length > 0 || imageUrls.length > 0 || Boolean(siteName || siteDescription);
   if (!hasSerpData) {
     try {
