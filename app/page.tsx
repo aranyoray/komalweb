@@ -240,7 +240,7 @@ export default function Home() {
                   variant="outline"
                   className="btn-secondary-premium text-primary text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full w-full sm:w-auto"
                 >
-                  <Link href="mailto:sales@komalkids.com">Talk to Us</Link>
+                  <Link href="mailto:play@komalkids.com">Talk to Us</Link>
                 </Button>
               </div>
             </div>
@@ -683,10 +683,10 @@ export default function Home() {
           <ScrollReveal delay={0.2}>
             <div className="flex gap-4 justify-center flex-wrap mt-8">
               <Button asChild size="lg" className="btn-primary-premium-inverted rounded-full px-8 py-3.5 h-auto border-0">
-                <Link href="mailto:sales@komalkids.com">Request Demo</Link>
+                <Link href="mailto:play@komalkids.com">Request Demo</Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="btn-secondary-premium-inverted rounded-full px-8 py-3.5 h-auto">
-                <Link href="mailto:sales@komalkids.com">Learn More</Link>
+                <Link href="mailto:play@komalkids.com">Learn More</Link>
               </Button>
             </div>
           </ScrollReveal>

@@ -163,7 +163,7 @@ const generateConfirmationHTML = (name: string): string => {
     <div style="text-align: center; padding: 24px;">
       <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">
         Questions? Reach out to us at
-        <a href="mailto:sales@komalkids.com" style="color: #6b4e71; text-decoration: none;">sales@komalkids.com</a>
+        <a href="mailto:play@komalkids.com" style="color: #6b4e71; text-decoration: none;">play@komalkids.com</a>
       </p>
       <p style="margin: 0; font-size: 12px; color: #999;">
         <a href="https://komalkids.com" style="color: #6b4e71; text-decoration: none;">komalkids.com</a>
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
     // Send notification to sales team
     await transporter.sendMail({
       from: process.env.SMTP_FROM || '"KOMAL Demo" <noreply@komalkids.com>',
-      to: 'sales@komalkids.com',
+      to: 'play@komalkids.com',
       subject: `New Demo Request from ${name}${organization ? ` (${organization})` : ''}`,
       html: generateDemoRequestHTML(name, email, organization),
       replyTo: email,
