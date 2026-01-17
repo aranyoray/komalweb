@@ -11,7 +11,8 @@
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add PDF generation for URL safety analysis report\n\n- Create generatePDF.ts utility with comprehensive PDF generation\n- PDF includes KOMAL logo \\(20x20px\\) with white background at top\n- Professional styling with proper padding throughout\n- Automatic page breaks - no content cut between pages\n- Footer on all pages with www.komalkids.com and page numbers\n- Last page includes local date/time with timezone and tagline\n- Add \"Generate PDF\" button before email button in demo page\n\nPDF Report Sections:\n- Overall Safety Score with visual progress bar\n- Content Depth Analysis \\(Title, Metadata, Content, Media\\)\n- Safety Risks Detected with severity badges\n- Safe Content Indicators\n- NLP Text Analysis \\(sentiment, language score, topics\\)\n- Vision AI Analysis \\(if available\\)\n- Multimedia Analysis \\(video/audio detection\\)\n- Age-Appropriate Actions grid for all age groups\n- Page Metadata\n- Report generation timestamp with timezone\n\nFeatures:\n- Loading state while generating PDF\n- Professional color scheme matching brand\n- Rounded rectangles and modern layout\n- Proper text wrapping for long content\n- Score-based color coding \\(green/amber/red\\)\nEOF\n\\)\")",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(git revert:*)"
     ]
   }
 }
