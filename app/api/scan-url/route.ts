@@ -82,221 +82,229 @@ const CHILD_SAFE_KEYWORDS = [
 const SAFE_PATTERN = new RegExp(`\\b(${CHILD_SAFE_KEYWORDS.join('|')})`, 'gi');
 
 // ============================================================================
-// CONTEXT-AWARE KEYWORD ANALYSIS
-// Analyzes context to determine if keyword usage is safe or dangerous
+// CONTEXT-AWARE KEYWORD ANALYSIS (OPTIMIZED - Only flag DANGEROUS contexts)
+// Keywords are ONLY flagged when they appear in explicitly harmful contexts
+// Neutral/benign usage = NOT flagged
 // ============================================================================
 
-// Safe context patterns - keyword is used innocuously
-const SAFE_CONTEXT_PATTERNS: { [keyword: string]: RegExp[] } = {
-  // Violence-related words in safe contexts
-  'gun': [/water\s*gun/i, /glue\s*gun/i, /nail\s*gun/i, /spray\s*gun/i, /gun\s*control/i, /nerf\s*gun/i, /toy\s*gun/i, /starter\s*gun/i, /gun\s*safety/i, /top\s*gun/i, /gun\s*laws/i],
-  'shoot': [/photo\s*shoot/i, /shoot\s*photos/i, /shoot\s*video/i, /basketball\s*shoot/i, /shoot\s*hoops/i, /shoot\s*for/i, /trouble\s*shoot/i, /shoot\s*the\s*breeze/i],
-  'shooting': [/photo\s*shooting/i, /shooting\s*star/i, /shooting\s*hoops/i, /basketball\s*shooting/i, /video\s*shooting/i, /trouble\s*shooting/i],
-  'kill': [/kill\s*time/i, /kill\s*two\s*birds/i, /killing\s*it/i, /kill\s*the\s*engine/i, /kill\s*switch/i, /kill\s*bill/i, /dressed\s*to\s*kill/i, /overkill/i, /kill\s*germs/i, /kill\s*bacteria/i],
-  'killing': [/killing\s*it/i, /killing\s*time/i, /not\s*killing/i, /stop\s*killing/i],
-  'bomb': [/bomb\s*diggity/i, /bomb\.com/i, /da\s*bomb/i, /bomb\s*dot\s*com/i, /bath\s*bomb/i, /cherry\s*bomb/i, /bomb\s*pop/i, /bomb\s*squad.*game/i, /f\s*bomb/i],
-  'shot': [/screen\s*shot/i, /shot\s*glass/i, /shot\s*put/i, /big\s*shot/i, /long\s*shot/i, /flu\s*shot/i, /vaccine\s*shot/i, /photo\s*shot/i, /one\s*shot/i, /best\s*shot/i],
-  'stab': [/stab\s*at/i, /take\s*a\s*stab/i, /stab.*attempt/i],
-  'wound': [/wound\s*up/i, /wound\s*around/i, /wound\s*down/i, /wound\s*care/i, /wound\s*healing/i],
-  'bloody': [/bloody\s*mary/i, /bloody\s*hell/i, /bloody\s*good/i],
-  'weapon': [/secret\s*weapon/i, /weapon\s*of\s*choice/i],
-  
-  // Substance-related words in safe contexts
-  'drug': [/drug\s*store/i, /drug\s*free/i, /anti\s*drug/i, /drug\s*awareness/i, /drug\s*prevention/i, /drug\s*education/i, /pharmaceutical/i, /prescription\s*drug/i, /over\s*the\s*counter/i, /drug\s*safety/i, /drug\s*test/i, /fda.*drug/i],
-  'drugs': [/drug\s*store/i, /drugs\s*free/i, /anti\s*drugs/i, /say\s*no\s*to\s*drugs/i, /prescription\s*drugs/i, /drugs\.com/i, /drugs\s*awareness/i, /pharmacy/i],
-  'weed': [/weed\s*killer/i, /pull\s*weeds/i, /garden\s*weed/i, /weed\s*out/i, /weed\s*free/i, /sea\s*weed/i, /weeds\s*in/i, /lawn.*weed/i],
-  'high': [/high\s*school/i, /high\s*score/i, /high\s*quality/i, /high\s*five/i, /high\s*jump/i, /high\s*definition/i, /high\s*speed/i, /high\s*tech/i, /high\s*performance/i, /sky\s*high/i, /high\s*level/i, /high\s*rise/i],
-  'pot': [/flower\s*pot/i, /pot\s*plant/i, /cooking\s*pot/i, /pot\s*pie/i, /melting\s*pot/i, /pot\s*luck/i, /crock\s*pot/i, /instant\s*pot/i, /pot\s*roast/i, /jackpot/i, /teapot/i],
-  'crack': [/crack\s*the\s*code/i, /crack\s*open/i, /crack\s*a\s*joke/i, /crack\s*up/i, /crack\s*of\s*dawn/i, /crack\s*down/i, /firecracker/i, /cracker/i],
-  'smoking': [/smoking\s*hot/i, /no\s*smoking/i, /smoking\s*gun/i, /quit\s*smoking/i, /stop\s*smoking/i, /anti\s*smoking/i, /smoking\s*ban/i],
-  'addiction': [/gaming\s*addiction/i, /phone\s*addiction/i, /social\s*media\s*addiction/i, /addiction\s*recovery/i, /addiction\s*help/i, /addiction\s*treatment/i, /overcome\s*addiction/i, /addiction\s*support/i],
-  'addict': [/coffee\s*addict/i, /game\s*addict/i, /book\s*addict/i, /music\s*addict/i, /chocolate\s*addict/i, /fitness\s*addict/i, /sports\s*addict/i],
-  'drunk': [/punch\s*drunk/i, /drunk\s*driving\s*awareness/i, /don't\s*drink.*drunk/i, /anti.*drunk/i, /drunk\s*in\s*love/i],
-  
-  // Gambling-related words in safe contexts
-  'bet': [/you\s*bet/i, /bet\s*you/i, /i\s*bet/i, /safe\s*bet/i, /best\s*bet/i, /bet\s*on\s*yourself/i, /alphabet/i, /i'd\s*bet/i],
-  'poker': [/poker\s*face/i, /fire\s*poker/i],
-  'slot': [/time\s*slot/i, /expansion\s*slot/i, /memory\s*slot/i, /slot\s*in/i, /parking\s*slot/i, /card\s*slot/i, /sd\s*slot/i],
-  'slots': [/time\s*slots/i, /expansion\s*slots/i, /available\s*slots/i, /memory\s*slots/i, /booking\s*slots/i],
-  'casino': [/casino\s*royale/i, /monte\s*carlo.*history/i],
-  
-  // Profanity in safe contexts (words that contain these as substrings)
-  'ass': [/bass/i, /class/i, /pass/i, /mass/i, /grass/i, /glass/i, /brass/i, /compass/i, /assess/i, /assistant/i, /massive/i, /classic/i, /passion/i, /embassy/i, /cassette/i, /hassle/i, /lasso/i],
-  'cock': [/cockpit/i, /peacock/i, /rooster/i, /hancock/i, /cocktail/i, /weathercock/i, /stopcock/i, /cock-a-doodle/i, /babcock/i, /hitchcock/i],
-  'dick': [/moby\s*dick/i, /dick\s*tracy/i, /dickens/i, /dictionary/i, /dick\s*clark/i, /dick\s*van\s*dyke/i, /dickson/i],
-  'tits': [/tit\s*for\s*tat/i, /titmouse/i, /tit.*bird/i, /bluetit/i],
-  'xxx': [/size\s*xxx/i, /xxx-large/i, /xxxl/i],
-  'damn': [/damn\s*good/i, /god\s*damn/i],
-  'hell': [/hell\s*yeah/i, /what\s*the\s*hell/i, /hell\s*of\s*a/i, /hello/i, /shell/i, /michelle/i, /seashell/i],
-  
-  // Hate-related words in safe contexts  
-  'discriminat': [/anti\s*discriminat/i, /non\s*discriminat/i, /stop\s*discriminat/i, /against\s*discriminat/i, /discriminat.*wrong/i, /discriminat.*awareness/i, /no\s*discriminat/i],
-  'racist': [/anti\s*racist/i, /not\s*racist/i, /stop\s*racist/i, /against\s*racist/i, /racist.*wrong/i, /isn't\s*racist/i],
-  'racism': [/anti\s*racism/i, /stop\s*racism/i, /end\s*racism/i, /against\s*racism/i, /racism.*awareness/i, /racism\s*is\s*wrong/i, /fight\s*racism/i],
-  
-  // Other potentially flagged words in safe contexts
-  'sex': [/sex\s*education/i, /sex\s*ed/i, /unisex/i, /middlesex/i, /essex/i, /sussex/i, /same\s*sex\s*marriage/i, /biological\s*sex/i, /sex\s*and\s*the\s*city/i, /sexual\s*health/i, /intersex/i],
-  'nude': [/nude\s*color/i, /nude\s*lipstick/i, /nude\s*shade/i, /nude\s*heel/i, /nude\s*palette/i, /nude\s*makeup/i, /nude\s*tone/i],
-  'naked': [/naked\s*eye/i, /naked\s*truth/i, /naked\s*juice/i, /naked\s*mole\s*rat/i],
-  'predator': [/apex\s*predator/i, /predator\s*prey/i, /natural\s*predator/i, /predator.*animal/i, /predator.*wildlife/i, /predator\s*vs\s*prey/i, /predator.*movie/i, /predator.*alien/i, /top\s*predator/i],
-  'grooming': [/dog\s*grooming/i, /pet\s*grooming/i, /cat\s*grooming/i, /horse\s*grooming/i, /grooming\s*kit/i, /personal\s*grooming/i, /grooming\s*products/i, /hair\s*grooming/i, /self\s*grooming/i],
-  'escort': [/police\s*escort/i, /security\s*escort/i, /escort\s*service.*shipping/i, /escort\s*mission/i, /ford\s*escort/i, /military\s*escort/i],
-  'abuse': [/substance\s*abuse\s*awareness/i, /abuse\s*prevention/i, /stop\s*abuse/i, /anti\s*abuse/i, /abuse\s*hotline/i, /report\s*abuse/i, /child\s*abuse\s*prevention/i, /against\s*abuse/i],
-  'torture': [/torture\s*test/i, /don't\s*torture/i, /stop\s*torture/i],
-  'suicide': [/suicide\s*prevention/i, /suicide\s*awareness/i, /suicide\s*hotline/i, /anti\s*suicide/i, /prevent\s*suicide/i, /suicide\s*squad.*movie/i, /988.*suicide/i],
-  'suicidal': [/suicidal\s*thoughts\s*help/i, /suicidal.*prevention/i, /help.*suicidal/i, /suicidal.*support/i],
-  'murder': [/murder\s*mystery/i, /murder\s*she\s*wrote/i, /murder.*game/i, /murder.*novel/i, /getting\s*away\s*with\s*murder/i],
-  'rape': [/grape/i, /drape/i, /scrape/i, /rape\s*awareness/i, /anti.*rape/i, /stop.*rape/i, /rape\s*crisis/i],
-  'violent': [/non\s*violent/i, /violent\s*crime\s*prevention/i, /anti\s*violent/i],
-  'violence': [/non\s*violence/i, /domestic\s*violence\s*awareness/i, /anti\s*violence/i, /stop\s*violence/i, /violence\s*prevention/i],
-};
-
-// DANGEROUS context patterns - keyword is used in harmful way (always flag these)
+// DANGEROUS context patterns - ONLY these will trigger a flag
+// If keyword doesn't match any dangerous pattern, it's considered SAFE
 const DANGEROUS_CONTEXT_PATTERNS: { [keyword: string]: RegExp[] } = {
-  // Weapons in dangerous contexts
-  'gun': [/buy\s*(a\s*)?gun/i, /sell\s*gun/i, /gun\s*for\s*sale/i, /illegal\s*gun/i, /gun.*kill/i, /shoot.*gun/i, /gun\s*violence/i, /loaded\s*gun/i],
-  'weapon': [/buy\s*weapon/i, /illegal\s*weapon/i, /deadly\s*weapon/i, /weapon.*attack/i, /concealed\s*weapon/i],
-  'bomb': [/make\s*(a\s*)?bomb/i, /bomb\s*threat/i, /bomb.*attack/i, /plant\s*(a\s*)?bomb/i, /bomb\s*recipe/i, /how\s*to\s*bomb/i],
-  
-  // Drugs in dangerous contexts
-  'drug': [/buy\s*drug/i, /sell\s*drug/i, /drug\s*dealer/i, /illegal\s*drug/i, /drug\s*high/i, /drug\s*trip/i, /drug\s*abuse/i, /get\s*high.*drug/i],
-  'drugs': [/buy\s*drugs/i, /sell\s*drugs/i, /illegal\s*drugs/i, /street\s*drugs/i, /do\s*drugs/i, /drugs\s*online/i],
-  'cocaine': [/buy\s*cocaine/i, /cocaine.*high/i, /snort\s*cocaine/i, /cocaine\s*dealer/i],
-  'heroin': [/buy\s*heroin/i, /heroin.*inject/i, /heroin\s*dealer/i, /shoot.*heroin/i],
-  'meth': [/buy\s*meth/i, /meth\s*lab/i, /cook\s*meth/i, /smoke\s*meth/i],
+  // === WEAPONS - Only flag when promoting violence/illegal activity ===
+  'gun': [
+    /buy\s*(a\s*)?gun/i, /sell\s*gun/i, /gun\s*for\s*sale/i, /illegal\s*gun/i,
+    /shoot\s*(him|her|them|someone|people)/i, /gun\s*violence/i, /loaded\s*gun/i,
+    /aim\s*(the\s*)?gun/i, /fire\s*(the\s*)?gun/i, /gun\s*attack/i, /armed\s*with.*gun/i
+  ],
+  'weapon': [
+    /buy\s*weapon/i, /illegal\s*weapon/i, /deadly\s*weapon/i, /weapon.*attack/i,
+    /concealed\s*weapon/i, /weapon.*kill/i, /armed.*weapon/i
+  ],
+  'bomb': [
+    /make\s*(a\s*)?bomb/i, /bomb\s*threat/i, /bomb.*attack/i, /plant\s*(a\s*)?bomb/i,
+    /bomb\s*recipe/i, /how\s*to\s*bomb/i, /bomb.*explod/i, /detonate.*bomb/i
+  ],
+  'knife': [
+    /stab\s*(him|her|them|someone)/i, /knife\s*attack/i, /knife.*kill/i,
+    /cut\s*(him|her|them|someone)/i
+  ],
+
+  // === DRUGS - Only flag when promoting use/sale ===
+  'drug': [
+    /buy\s*drug/i, /sell\s*drug/i, /drug\s*dealer/i, /illegal\s*drug/i,
+    /drug\s*high/i, /drug\s*trip/i, /get\s*high.*drug/i, /drug.*overdose/i,
+    /inject.*drug/i, /snort.*drug/i
+  ],
+  'drugs': [
+    /buy\s*drugs/i, /sell\s*drugs/i, /illegal\s*drugs/i, /street\s*drugs/i,
+    /do\s*drugs/i, /drugs\s*online/i, /take\s*drugs/i, /drugs.*high/i
+  ],
+  'cocaine': [/buy\s*cocaine/i, /cocaine.*high/i, /snort\s*cocaine/i, /cocaine\s*dealer/i, /use\s*cocaine/i],
+  'heroin': [/buy\s*heroin/i, /heroin.*inject/i, /heroin\s*dealer/i, /shoot.*heroin/i, /use\s*heroin/i],
+  'meth': [/buy\s*meth/i, /meth\s*lab/i, /cook\s*meth/i, /smoke\s*meth/i, /use\s*meth/i],
   'weed': [/buy\s*weed/i, /sell\s*weed/i, /smoke\s*weed/i, /weed\s*dealer/i, /get\s*high.*weed/i],
-  
-  // Gambling in dangerous contexts  
-  'gambling': [/online\s*gambling/i, /gambling\s*site/i, /gambling\s*app/i, /real\s*money\s*gambling/i, /gambling\s*addiction/i],
-  'casino': [/online\s*casino/i, /casino\s*bonus/i, /play.*casino/i, /casino\s*games.*money/i, /live\s*casino/i],
-  'betting': [/sports\s*betting/i, /online\s*betting/i, /betting\s*site/i, /betting\s*odds/i, /place.*bet/i],
-  
-  // Violence in dangerous contexts
-  'kill': [/how\s*to\s*kill/i, /want\s*to\s*kill/i, /going\s*to\s*kill/i, /kill\s*(him|her|them|you|myself)/i, /kill\s*someone/i],
-  'murder': [/how\s*to\s*murder/i, /want\s*to\s*murder/i, /commit\s*murder/i, /get\s*away\s*with\s*murder/i],
-  'suicide': [/commit\s*suicide/i, /how\s*to\s*(commit\s*)?suicide/i, /want\s*to\s*die/i, /kill\s*myself/i, /end\s*my\s*life/i],
-  'self-harm': [/how\s*to\s*self.?harm/i, /want\s*to\s*hurt\s*myself/i, /cutting\s*myself/i],
-  
-  // Explicit content markers
-  'porn': [/watch\s*porn/i, /free\s*porn/i, /porn\s*video/i, /porn\s*site/i, /xxx\s*porn/i],
-  'sex': [/have\s*sex/i, /sex\s*video/i, /sex\s*tape/i, /sex\s*chat/i, /casual\s*sex/i, /sex\s*hookup/i],
-  'nude': [/nude\s*photo/i, /nude\s*pic/i, /send\s*nude/i, /nude\s*video/i, /nude\s*girl/i, /nude\s*woman/i],
-  'naked': [/naked\s*photo/i, /naked\s*pic/i, /naked\s*girl/i, /naked\s*woman/i, /naked\s*video/i],
-  
-  // Predatory behavior
-  'grooming': [/child\s*grooming/i, /online\s*grooming/i, /grooming.*minor/i, /grooming.*child/i],
+  'marijuana': [/buy\s*marijuana/i, /sell\s*marijuana/i, /smoke\s*marijuana/i, /marijuana\s*dealer/i],
+
+  // === GAMBLING - Only flag when promoting real money gambling ===
+  'gambling': [
+    /online\s*gambling/i, /gambling\s*site/i, /gambling\s*app/i,
+    /real\s*money\s*gambling/i, /win\s*money.*gambl/i, /gamble\s*online/i
+  ],
+  'casino': [
+    /online\s*casino/i, /casino\s*bonus/i, /play.*casino.*money/i,
+    /casino\s*games.*real.*money/i, /live\s*casino/i, /casino\s*deposit/i
+  ],
+  'betting': [
+    /sports\s*betting/i, /online\s*betting/i, /betting\s*site/i,
+    /betting\s*odds/i, /place.*bet.*money/i, /win.*bet/i
+  ],
+  'slot': [/slot\s*machine.*money/i, /play\s*slots.*real/i, /online\s*slots.*money/i],
+
+  // === VIOLENCE - Only flag explicit threats/instructions ===
+  'kill': [
+    /how\s*to\s*kill/i, /want\s*to\s*kill/i, /going\s*to\s*kill/i,
+    /kill\s*(him|her|them|you|myself|someone|people)/i, /i('ll|.will)\s*kill/i,
+    /plan\s*to\s*kill/i, /murder.*kill/i
+  ],
+  'murder': [
+    /how\s*to\s*murder/i, /want\s*to\s*murder/i, /commit\s*murder/i,
+    /plan.*murder/i, /murder\s*(him|her|them|someone)/i
+  ],
+  'attack': [
+    /plan\s*(an\s*)?attack/i, /attack\s*(him|her|them|someone|people)/i,
+    /violent\s*attack/i, /terrorist\s*attack/i
+  ],
+  'hurt': [
+    /hurt\s*(him|her|them|myself|someone)/i, /want\s*to\s*hurt/i,
+    /plan\s*to\s*hurt/i, /going\s*to\s*hurt/i
+  ],
+
+  // === SELF-HARM/SUICIDE - Only flag promoting/instructing ===
+  'suicide': [
+    /commit\s*suicide/i, /how\s*to\s*(commit\s*)?suicide/i, /want\s*to\s*die/i,
+    /kill\s*myself/i, /end\s*my\s*life/i, /suicide\s*method/i, /ways\s*to\s*die/i
+  ],
+  'self-harm': [/how\s*to\s*self.?harm/i, /want\s*to\s*hurt\s*myself/i, /cutting\s*myself/i, /self.?harm.*method/i],
+  'cutting': [/cutting\s*myself/i, /cut\s*myself/i, /self.?cutting/i],
+
+  // === EXPLICIT CONTENT - Only flag actual adult content ===
+  'porn': [/watch\s*porn/i, /free\s*porn/i, /porn\s*video/i, /porn\s*site/i, /xxx\s*porn/i, /porn\s*hub/i],
+  'xxx': [/xxx\s*video/i, /xxx\s*site/i, /xxx\s*movie/i, /xxx\s*porn/i, /xxx\s*adult/i],
+  'sex': [
+    /have\s*sex/i, /sex\s*video/i, /sex\s*tape/i, /sex\s*chat/i,
+    /casual\s*sex/i, /sex\s*hookup/i, /sex\s*scene/i, /sexual\s*content/i
+  ],
+  'nude': [
+    /nude\s*photo/i, /nude\s*pic/i, /send\s*nude/i, /nude\s*video/i,
+    /nude\s*girl/i, /nude\s*woman/i, /nude\s*image/i, /see.*nude/i
+  ],
+  'naked': [
+    /naked\s*photo/i, /naked\s*pic/i, /naked\s*girl/i, /naked\s*woman/i,
+    /naked\s*video/i, /naked\s*image/i, /see.*naked/i
+  ],
+
+  // === PREDATORY - Always dangerous ===
+  'grooming': [/child\s*grooming/i, /online\s*grooming/i, /grooming.*minor/i, /grooming.*child/i, /grooming.*kid/i],
   'predator': [/sexual\s*predator/i, /child\s*predator/i, /online\s*predator/i],
+
+  // === HATE/DISCRIMINATION - Only flag when promoting hate ===
+  'racist': [/be\s*racist/i, /racist\s*joke/i, /racist\s*slur/i],
+  'racism': [/promote\s*racism/i, /racism\s*is\s*(good|right)/i],
+  'hate': [/hate\s*(him|her|them|you|jews|muslims|black|white|gay)/i, /hate\s*crime/i, /hate\s*speech/i],
+
+  // === PROFANITY - Only flag in aggressive/abusive context ===
+  'fuck': [/fuck\s*(you|off|him|her|them)/i, /go\s*fuck/i, /fucking\s*(idiot|stupid|hate)/i],
+  'shit': [/shit.*die/i, /shit.*kill/i, /piece\s*of\s*shit/i],
+  'bitch': [/stupid\s*bitch/i, /kill.*bitch/i, /hate.*bitch/i],
 };
 
-// Age-specific sensitivity - some content is okay for older ages
-const AGE_SENSITIVE_KEYWORDS: { [keyword: string]: { okayFor: AgeGroup[]; reducedSeverity: number } } = {
-  'violence': { okayFor: ['13-16', '16+'], reducedSeverity: 0.3 },
-  'violent': { okayFor: ['13-16', '16+'], reducedSeverity: 0.3 },
-  'kill': { okayFor: ['13-16', '16+'], reducedSeverity: 0.4 },
-  'killing': { okayFor: ['13-16', '16+'], reducedSeverity: 0.4 },
-  'blood': { okayFor: ['13-16', '16+'], reducedSeverity: 0.5 },
-  'bloody': { okayFor: ['13-16', '16+'], reducedSeverity: 0.5 },
-  'death': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.5 },
-  'dead': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.5 },
-  'damn': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.2 },
-  'hell': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.2 },
-  'crap': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.1 },
-  'suck': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.1 },
-  'dating': { okayFor: ['13-16', '16+'], reducedSeverity: 0.3 },
-  'romance': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.5 },
-  'kiss': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.7 },
-  'beer': { okayFor: ['16+'], reducedSeverity: 0.5 },
-  'wine': { okayFor: ['16+'], reducedSeverity: 0.5 },
-  'alcohol': { okayFor: ['16+'], reducedSeverity: 0.4 },
-};
+// Keywords that REQUIRE dangerous context to be flagged
+// If found without dangerous context, they are IGNORED (safe by default)
+const CONTEXT_REQUIRED_KEYWORDS = new Set([
+  // Common words that need context to determine safety
+  'gun', 'shoot', 'shooting', 'shot', 'kill', 'killing', 'dead', 'death', 'die', 'dying',
+  'drug', 'drugs', 'high', 'pot', 'weed', 'crack', 'smoking', 'meth',
+  'bomb', 'weapon', 'knife', 'attack', 'fight', 'hurt', 'harm',
+  'bet', 'betting', 'slot', 'slots', 'poker', 'casino', 'gambling',
+  'sex', 'sexy', 'nude', 'naked', 'adult',
+  'blood', 'bloody', 'violent', 'violence',
+  'hate', 'racist', 'racism',
+  'hell', 'damn', 'crap', 'suck',
+  'ass', 'cock', 'dick', 'bitch',
+  'addiction', 'addict', 'drunk',
+  'abuse', 'predator', 'grooming', 'escort',
+  'suicide', 'suicidal', 'murder', 'rape', 'torture'
+]);
 
-// Analyze keyword context and determine if it's safe, dangerous, or needs age-based consideration
+// ALWAYS DANGEROUS keywords (no context needed - always flag)
+const ALWAYS_DANGEROUS_KEYWORDS = new Set([
+  'porn', 'pornography', 'pornhub', 'xvideos', 'xnxx',
+  'cocaine', 'heroin', 'methamphetamine', 'fentanyl', 'lsd', 'ecstasy',
+  'pedophile', 'pedophilia', 'incest',
+  'terrorism', 'terrorist',
+  'nigger', 'nigga', 'faggot', 'retard'
+]);
+
+// Analyze keyword context - ONLY flag when context is EXPLICITLY harmful
 interface ContextAnalysisResult {
-  isSafe: boolean;
-  isDangerous: boolean;
-  ageAppropriate: { [key in AgeGroup]: boolean };
-  severityMultiplier: { [key in AgeGroup]: number };
+  shouldFlag: boolean;  // Whether to flag this keyword
+  isDangerous: boolean; // Is it dangerous content
+  severity: number;     // 0 = safe, 0.5 = minor, 1 = full severity
   reason: string;
+  ageMultipliers: { [key in AgeGroup]: number };
 }
 
 function analyzeKeywordContext(keyword: string, context: string): ContextAnalysisResult {
-  const result: ContextAnalysisResult = {
-    isSafe: false,
-    isDangerous: false,
-    ageAppropriate: { '<10': false, '10-13': false, '13-16': false, '16+': false },
-    severityMultiplier: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 1 },
-    reason: '',
-  };
-  
   const lowerKeyword = keyword.toLowerCase();
   const lowerContext = context.toLowerCase();
   
-  // Check for DANGEROUS context first (highest priority)
+  // Default: NOT flagged (safe until proven dangerous)
+  const safeResult: ContextAnalysisResult = {
+    shouldFlag: false,
+    isDangerous: false,
+    severity: 0,
+    reason: 'Neutral context - not flagged',
+    ageMultipliers: { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 }
+  };
+
+  // ALWAYS DANGEROUS - No context check needed
+  if (ALWAYS_DANGEROUS_KEYWORDS.has(lowerKeyword)) {
+    return {
+      shouldFlag: true,
+      isDangerous: true,
+      severity: 1,
+      reason: 'Always dangerous keyword',
+      ageMultipliers: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 1 }
+    };
+  }
+
+  // Check for DANGEROUS context patterns
   const dangerousPatterns = DANGEROUS_CONTEXT_PATTERNS[lowerKeyword];
   if (dangerousPatterns) {
     for (const pattern of dangerousPatterns) {
       if (pattern.test(lowerContext)) {
-        result.isDangerous = true;
-        result.reason = 'Dangerous context detected';
-        // All ages should be blocked for dangerous content
-        return result;
+        return {
+          shouldFlag: true,
+          isDangerous: true,
+          severity: 1,
+          reason: `Dangerous context: ${pattern.source.slice(0, 30)}...`,
+          ageMultipliers: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 0.8 }
+        };
       }
     }
   }
-  
-  // Check for SAFE context (keyword used innocuously)
-  const safePatterns = SAFE_CONTEXT_PATTERNS[lowerKeyword];
-  if (safePatterns) {
-    for (const pattern of safePatterns) {
+
+  // If keyword requires context and no dangerous context found → SAFE
+  if (CONTEXT_REQUIRED_KEYWORDS.has(lowerKeyword)) {
+    // Check for educational/awareness context (extra safety)
+    const educationalPatterns = [
+      /awareness/i, /prevention/i, /education/i, /learn\s*about/i, /teach/i,
+      /school/i, /help/i, /support/i, /recovery/i, /treatment/i, /safety/i,
+      /protect/i, /stop\s/i, /anti[\s-]/i, /against/i, /prevent/i, /avoid/i,
+      /warning/i, /danger.*of/i, /harmful.*effect/i, /news/i, /report/i,
+      /study/i, /research/i, /article/i, /definition/i, /meaning/i, /history/i
+    ];
+    
+    for (const pattern of educationalPatterns) {
       if (pattern.test(lowerContext)) {
-        result.isSafe = true;
-        result.reason = 'Safe context detected';
-        result.ageAppropriate = { '<10': true, '10-13': true, '13-16': true, '16+': true };
-        result.severityMultiplier = { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 };
-        return result;
+        return {
+          ...safeResult,
+          reason: 'Educational/informational context'
+        };
       }
     }
+    
+    // No dangerous context found → not flagged
+    return safeResult;
   }
-  
-  // Check for age-sensitive keywords (might be okay for older ages)
-  const ageSensitivity = AGE_SENSITIVE_KEYWORDS[lowerKeyword];
-  if (ageSensitivity) {
-    result.reason = 'Age-sensitive content';
-    for (const ageGroup of AGE_GROUPS) {
-      if (ageSensitivity.okayFor.includes(ageGroup)) {
-        result.ageAppropriate[ageGroup] = true;
-        result.severityMultiplier[ageGroup] = ageSensitivity.reducedSeverity;
-      }
-    }
-    return result;
-  }
-  
-  // Check context for educational/awareness indicators
-  const educationalPatterns = [
-    /awareness/i, /prevention/i, /education/i, /learn/i, /teach/i, /school/i,
-    /help/i, /support/i, /recovery/i, /treatment/i, /safety/i, /protect/i,
-    /stop/i, /anti/i, /against/i, /prevent/i, /avoid/i, /danger.*of/i,
-    /warning/i, /risk/i, /harmful/i, /negative.*effect/i
-  ];
-  
-  for (const pattern of educationalPatterns) {
-    if (pattern.test(lowerContext)) {
-      result.isSafe = true;
-      result.reason = 'Educational/awareness context';
-      result.ageAppropriate = { '<10': true, '10-13': true, '13-16': true, '16+': true };
-      result.severityMultiplier = { '<10': 0.2, '10-13': 0.1, '13-16': 0, '16+': 0 };
-      return result;
-    }
-  }
-  
-  // Default: keyword is potentially unsafe, apply standard severity
-  result.reason = 'No safe context detected';
-  return result;
+
+  // Keyword not in our lists → not flagged
+  return safeResult;
 }
 
 // Get extended context around a keyword for better analysis
 function getExtendedContext(content: string, keyword: string, position: number): string {
-  const contextRadius = 80; // chars before and after (increased for better context)
+  const contextRadius = 100; // chars before and after (increased for better context)
   const start = Math.max(0, position - contextRadius);
   const end = Math.min(content.length, position + keyword.length + contextRadius);
   return content.slice(start, end).toLowerCase();
@@ -386,6 +394,7 @@ interface ScanResult {
   };
   timestamp: string;
   analysisMethod: 'live' | 'demo';
+  usedSearchFallback?: boolean; // True when direct page access failed and Google search was used
   performanceMetrics?: {
     totalTimeMs: number;
     steps: {
@@ -423,7 +432,8 @@ function initializeClients() {
 }
 
 // ============================================================================
-// OPTIMIZED CHILD SAFETY ANALYSIS (Context-Aware with Age-Specific Scoring)
+// OPTIMIZED CHILD SAFETY ANALYSIS (Context-Aware - Only Flag Dangerous)
+// Keywords are ONLY flagged when they appear in EXPLICITLY HARMFUL contexts
 // ============================================================================
 
 interface KeywordFinding {
@@ -433,6 +443,7 @@ interface KeywordFinding {
   context: string[];
   contextSafe: boolean;
   isDangerous: boolean;
+  severity: number;
   ageMultipliers: { [key in AgeGroup]: number };
 }
 
@@ -474,10 +485,10 @@ function analyzeChildSafetyFast(
       // Group by keyword and analyze context for each instance
       const keywordGroups: { 
         [key: string]: { 
-          safeCount: number; 
-          unsafeCount: number; 
-          dangerousCount: number;
+          flaggedCount: number;
+          notFlaggedCount: number;
           contexts: string[];
+          severity: number;
           ageMultipliers: { [key in AgeGroup]: number };
         } 
       } = {};
@@ -485,53 +496,56 @@ function analyzeChildSafetyFast(
       for (const km of keywordMatches) {
         if (!keywordGroups[km.keyword]) {
           keywordGroups[km.keyword] = { 
-            safeCount: 0, 
-            unsafeCount: 0, 
-            dangerousCount: 0,
+            flaggedCount: 0,
+            notFlaggedCount: 0,
             contexts: [],
-            ageMultipliers: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 1 }
+            severity: 0,
+            ageMultipliers: { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 }
           };
         }
         
-        // Analyze the context for this specific keyword instance
+        // Analyze the context - ONLY flags if context is EXPLICITLY harmful
         const contextAnalysis = analyzeKeywordContext(km.keyword, km.context);
         
-        if (contextAnalysis.isSafe) {
-          keywordGroups[km.keyword].safeCount++;
-          filteredByContext++;
-          console.log(`✅ SAFE CONTEXT: "${km.keyword}" in "${km.context.slice(0, 50)}..." - ${contextAnalysis.reason}`);
-        } else if (contextAnalysis.isDangerous) {
-          keywordGroups[km.keyword].dangerousCount++;
-          keywordGroups[km.keyword].unsafeCount++;
-          if (keywordGroups[km.keyword].contexts.length < 2) {
-            keywordGroups[km.keyword].contexts.push('⚠️ ' + km.context.trim());
-          }
-          console.log(`🚨 DANGEROUS: "${km.keyword}" in "${km.context.slice(0, 50)}..." - ${contextAnalysis.reason}`);
-        } else {
-          // Apply age-specific multipliers
-          keywordGroups[km.keyword].unsafeCount++;
+        if (contextAnalysis.shouldFlag) {
+          // This keyword IS in dangerous context - FLAG IT
+          keywordGroups[km.keyword].flaggedCount++;
+          keywordGroups[km.keyword].severity = Math.max(keywordGroups[km.keyword].severity, contextAnalysis.severity);
+          
+          // Update age multipliers (take the maximum/worst)
           for (const ageGroup of AGE_GROUPS) {
-            keywordGroups[km.keyword].ageMultipliers[ageGroup] = Math.min(
+            keywordGroups[km.keyword].ageMultipliers[ageGroup] = Math.max(
               keywordGroups[km.keyword].ageMultipliers[ageGroup],
-              contextAnalysis.severityMultiplier[ageGroup]
+              contextAnalysis.ageMultipliers[ageGroup]
             );
           }
+          
           if (keywordGroups[km.keyword].contexts.length < 2) {
-            keywordGroups[km.keyword].contexts.push('...' + km.context.trim() + '...');
+            keywordGroups[km.keyword].contexts.push('⚠️ ' + km.context.trim().slice(0, 80));
+          }
+          console.log(`🚨 FLAGGED: "${km.keyword}" - ${contextAnalysis.reason}`);
+        } else {
+          // Context is neutral/safe - DO NOT FLAG
+          keywordGroups[km.keyword].notFlaggedCount++;
+          filteredByContext++;
+          // Only log first few to avoid spam
+          if (filteredByContext <= 5) {
+            console.log(`✅ NOT FLAGGED: "${km.keyword}" - ${contextAnalysis.reason}`);
           }
         }
       }
       
-      // Only add keywords that have unsafe/dangerous instances
+      // Only add keywords that were FLAGGED (dangerous context detected)
       for (const [keyword, data] of Object.entries(keywordGroups)) {
-        if (data.unsafeCount > 0) {
+        if (data.flaggedCount > 0) {
           unsafeKeywordsFound.push({
             category,
             keyword,
-            count: data.unsafeCount,
+            count: data.flaggedCount,
             context: data.contexts,
             contextSafe: false,
-            isDangerous: data.dangerousCount > 0,
+            isDangerous: data.severity >= 0.8,
+            severity: data.severity,
             ageMultipliers: data.ageMultipliers,
           });
         }
@@ -543,40 +557,25 @@ function analyzeChildSafetyFast(
   const safeMatches = allContent.match(SAFE_PATTERN);
   const safeKeywordsFound = safeMatches ? [...new Set(safeMatches.map(m => m.toLowerCase()))] : [];
 
-  // Calculate age-specific risk scores
+  // Calculate age-specific risk scores (ONLY from flagged keywords)
   for (const unsafe of unsafeKeywordsFound) {
     const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
     if (risk) {
       const baseSeverity = risk.severity === 'critical' ? 10 : risk.severity === 'high' ? 6 : risk.severity === 'medium' ? 3 : 1;
       const countFactor = Math.min(unsafe.count, 5);
+      const severityFactor = unsafe.severity;
       
-      // Dangerous content gets maximum penalty for all ages
-      if (unsafe.isDangerous) {
-        for (const ageGroup of AGE_GROUPS) {
-          ageSpecificRiskScores[ageGroup] += countFactor * baseSeverity;
-        }
-      } else {
-        // Apply age-specific multipliers
-        for (const ageGroup of AGE_GROUPS) {
-          const ageMultiplier = unsafe.ageMultipliers[ageGroup];
-          ageSpecificRiskScores[ageGroup] += countFactor * baseSeverity * ageMultiplier;
-        }
+      for (const ageGroup of AGE_GROUPS) {
+        const ageMultiplier = unsafe.ageMultipliers[ageGroup];
+        ageSpecificRiskScores[ageGroup] += countFactor * baseSeverity * severityFactor * ageMultiplier;
       }
     }
   }
 
-  // Reduce risk for safe content (educational context bonus)
+  // Bonus for safe content (educational sites)
   const safeBonus = Math.min(safeKeywordsFound.length * 3, 40);
   for (const ageGroup of AGE_GROUPS) {
     ageSpecificRiskScores[ageGroup] = Math.max(0, ageSpecificRiskScores[ageGroup] - safeBonus);
-  }
-  
-  // Additional reduction for filtered-by-context keywords
-  if (filteredByContext > 0) {
-    const contextBonus = filteredByContext * 3;
-    for (const ageGroup of AGE_GROUPS) {
-      ageSpecificRiskScores[ageGroup] = Math.max(0, ageSpecificRiskScores[ageGroup] - contextBonus);
-    }
   }
 
   // Overall risk score is the average, but weighted toward younger ages
@@ -597,7 +596,7 @@ function analyzeChildSafetyFast(
     riskLevel = 'caution';
   }
 
-  console.log(`📊 Context Analysis: ${filteredByContext} safe contexts filtered, Risk scores by age:`, ageSpecificRiskScores);
+  console.log(`📊 Context Analysis: ${filteredByContext} keywords NOT flagged (neutral context), ${unsafeKeywordsFound.length} flagged`);
 
   return { 
     unsafeKeywordsFound, 
@@ -1415,6 +1414,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     },
     timestamp: new Date().toISOString(),
     analysisMethod: analysisMethod as 'live' | 'demo',
+    usedSearchFallback: fetchFailed || useSearchFallback,
     performanceMetrics: {
       totalTimeMs,
       steps: performanceSteps,

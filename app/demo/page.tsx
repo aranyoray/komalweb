@@ -68,6 +68,7 @@ interface ScanResult {
   };
   timestamp: string;
   analysisMethod?: 'live' | 'demo';
+  usedSearchFallback?: boolean;
   performanceMetrics?: {
     totalTimeMs: number;
     steps: {
@@ -652,10 +653,20 @@ export default function DemoPage() {
                       {result.contentAnalysis.metadata.description && (
                         <p className="break-words"><span className="font-semibold">Description:</span> {result.contentAnalysis.metadata.description.substring(0, 100)}...</p>
                       )}
-                      <p>
-                        <span className="font-semibold">Stats:</span> {result.contentAnalysis.metadata.imageCount} images, {result.contentAnalysis.metadata.linkCount} links,
-                        {result.contentAnalysis.metadata.videoCount} videos, {result.contentAnalysis.metadata.audioCount} audio
-                      </p>
+                      {(result.contentAnalysis.metadata.imageCount >= 1 || 
+                        result.contentAnalysis.metadata.linkCount >= 1 || 
+                        result.contentAnalysis.metadata.videoCount >= 1 || 
+                        result.contentAnalysis.metadata.audioCount >= 1) && (
+                        <p>
+                          <span className="font-semibold">Stats:</span>{' '}
+                          {[
+                            result.contentAnalysis.metadata.imageCount >= 1 && `${result.contentAnalysis.metadata.imageCount} images`,
+                            result.contentAnalysis.metadata.linkCount >= 1 && `${result.contentAnalysis.metadata.linkCount} links`,
+                            result.contentAnalysis.metadata.videoCount >= 1 && `${result.contentAnalysis.metadata.videoCount} videos`,
+                            result.contentAnalysis.metadata.audioCount >= 1 && `${result.contentAnalysis.metadata.audioCount} audio`
+                          ].filter(Boolean).join(', ')}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -741,63 +752,65 @@ export default function DemoPage() {
                     </div>
                   </div>
 
-                  {/* Vision AI Analysis */}
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
-                        <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                      </div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">Vision AI Analysis</h3>
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm text-text-dim mb-1">Visual Safety Score</p>
-                        <p className={`text-lg font-semibold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore)}`}>
-                          {isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore}/100
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-text-dim mb-2">Detected Objects</p>
-                        <div className="flex flex-wrap gap-2">
-                          {(isUnder16Blocked ? ['Flagged'] : result.contentAnalysis.visualAnalysis.detectedObjects).map((obj, idx) => (
-                            <span
-                              key={idx}
-                              className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
-                            >
-                              {obj}
-                            </span>
-                          ))}
+                  {/* Vision AI Analysis - Hidden when search fallback was used */}
+                  {!result.usedSearchFallback && (
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                         </div>
+                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">Vision AI Analysis</h3>
                       </div>
-                      {result.contentAnalysis.visualAnalysis.concerns.length > 0 && (
+                      <div className="space-y-3">
                         <div>
-                          <p className="text-sm text-text-dim mb-2">Visual Concerns</p>
-                          <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.visualAnalysis.concerns.map((concern, idx) => (
-                              <span key={idx} className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm">
-                                {concern}
-                              </span>
-                            ))}
-                          </div>
+                          <p className="text-sm text-text-dim mb-1">Visual Safety Score</p>
+                          <p className={`text-lg font-semibold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore)}`}>
+                            {isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore}/100
+                          </p>
                         </div>
-                      )}
-                      {result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 && (
                         <div>
-                          <p className="text-sm text-text-dim mb-2">Image Labels</p>
+                          <p className="text-sm text-text-dim mb-2">Detected Objects</p>
                           <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label, idx) => (
+                            {(isUnder16Blocked ? ['Flagged'] : result.contentAnalysis.visualAnalysis.detectedObjects).map((obj, idx) => (
                               <span
                                 key={idx}
-                                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
+                                className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
                               >
-                                {label}
+                                {obj}
                               </span>
                             ))}
                           </div>
                         </div>
-                      )}
+                        {result.contentAnalysis.visualAnalysis.concerns.length > 0 && (
+                          <div>
+                            <p className="text-sm text-text-dim mb-2">Visual Concerns</p>
+                            <div className="flex flex-wrap gap-2">
+                              {result.contentAnalysis.visualAnalysis.concerns.map((concern, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm">
+                                  {concern}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 && (
+                          <div>
+                            <p className="text-sm text-text-dim mb-2">Image Labels</p>
+                            <div className="flex flex-wrap gap-2">
+                              {result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
+                                >
+                                  {label}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </ScrollReveal>
 
