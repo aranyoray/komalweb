@@ -66,7 +66,8 @@ export const CONTENT_RULES = {
 
 export type CategoryScores = Record<string, { detected: boolean; confidence: number }>;
 
-export const isBlockedForUnder16 = (categoryScores: CategoryScores): boolean => {
+export const isBlockedForUnder16 = (categoryScores: CategoryScores | null | undefined): boolean => {
+  if (!categoryScores) return false;
   return Object.entries(categoryScores).some(([category, data]) => {
     if (!data.detected || data.confidence <= 0.5) {
       return false;

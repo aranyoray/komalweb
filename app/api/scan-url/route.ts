@@ -2,15 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
-import puppeteer from 'puppeteer';
-import {
-  loadAndVectorizeKeywords,
-  extractWordFrequencies,
-  findSimilarKeywords,
-  generateSimilarityReport,
-  SimilarityMatch,
-  CategoryKeywords,
-} from '@/lib/keyword-vectorization';
 
 // ============================================================================
 // OPTIMIZED CHILD SAFETY SCORING SYSTEM
@@ -89,6 +80,85 @@ const CHILD_SAFE_KEYWORDS = [
 ];
 
 const SAFE_PATTERN = new RegExp(`\\b(${CHILD_SAFE_KEYWORDS.join('|')})`, 'gi');
+
+// ============================================================================
+// CONTEXT-AWARE KEYWORD ANALYSIS
+// Safe context patterns that indicate benign usage of potentially flagged words
+// ============================================================================
+
+const SAFE_CONTEXT_PATTERNS: { [keyword: string]: RegExp[] } = {
+  // Violence-related words in safe contexts
+  'gun': [/water\s*gun/i, /glue\s*gun/i, /nail\s*gun/i, /spray\s*gun/i, /gun\s*control/i, /nerf\s*gun/i, /toy\s*gun/i, /starter\s*gun/i, /gun\s*safety/i],
+  'shoot': [/photo\s*shoot/i, /shoot\s*photos/i, /shoot\s*video/i, /basketball\s*shoot/i, /shoot\s*hoops/i, /shoot\s*for/i, /trouble\s*shoot/i],
+  'shooting': [/photo\s*shooting/i, /shooting\s*star/i, /shooting\s*hoops/i, /basketball\s*shooting/i, /video\s*shooting/i, /trouble\s*shooting/i],
+  'kill': [/kill\s*time/i, /kill\s*two\s*birds/i, /killing\s*it/i, /kill\s*the\s*engine/i, /kill\s*switch/i, /kill\s*bill/i, /dressed\s*to\s*kill/i, /overkill/i],
+  'killing': [/killing\s*it/i, /killing\s*time/i, /mercy\s*killing/i, /not\s*killing/i],
+  'bomb': [/bomb\s*diggity/i, /bomb\.com/i, /da\s*bomb/i, /bomb\s*dot\s*com/i, /bath\s*bomb/i, /cherry\s*bomb/i, /bomb\s*pop/i, /bomb\s*squad.*game/i],
+  'shot': [/screen\s*shot/i, /shot\s*glass/i, /shot\s*put/i, /big\s*shot/i, /long\s*shot/i, /flu\s*shot/i, /vaccine\s*shot/i, /photo\s*shot/i, /one\s*shot/i],
+  'stab': [/stab\s*at/i, /take\s*a\s*stab/i],
+  'wound': [/wound\s*up/i, /wound\s*around/i, /wound\s*down/i],
+  'bloody': [/bloody\s*mary/i, /bloody\s*hell/i, /bloody\s*good/i], // British slang
+  'weapon': [/secret\s*weapon/i, /weapon\s*of\s*choice/i],
+  
+  // Substance-related words in safe contexts
+  'drug': [/drug\s*store/i, /drug\s*free/i, /anti\s*drug/i, /drug\s*awareness/i, /drug\s*prevention/i, /drug\s*education/i, /pharmaceutical\s*drug/i, /prescription\s*drug/i, /over\s*the\s*counter\s*drug/i, /drug\s*safety/i],
+  'drugs': [/drug\s*store/i, /drugs\s*free/i, /anti\s*drugs/i, /say\s*no\s*to\s*drugs/i, /prescription\s*drugs/i, /drugs\.com/i, /drugs\s*awareness/i],
+  'weed': [/weed\s*killer/i, /pull\s*weeds/i, /garden\s*weed/i, /weed\s*out/i, /weed\s*free/i, /sea\s*weed/i, /weeds\s*in/i],
+  'high': [/high\s*school/i, /high\s*score/i, /high\s*quality/i, /high\s*five/i, /high\s*jump/i, /high\s*definition/i, /high\s*speed/i, /high\s*tech/i, /high\s*performance/i, /sky\s*high/i],
+  'pot': [/flower\s*pot/i, /pot\s*plant/i, /cooking\s*pot/i, /pot\s*pie/i, /melting\s*pot/i, /pot\s*luck/i, /crock\s*pot/i, /instant\s*pot/i, /pot\s*roast/i, /jackpot/i],
+  'crack': [/crack\s*the\s*code/i, /crack\s*open/i, /crack\s*a\s*joke/i, /crack\s*up/i, /safe\s*crack/i, /crack\s*of\s*dawn/i, /crack\s*down/i, /firecracker/i],
+  'smoking': [/smoking\s*hot/i, /no\s*smoking/i, /smoking\s*gun/i, /quit\s*smoking/i, /stop\s*smoking/i, /anti\s*smoking/i],
+  'addiction': [/gaming\s*addiction/i, /phone\s*addiction/i, /social\s*media\s*addiction/i, /addiction\s*recovery/i, /addiction\s*help/i, /addiction\s*treatment/i, /overcome\s*addiction/i],
+  'addict': [/coffee\s*addict/i, /game\s*addict/i, /book\s*addict/i, /music\s*addict/i, /chocolate\s*addict/i, /fitness\s*addict/i],
+  'drunk': [/punch\s*drunk/i, /drunk\s*driving\s*awareness/i, /don't\s*drink.*drunk/i, /anti.*drunk/i],
+  
+  // Gambling-related words in safe contexts
+  'bet': [/you\s*bet/i, /bet\s*you/i, /i\s*bet/i, /safe\s*bet/i, /best\s*bet/i, /bet\s*on\s*yourself/i, /alphabet/i],
+  'poker': [/poker\s*face/i, /fire\s*poker/i],
+  'slot': [/time\s*slot/i, /slot\s*machine.*game/i, /expansion\s*slot/i, /memory\s*slot/i, /slot\s*in/i, /parking\s*slot/i],
+  'slots': [/time\s*slots/i, /expansion\s*slots/i, /available\s*slots/i, /memory\s*slots/i],
+  'casino': [/casino\s*royale/i, /monte\s*carlo.*history/i], // Movie references or history
+  
+  // Profanity in safe contexts
+  'ass': [/bass/i, /class/i, /pass/i, /mass/i, /grass/i, /glass/i, /brass/i, /compass/i, /assess/i, /assistant/i, /ассе/i, /massive/i, /classic/i, /passion/i, /embassy/i],
+  'cock': [/cockpit/i, /peacock/i, /rooster.*cock/i, /hancock/i, /cocktail/i, /weathercock/i, /stopcock/i, /cock-a-doodle/i],
+  'dick': [/moby\s*dick/i, /dick\s*tracy/i, /dickens/i, /dictionary/i, /dick\s*clark/i, /dick\s*van\s*dyke/i],
+  'tits': [/tit\s*for\s*tat/i, /titmouse/i, /tit.*bird/i],
+  'xxx': [/size\s*xxx/i, /xxx-large/i, /xxxl/i],
+  
+  // Hate-related words in safe contexts  
+  'discriminat': [/anti\s*discriminat/i, /non\s*discriminat/i, /stop\s*discriminat/i, /against\s*discriminat/i, /discriminat.*wrong/i, /discriminat.*awareness/i],
+  'racist': [/anti\s*racist/i, /not\s*racist/i, /stop\s*racist/i, /against\s*racist/i, /racist.*wrong/i],
+  'racism': [/anti\s*racism/i, /stop\s*racism/i, /end\s*racism/i, /against\s*racism/i, /racism.*awareness/i, /racism\s*is\s*wrong/i],
+  
+  // Other potentially flagged words in safe contexts
+  'sex': [/sex\s*education/i, /sex\s*ed/i, /unisex/i, /middlesex/i, /essex/i, /sussex/i, /same\s*sex\s*marriage/i, /biological\s*sex/i, /sex\s*and\s*the\s*city/i],
+  'nude': [/nude\s*color/i, /nude\s*lipstick/i, /nude\s*shade/i, /nude\s*heel/i, /nude\s*palette/i, /nude\s*makeup/i],
+  'naked': [/naked\s*eye/i, /naked\s*truth/i, /buck\s*naked/i, /naked\s*juice/i],
+  'predator': [/apex\s*predator/i, /predator\s*prey/i, /natural\s*predator/i, /predator.*animal/i, /predator.*wildlife/i, /predator\s*vs\s*prey/i, /predator.*movie/i, /predator.*alien/i],
+  'grooming': [/dog\s*grooming/i, /pet\s*grooming/i, /cat\s*grooming/i, /horse\s*grooming/i, /grooming\s*kit/i, /personal\s*grooming/i, /grooming\s*products/i, /hair\s*grooming/i],
+  'escort': [/police\s*escort/i, /security\s*escort/i, /escort\s*service.*shipping/i, /escort\s*mission/i, /ford\s*escort/i],
+  'abuse': [/substance\s*abuse\s*awareness/i, /abuse\s*prevention/i, /stop\s*abuse/i, /anti\s*abuse/i, /abuse\s*hotline/i, /report\s*abuse/i],
+  'torture': [/torture\s*test/i, /don't\s*torture/i],
+  'suicide': [/suicide\s*prevention/i, /suicide\s*awareness/i, /suicide\s*hotline/i, /anti\s*suicide/i, /prevent\s*suicide/i, /suicide\s*squad.*movie/i],
+  'suicidal': [/suicidal\s*thoughts\s*help/i, /suicidal.*prevention/i, /help.*suicidal/i],
+};
+
+// Check if a keyword appears in a safe context
+function isKeywordInSafeContext(keyword: string, context: string): boolean {
+  const safePatterns = SAFE_CONTEXT_PATTERNS[keyword.toLowerCase()];
+  if (!safePatterns) return false;
+  
+  return safePatterns.some(pattern => pattern.test(context));
+}
+
+// Get extended context around a keyword for better analysis
+function getExtendedContext(content: string, keyword: string, position: number): string {
+  const contextRadius = 60; // chars before and after
+  const start = Math.max(0, position - contextRadius);
+  const end = Math.min(content.length, position + keyword.length + contextRadius);
+  return content.slice(start, end).toLowerCase();
+}
 
 interface ChildSafetyRisk {
   category: string;
@@ -212,34 +282,70 @@ function analyzeChildSafetyFast(
   description: string = '',
   keywords: string[] = []
 ): {
-  unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[] }[];
+  unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[]; contextSafe: boolean }[];
   safeKeywordsFound: string[];
   riskScore: number;
   riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous';
+  filteredByContext: number; // Count of keywords filtered out due to safe context
 } {
   // Combine all content (limit to 15k chars for speed)
   const allContent = `${title} ${description} ${keywords.join(' ')} ${text}`.toLowerCase().slice(0, 15000);
-  const unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[] }[] = [];
+  const unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[]; contextSafe: boolean }[] = [];
+  let filteredByContext = 0;
 
-  // Use pre-compiled patterns for fast matching
+  // Use pre-compiled patterns for fast matching with CONTEXT AWARENESS
   for (const [category, pattern] of Object.entries(CHILD_UNSAFE_PATTERNS)) {
-    const matches = allContent.match(pattern);
-    if (matches && matches.length > 0) {
-      // Group matches by keyword
-      const keywordCounts: { [key: string]: number } = {};
-      for (const match of matches) {
-        const normalized = match.toLowerCase();
-        keywordCounts[normalized] = (keywordCounts[normalized] || 0) + 1;
+    // Reset lastIndex for global regex
+    pattern.lastIndex = 0;
+    
+    // Find all matches with their positions
+    let match;
+    const keywordMatches: { keyword: string; position: number; context: string }[] = [];
+    const tempContent = allContent;
+    
+    // Use matchAll for position tracking
+    const regex = new RegExp(pattern.source, 'gi');
+    while ((match = regex.exec(tempContent)) !== null) {
+      const keyword = match[0].toLowerCase();
+      const position = match.index;
+      const extendedContext = getExtendedContext(tempContent, keyword, position);
+      keywordMatches.push({ keyword, position, context: extendedContext });
+    }
+    
+    if (keywordMatches.length > 0) {
+      // Group by keyword and analyze context for each
+      const keywordGroups: { [key: string]: { safeCount: number; unsafeCount: number; contexts: string[] } } = {};
+      
+      for (const km of keywordMatches) {
+        if (!keywordGroups[km.keyword]) {
+          keywordGroups[km.keyword] = { safeCount: 0, unsafeCount: 0, contexts: [] };
+        }
+        
+        // Check if this specific instance is in a safe context
+        const isSafe = isKeywordInSafeContext(km.keyword, km.context);
+        
+        if (isSafe) {
+          keywordGroups[km.keyword].safeCount++;
+          filteredByContext++;
+        } else {
+          keywordGroups[km.keyword].unsafeCount++;
+          if (keywordGroups[km.keyword].contexts.length < 2) {
+            keywordGroups[km.keyword].contexts.push('...' + km.context.trim() + '...');
+          }
+        }
       }
-
-      for (const [keyword, count] of Object.entries(keywordCounts)) {
-        // Get one context snippet (fast approach)
-        const pos = allContent.indexOf(keyword);
-        const context = pos >= 0
-          ? ['...' + allContent.slice(Math.max(0, pos - 25), Math.min(allContent.length, pos + keyword.length + 25)).trim() + '...']
-          : [];
-
-        unsafeKeywordsFound.push({ category, keyword, count, context });
+      
+      // Only add keywords that have unsafe instances
+      for (const [keyword, data] of Object.entries(keywordGroups)) {
+        if (data.unsafeCount > 0) {
+          unsafeKeywordsFound.push({
+            category,
+            keyword,
+            count: data.unsafeCount, // Only count unsafe instances
+            context: data.contexts,
+            contextSafe: false,
+          });
+        }
       }
     }
   }
@@ -248,7 +354,7 @@ function analyzeChildSafetyFast(
   const safeMatches = allContent.match(SAFE_PATTERN);
   const safeKeywordsFound = safeMatches ? [...new Set(safeMatches.map(m => m.toLowerCase()))] : [];
 
-  // Calculate risk score
+  // Calculate risk score (only for keywords NOT in safe context)
   let riskScore = 0;
   for (const unsafe of unsafeKeywordsFound) {
     const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
@@ -260,6 +366,11 @@ function analyzeChildSafetyFast(
 
   // Reduce risk for safe content
   riskScore = Math.max(0, riskScore - Math.min(safeKeywordsFound.length * 2, 30));
+  
+  // Additional reduction if many keywords were filtered by safe context
+  if (filteredByContext > 0) {
+    riskScore = Math.max(0, riskScore - filteredByContext * 2);
+  }
 
   // Determine risk level
   let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
@@ -267,7 +378,7 @@ function analyzeChildSafetyFast(
   else if (riskScore >= 25) riskLevel = 'unsafe';
   else if (riskScore >= 10) riskLevel = 'caution';
 
-  return { unsafeKeywordsFound, safeKeywordsFound, riskScore, riskLevel };
+  return { unsafeKeywordsFound, safeKeywordsFound, riskScore, riskLevel, filteredByContext };
 }
 
 // ============================================================================
@@ -408,27 +519,23 @@ function analyzeMultimediaFast(html: string, $: cheerio.CheerioAPI): {
 }
 
 // ============================================================================
-// FAST CONTENT FETCHING (3 second timeout)
+// FAST CONTENT FETCHING (2 second timeout)
 // ============================================================================
 
 async function fetchWebpageContentFast(url: string): Promise<string> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; KomalSafetyBot/1.0)',
-        'Accept': 'text/html',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
-      signal: AbortSignal.timeout(7000),
+      signal: AbortSignal.timeout(2000), // 2 second hard timeout
     });
-    clearTimeout(timeoutId);
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return await response.text();
   } catch (error) {
-    clearTimeout(timeoutId);
     throw error;
   }
 }
@@ -472,26 +579,25 @@ function parseHTMLContentFast(html: string, url: string) {
 }
 
 // ============================================================================
-// OPTIONAL VISION API (Single image, with timeout)
+// FAST IMAGE ANALYSIS (Direct URL analysis, no Puppeteer)
 // ============================================================================
 
-async function analyzeImageFast(imageUrl: string): Promise<any> {
+async function analyzeImageUrlFast(imageUrl: string): Promise<any> {
   if (!visionClient) return null;
 
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    });
-
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 720 });
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 8000 });
-
-    const screenshot = await page.screenshot({ type: 'png' });
-    return screenshot as Buffer;
-  } catch (error) {
-    console.error('Error capturing screenshot:', error);
+    const [result] = await Promise.race([
+      visionClient.annotateImage({
+        image: { source: { imageUri: imageUrl } },
+        features: [
+          { type: 'SAFE_SEARCH_DETECTION' },
+          { type: 'LABEL_DETECTION', maxResults: 5 },
+        ],
+      }),
+      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('Vision timeout')), 1500)),
+    ]);
+    return result;
+  } catch {
     return null;
   }
 }
@@ -504,10 +610,10 @@ async function analyzeTextFast(text: string): Promise<{ sentiment: string; entit
   if (!languageClient || !text) return null;
 
   try {
-    const truncated = text.slice(0, 3000);
+    const truncated = text.slice(0, 1500); // Reduced for speed
     const [sentimentResult] = await Promise.race([
       languageClient.analyzeSentiment({ document: { content: truncated, type: 'PLAIN_TEXT' } }),
-      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('NLP timeout')), 2000)),
+      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('NLP timeout')), 1500)),
     ]);
 
     const score = sentimentResult?.documentSentiment?.score || 0;
@@ -521,10 +627,10 @@ async function analyzeTextFast(text: string): Promise<{ sentiment: string; entit
 }
 
 /**
- * Analyze images using Google Cloud Vision API
+ * Analyze images using Google Cloud Vision API (Fast version - max 2 images, 1.5s timeout each)
  */
-async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer | null) {
-  if (!visionClient) {
+async function analyzeImagesWithVisionFast(imageUrls: string[]) {
+  if (!visionClient || imageUrls.length === 0) {
     return null;
   }
 
@@ -535,34 +641,19 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
       detectedObjects: [] as string[],
     };
 
-    const requests: Promise<any>[] = [];
-
-    // Analyze screenshot
-    if (screenshot) {
-      requests.push(
-        visionClient.annotateImage({
-          image: { content: screenshot },
-          features: [
-            { type: 'LABEL_DETECTION', maxResults: 10 },
-            { type: 'SAFE_SEARCH_DETECTION' },
-            { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
-          ],
-        }).catch(() => [null])
-      );
-    }
-
-    // Analyze page images
-    for (const imageUrl of imageUrls.slice(0, 3)) {
-      requests.push(
-        visionClient.annotateImage({
+    // Only analyze first 2 images in parallel with aggressive timeout
+    const requests = imageUrls.slice(0, 2).map(imageUrl =>
+      Promise.race([
+        visionClient!.annotateImage({
           image: { source: { imageUri: imageUrl } },
           features: [
-            { type: 'LABEL_DETECTION', maxResults: 5 },
             { type: 'SAFE_SEARCH_DETECTION' },
+            { type: 'LABEL_DETECTION', maxResults: 5 },
           ],
-        }).catch(() => [null])
-      );
-    }
+        }).catch(() => [null]),
+        new Promise<[null]>(resolve => setTimeout(() => resolve([null]), 1500)),
+      ])
+    );
 
     const allResults = await Promise.all(requests);
 
@@ -573,13 +664,6 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
         ?.filter((l: any) => (l.score || 0) > 0.7)
         ?.map((l: any) => l.description || '') || [];
       results.labels.push(...highConfLabels);
-
-      if (result.localizedObjectAnnotations) {
-        const objects = result.localizedObjectAnnotations
-          ?.filter((o: any) => (o.score || 0) > 0.6)
-          ?.map((o: any) => o.name || '') || [];
-        results.detectedObjects.push(...objects);
-      }
 
       if (result.safeSearchAnnotation) {
         if (!results.safeSearchAnnotation) {
@@ -596,12 +680,9 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
       }
     }
 
-    results.labels = [...new Set(results.labels)].slice(0, 10);
-    results.detectedObjects = [...new Set(results.detectedObjects)].slice(0, 8);
-
+    results.labels = [...new Set(results.labels)].slice(0, 8);
     return results;
-  } catch (error) {
-    console.error('Error analyzing images with Vision API:', error);
+  } catch {
     return null;
   }
 }
@@ -651,65 +732,93 @@ function getLikelihoodScore(
 }
 
 // ============================================================================
-// MAIN OPTIMIZED ANALYSIS
+// MAIN OPTIMIZED ANALYSIS (Target: <4 seconds)
 // ============================================================================
 
 async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   const startTime = Date.now();
+  const MAX_TOTAL_TIME = 3500; // 3.5 second hard limit
+  const getElapsed = () => ((Date.now() - startTime) / 1000).toFixed(3);
+  
+  console.log(`\n🔍 [KOMAL ANALYSIS] Starting scan for: ${url}`);
+  console.log(`⏱️  [0.000s] Step 1: Initializing...`);
+  
   initializeClients();
 
   try {
-    console.log('Fetching webpage content...');
-    const htmlPromise = fetchWebpageContent(url);
-    const screenshotPromise = visionClient ? captureScreenshot(url) : Promise.resolve(null);
-    const html = await htmlPromise;
+    // Step 1: Fetch HTML with 2s timeout
+    console.log(`⏱️  [${getElapsed()}s] Step 2: Fetching webpage content...`);
+    const html = await fetchWebpageContentFast(url);
+    console.log(`✅ [${getElapsed()}s] Step 2 Complete: Fetched ${(html.length / 1024).toFixed(1)}KB of HTML`);
 
-    // Step 2: Parse HTML (synchronous, fast)
+    // Step 2: Parse HTML (synchronous, <50ms)
+    console.log(`⏱️  [${getElapsed()}s] Step 3: Parsing HTML content...`);
     const parsed = parseHTMLContentFast(html, url);
-    console.log(`Parse: ${Date.now() - startTime}ms`);
+    console.log(`✅ [${getElapsed()}s] Step 3 Complete: Found ${parsed.imageCount} images, ${parsed.linkCount} links, ${parsed.videoCount} videos`);
 
-    console.log('Analyzing text with NLP...');
-    const nlpPromise = analyzeTextWithNLP(parsedContent.textContent);
-
-    console.log('Analyzing images with Vision API...');
-    const visionPromise = screenshotPromise.then((screenshot) =>
-      analyzeImagesWithVision(parsedContent.imageUrls, screenshot)
+    // Step 3: Run child safety analysis
+    console.log(`⏱️  [${getElapsed()}s] Step 4: Running context-aware keyword analysis...`);
+    const childSafetyAnalysis = analyzeChildSafetyFast(
+      parsed.textContent,
+      parsed.title,
+      parsed.description,
+      parsed.keywords
     );
+    console.log(`✅ [${getElapsed()}s] Step 4 Complete: ${childSafetyAnalysis.unsafeKeywordsFound.length} risks found, ${childSafetyAnalysis.filteredByContext} safe-context keywords excluded`);
 
-    console.log('Performing child safety analysis...');
-    const childSafetyAnalysis = analyzeChildSafety(
-      parsedContent.textContent,
-      parsedContent.title,
-      parsedContent.description,
-      parsedContent.keywords
-    );
-    console.log(`Safety analysis: ${Date.now() - startTime}ms`);
+    // Calculate remaining time for API calls
+    const remainingTime = MAX_TOTAL_TIME - (Date.now() - startTime);
+    
+    // Run NLP and Vision in parallel with remaining time budget
+    type NlpResult = { sentiment: string; entities: string[] } | null;
+    type VisionResult = { labels: string[]; safeSearchAnnotation: any; detectedObjects: string[] } | null;
+    
+    let nlpResults: NlpResult = null;
+    let visionResults: VisionResult = null;
 
-    // Perform deep keyword vectorization analysis
-    console.log('Performing deep keyword analysis...');
-    const categoryKeywords = loadAndVectorizeKeywords();
-    const wordFrequencies = extractWordFrequencies(parsedContent.textContent);
-    const similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, parsedContent.textContent);
-    const similarityReport = generateSimilarityReport(similarityMatches, wordFrequencies);
+    if (remainingTime > 500) {
+      console.log(`⏱️  [${getElapsed()}s] Step 5: Running AI APIs in parallel (NLP + Vision)...`);
+      
+      // Create promises that resolve to their results
+      const nlpPromise: Promise<NlpResult> = languageClient && parsed.textContent
+        ? analyzeTextFast(parsed.textContent).catch(() => null)
+        : Promise.resolve(null);
+      
+      const visionPromise: Promise<VisionResult> = visionClient && parsed.imageUrls.length > 0
+        ? analyzeImagesWithVisionFast(parsed.imageUrls).catch(() => null)
+        : Promise.resolve(null);
 
-    const [nlpResults, visionResults] = await Promise.all([nlpPromise, visionPromise]);
+      // Race against timeout
+      const timeout = Math.min(remainingTime - 200, 2000);
+      const results = await Promise.race([
+        Promise.all([nlpPromise, visionPromise]),
+        new Promise<[NlpResult, VisionResult]>(resolve => 
+          setTimeout(() => resolve([null, null]), timeout)
+        ),
+      ]);
+      
+      [nlpResults, visionResults] = results;
+      console.log(`✅ [${getElapsed()}s] Step 5 Complete: NLP=${nlpResults ? 'success' : 'skipped'}, Vision=${visionResults ? 'success' : 'skipped'}`);
+    } else {
+      console.log(`⚠️  [${getElapsed()}s] Step 5: Skipped AI APIs (insufficient time budget: ${remainingTime}ms)`);
+    }
 
-    // Calculate multimedia risk
-    const multimediaRisk = 100 - parsedContent.multimedia.mediaSafetyScore;
-
-    // Calculate age group scores
+    // Step 4: Calculate scores (fast, <10ms)
+    console.log(`⏱️  [${getElapsed()}s] Step 6: Calculating age-group scores...`);
+    const multimediaRisk = 100 - parsed.multimedia.mediaSafetyScore;
     const ageGroupScores = calculateAgeGroupScores(
       childSafetyAnalysis,
       visionResults?.safeSearchAnnotation,
       multimediaRisk
     );
 
-    // Calculate overall score (average of all age groups)
     const overallScore = Math.round(
       Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
     );
+    console.log(`✅ [${getElapsed()}s] Step 6 Complete: Overall safety score = ${overallScore}/100`);
 
     // Build risk categories
+    console.log(`⏱️  [${getElapsed()}s] Step 7: Building final report...`);
     const riskCategories = childSafetyAnalysis.unsafeKeywordsFound.slice(0, 5).map(unsafe => ({
       category: unsafe.category,
       severity: CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category)?.severity || 'low',
@@ -724,7 +833,8 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     const titleSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => titleLower.includes(u.keyword));
     const metadataSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => metaLower.includes(u.keyword));
 
-    console.log(`Total: ${Date.now() - startTime}ms`);
+    console.log(`✅ [${getElapsed()}s] Step 7 Complete: Report generated`);
+    console.log(`\n🎯 [KOMAL ANALYSIS] COMPLETE in ${getElapsed()}s | Score: ${overallScore}/100 | Risk: ${childSafetyAnalysis.riskLevel}\n`);
 
     return {
       url,
@@ -732,20 +842,20 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       ageGroupScores,
       contentAnalysis: {
         textAnalysis: {
-          sentiment: nlpResult?.sentiment || 'Neutral',
-          keyTopics: [],
+          sentiment: nlpResults?.sentiment || 'Neutral',
+          keyTopics: detectTopics(parsed.textContent, parsed.title),
           languageScore: Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
-          entities: nlpResult?.entities || [],
-          unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map(u => u.keyword),
+          entities: nlpResults?.entities || [],
+          unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map((u: { keyword: string }) => u.keyword),
           safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
         },
         visualAnalysis: {
-          detectedObjects: [],
-          safetyScore: visionResult
-            ? Math.max(0, 100 - getLikelihoodScore(visionResult.adult) * 20 - getLikelihoodScore(visionResult.violence) * 15)
+          detectedObjects: visionResults?.detectedObjects || [],
+          safetyScore: visionResults?.safeSearchAnnotation
+            ? Math.max(0, 100 - getLikelihoodScore(visionResults.safeSearchAnnotation.adult) * 20 - getLikelihoodScore(visionResults.safeSearchAnnotation.violence) * 15)
             : 100,
-          concerns: visionResult && getLikelihoodScore(visionResult.adult) >= 3 ? ['Adult content detected'] : [],
-          labels: [],
+          concerns: visionResults?.safeSearchAnnotation && getLikelihoodScore(visionResults.safeSearchAnnotation.adult) >= 3 ? ['Adult content detected'] : [],
+          labels: visionResults?.labels || [],
         },
         multimediaAnalysis: parsed.multimedia,
         metadata: {
@@ -769,12 +879,40 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
         },
       },
       timestamp: new Date().toISOString(),
-      analysisMethod: visionClient || languageClient ? 'live' : 'demo',
+      analysisMethod: (nlpResults || visionResults) ? 'live' : 'demo',
     };
   } catch (error) {
-    console.error('Error in analysis, using demo mode:', error);
+    const errorTime = ((Date.now() - startTime) / 1000).toFixed(3);
+    console.error(`\n❌ [KOMAL ANALYSIS] ERROR at ${errorTime}s:`, error);
+    console.log(`⚠️  [${errorTime}s] Falling back to demo mode...`);
     return generateDemoAnalysisFast(url);
   }
+}
+
+// Fast topic detection without external API
+function detectTopics(text: string, title: string): string[] {
+  const content = (title + ' ' + text).toLowerCase();
+  const topics: string[] = [];
+  
+  const topicPatterns: { [key: string]: RegExp } = {
+    'Education': /\b(learn|education|school|study|course|tutorial|lesson|teach)\b/i,
+    'News': /\b(news|breaking|report|headline|journalist|media)\b/i,
+    'Entertainment': /\b(movie|music|game|entertainment|video|stream|watch)\b/i,
+    'Social Media': /\b(social|share|post|follow|like|comment|profile)\b/i,
+    'Shopping': /\b(buy|shop|cart|price|sale|discount|order)\b/i,
+    'Technology': /\b(tech|software|app|computer|digital|internet|online)\b/i,
+    'Health': /\b(health|medical|doctor|wellness|fitness|diet)\b/i,
+    'Sports': /\b(sport|game|team|player|score|match|championship)\b/i,
+  };
+  
+  for (const [topic, pattern] of Object.entries(topicPatterns)) {
+    if (pattern.test(content)) {
+      topics.push(topic);
+      if (topics.length >= 3) break;
+    }
+  }
+  
+  return topics.length > 0 ? topics : ['General'];
 }
 
 // ============================================================================
@@ -782,12 +920,20 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
 // ============================================================================
 
 function generateDemoAnalysisFast(url: string): ScanResult {
+  const startTime = Date.now();
+  const getElapsed = () => ((Date.now() - startTime) / 1000).toFixed(3);
+  
+  console.log(`\n🔍 [KOMAL DEMO MODE] Starting URL-based analysis for: ${url}`);
+  console.log(`⏱️  [${getElapsed()}s] Running keyword analysis on URL...`);
+  
   const urlLower = url.toLowerCase();
   const childSafetyAnalysis = analyzeChildSafetyFast(urlLower, '', '', []);
 
   // Quick URL pattern detection
   const isEducational = /edu|learn|wiki|school|kids|child/i.test(urlLower);
   const isSocial = /facebook|instagram|tiktok|twitter|snapchat/i.test(urlLower);
+  
+  console.log(`✅ [${getElapsed()}s] Pattern detection: Educational=${isEducational}, Social=${isSocial}`);
 
   const ageGroupScores = calculateAgeGroupScores(childSafetyAnalysis, null, 0);
 
@@ -811,6 +957,8 @@ function generateDemoAnalysisFast(url: string): ScanResult {
   const overallScore = Math.round(
     Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
   );
+  
+  console.log(`🎯 [KOMAL DEMO MODE] COMPLETE in ${getElapsed()}s | Score: ${overallScore}/100 | Risk: ${childSafetyAnalysis.riskLevel}\n`);
 
   return {
     url,

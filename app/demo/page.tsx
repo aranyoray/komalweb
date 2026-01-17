@@ -6,7 +6,6 @@ import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, Mess
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
-import { isBlockedForUnder16 } from "@/lib/content-rules";
 
 interface ScanResult {
   url: string;
@@ -262,7 +261,24 @@ export default function DemoPage() {
     return 'bg-red-100';
   };
 
-  const isUnder16Blocked = result ? isBlockedForUnder16(result.categoryScores) : false;
+  const getSeverityColor = (severity: string) => {
+    switch (severity.toLowerCase()) {
+      case 'critical':
+        return 'bg-red-600 text-white';
+      case 'high':
+        return 'bg-red-500 text-white';
+      case 'medium':
+        return 'bg-amber-500 text-white';
+      case 'low':
+        return 'bg-yellow-400 text-gray-800';
+      default:
+        return 'bg-gray-400 text-white';
+    }
+  };
+
+  // Check if content should be blocked for under 16 based on child safety analysis
+  const isUnder16Blocked = result?.childSafetyAnalysis?.overallRisk === 'dangerous' || 
+    result?.childSafetyAnalysis?.riskCategories?.some(r => r.severity === 'critical');
   const displayOverallScore = result ? (isUnder16Blocked ? 0 : result.overallScore) : 0;
 
   return (
@@ -691,7 +707,7 @@ export default function DemoPage() {
                             </span>
                           ))}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
 
@@ -812,7 +828,7 @@ export default function DemoPage() {
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                   <h2 className="text-2xl font-bold text-primary mb-6">Age-Appropriate Actions</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {Object.entries(result.ageGroupActions).map(([ageGroup, data]) => {
+                    {Object.entries(result.ageGroupScores).map(([ageGroup, data]) => {
                       const displayAction = isUnder16Blocked ? 'BLOCK' : data.action;
                       const displayScore = isUnder16Blocked ? 0 : data.score;
                       const displayReason = isUnder16Blocked
@@ -848,25 +864,23 @@ export default function DemoPage() {
                 </div>
               </ScrollReveal>
 
-              {/* Detected Categories */}
-              {Object.keys(result.categoryScores).length > 0 && (
+              {/* Content Risk Summary */}
+              {result.childSafetyAnalysis.riskCategories.length > 0 && (
                 <ScrollReveal delay={0.5}>
                   <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-                    <h2 className="text-2xl font-bold text-primary mb-6">Content Categories Detected</h2>
+                    <h2 className="text-2xl font-bold text-primary mb-6">Content Risk Summary</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.entries(result.categoryScores)
-                        .filter(([_, data]) => data.detected)
-                        .map(([category, data]) => (
-                          <div
-                            key={category}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200"
-                          >
-                            <span className="font-medium text-primary">{category}</span>
-                            <span className="text-sm text-text-dim">
-                              {isUnder16Blocked ? '0% confidence (blocked)' : `${Math.round(data.confidence * 100)}% confidence`}
-                            </span>
-                          </div>
-                        ))}
+                      {result.childSafetyAnalysis.riskCategories.map((risk, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200"
+                        >
+                          <span className="font-medium text-primary capitalize">{risk.category}</span>
+                          <span className={`text-sm px-2 py-1 rounded ${getSeverityColor(risk.severity)}`}>
+                            {risk.severity.toUpperCase()}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </ScrollReveal>
