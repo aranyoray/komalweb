@@ -2,11 +2,11 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck, FileDown } from "lucide-react";
+import { generateSafetyReportPDF } from "@/lib/generatePDF";
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
-import { isBlockedForUnder16 } from "@/lib/content-rules";
 
 interface ScanResult {
   url: string;
@@ -69,6 +69,15 @@ interface ScanResult {
   };
   timestamp: string;
   analysisMethod?: 'live' | 'demo';
+  usedSearchFallback?: boolean;
+  performanceMetrics?: {
+    totalTimeMs: number;
+    steps: {
+      name: string;
+      durationMs: number;
+      details?: string;
+    }[];
+  };
 }
 
 export default function DemoPage() {
@@ -84,13 +93,39 @@ export default function DemoPage() {
   const [demoForm, setDemoForm] = useState({ name: '', email: '', organization: '' });
   const [sendingEmail, setSendingEmail] = useState(false);
   const [submittingDemo, setSubmittingDemo] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   const [modalMessage, setModalMessage] = useState({ type: '', text: '' });
 
   const reportRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const safeKeywords = result?.contentAnalysis.textAnalysis.safeKeywordsFound ?? [];
+  const renderSafeKeywords = () => {
+    if (safeKeywords.length === 0) {
+      return null;
+    }
+
+    return (
+      <ScrollReveal delay={0.28}>
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-bold text-primary mb-3 flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+            Safe Content Indicators
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {safeKeywords.map((kw, idx) => (
+              <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-sm">
+                {kw}
+              </span>
+            ))}
+          </div>
+        </div>
+      </ScrollReveal>
+    );
+  };
 
   const handleScan = async () => {
     if (!url.trim()) {
-      setError('Please enter a URL');
+      setError('Please enter a URL or keyword');
       return;
     }
 
@@ -99,9 +134,24 @@ export default function DemoPage() {
     setResult(null);
 
     try {
-      let normalizedUrl = url.trim();
-      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-        normalizedUrl = 'https://' + normalizedUrl;
+      let input = url.trim();
+      
+      // Check if input looks like a URL (has domain-like pattern with dots or protocol)
+      const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(input) || 
+                          input.includes('.com') || 
+                          input.includes('.org') || 
+                          input.includes('.net') ||
+                          input.includes('.edu') ||
+                          input.includes('.gov') ||
+                          input.includes('.io') ||
+                          input.includes('.co') ||
+                          input.includes('.in') ||
+                          input.startsWith('http://') || 
+                          input.startsWith('https://');
+      
+      // Only normalize as URL if it looks like a URL
+      if (looksLikeUrl && !input.startsWith('http://') && !input.startsWith('https://')) {
+        input = 'https://' + input;
       }
 
       const response = await fetch('/api/scan-url', {
@@ -109,18 +159,45 @@ export default function DemoPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: normalizedUrl }),
+        body: JSON.stringify({ url: input }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to scan URL');
+        throw new Error(data.error || 'Failed to analyze');
       }
 
       setResult(data);
+      
+      // Scroll to results section after a brief delay for rendering
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      
+      // Log performance metrics to browser console
+      if (data.performanceMetrics) {
+        const { totalTimeMs, steps } = data.performanceMetrics;
+        console.log('\n%c🔍 KOMAL URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
+        console.log(`%c📍 Input: ${input}`, 'color: #666;');
+        console.log(`%c⏱️  Total Time: ${(totalTimeMs / 1000).toFixed(3)}s`, 'color: #2196F3; font-weight: bold;');
+        console.log('%c\n📊 Step Breakdown:', 'color: #6B4E71; font-weight: bold;');
+        console.table(steps.map((step: { name: string; durationMs: number; details?: string }) => ({
+          Step: step.name,
+          'Duration (ms)': step.durationMs,
+          'Duration (s)': (step.durationMs / 1000).toFixed(3),
+          Details: step.details || '-'
+        })));
+        console.log(`%c\n✅ Analysis Method: ${data.analysisMethod?.toUpperCase() || 'UNKNOWN'}`, 'color: #4CAF50; font-weight: bold;');
+        console.log(`%c🎯 Safety Score: ${data.overallScore}/100 | Risk Level: ${data.childSafetyAnalysis?.overallRisk?.toUpperCase() || 'N/A'}`, 
+          data.overallScore >= 75 ? 'color: #4CAF50; font-weight: bold;' : 
+          data.overallScore >= 50 ? 'color: #FF9800; font-weight: bold;' : 
+          'color: #F44336; font-weight: bold;');
+        console.log('\n');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('%c❌ KOMAL Analysis Error:', 'color: #F44336; font-weight: bold;', err);
     } finally {
       setLoading(false);
     }
@@ -142,7 +219,6 @@ export default function DemoPage() {
         body: JSON.stringify({
           email: emailInput.trim(),
           report: result,
-          senderEmail: emailInput.trim(),
         }),
       });
 
@@ -200,6 +276,20 @@ export default function DemoPage() {
     }
   };
 
+  // Generate PDF functionality
+  const handleGeneratePDF = async () => {
+    if (!result) return;
+
+    setGeneratingPDF(true);
+    try {
+      await generateSafetyReportPDF(result);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'BLOCK':
@@ -238,7 +328,24 @@ export default function DemoPage() {
     return 'bg-red-100';
   };
 
-  const isUnder16Blocked = result ? isBlockedForUnder16(result.categoryScores) : false;
+  const getSeverityColor = (severity: string) => {
+    switch (severity.toLowerCase()) {
+      case 'critical':
+        return 'bg-red-600 text-white';
+      case 'high':
+        return 'bg-red-500 text-white';
+      case 'medium':
+        return 'bg-amber-500 text-white';
+      case 'low':
+        return 'bg-yellow-400 text-gray-800';
+      default:
+        return 'bg-gray-400 text-white';
+    }
+  };
+
+  // Check if content should be blocked for under 16 based on child safety analysis
+  const isUnder16Blocked = result?.childSafetyAnalysis?.overallRisk === 'dangerous' || 
+    result?.childSafetyAnalysis?.riskCategories?.some(r => r.severity === 'critical');
   const displayOverallScore = result ? (isUnder16Blocked ? 0 : result.overallScore) : 0;
 
   return (
@@ -426,7 +533,7 @@ export default function DemoPage() {
                 </span>
               </h1>
               <p className="text-sm sm:text-base md:text-lg text-text-dim max-w-[700px] mx-auto px-2">
-                Enter any URL to analyze content safety for children using deep keyword analysis,
+                Enter any URL or keyword to analyze content safety for children using deep keyword analysis,
                 Vision AI, NLP, and multimedia scanning.
               </p>
             </div>
@@ -449,7 +556,7 @@ export default function DemoPage() {
                         handleScan();
                       }
                     }}
-                    placeholder="example.com"
+                    placeholder="Enter URL or keyword (e.g., example.com or violence)"
                     className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:border-primary transition-colors"
                     disabled={loading}
                   />
@@ -463,12 +570,12 @@ export default function DemoPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Scanning...
+                      Analyzing...
                     </>
                   ) : (
                     <>
                       <Search className="w-5 h-5 mr-2" />
-                      Scan URL
+                      Analyze
                     </>
                   )}
                 </Button>
@@ -491,6 +598,24 @@ export default function DemoPage() {
               <ScrollReveal delay={0.15}>
                 <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-2 sm:gap-3">
                   <Button
+                    onClick={handleGeneratePDF}
+                    disabled={generatingPDF}
+                    variant="outline"
+                    className="border-2 border-green-500/30 text-green-700 hover:bg-green-50 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
+                  >
+                    {generatingPDF ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="w-4 h-4 mr-2" />
+                        Generate PDF
+                      </>
+                    )}
+                  </Button>
+                  <Button
                     onClick={() => setShowEmailModal(true)}
                     variant="outline"
                     className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
@@ -510,7 +635,7 @@ export default function DemoPage() {
 
               {/* Overall Score & Child Safety Risk */}
               <ScrollReveal delay={0.2}>
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
+                <div ref={resultsRef} className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-primary">Overall Safety Score</h2>
                     <div className={`${getScoreBackground(displayOverallScore)} px-6 py-3 rounded-2xl`}>
@@ -582,10 +707,20 @@ export default function DemoPage() {
                       {result.contentAnalysis.metadata.description && (
                         <p className="break-words"><span className="font-semibold">Description:</span> {result.contentAnalysis.metadata.description.substring(0, 100)}...</p>
                       )}
-                      <p>
-                        <span className="font-semibold">Stats:</span> {result.contentAnalysis.metadata.imageCount} images, {result.contentAnalysis.metadata.linkCount} links,
-                        {result.contentAnalysis.metadata.videoCount} videos, {result.contentAnalysis.metadata.audioCount} audio
-                      </p>
+                      {(result.contentAnalysis.metadata.imageCount >= 1 || 
+                        result.contentAnalysis.metadata.linkCount >= 1 || 
+                        result.contentAnalysis.metadata.videoCount >= 1 || 
+                        result.contentAnalysis.metadata.audioCount >= 1) && (
+                        <p>
+                          <span className="font-semibold">Stats:</span>{' '}
+                          {[
+                            result.contentAnalysis.metadata.imageCount >= 1 && `${result.contentAnalysis.metadata.imageCount} images`,
+                            result.contentAnalysis.metadata.linkCount >= 1 && `${result.contentAnalysis.metadata.linkCount} links`,
+                            result.contentAnalysis.metadata.videoCount >= 1 && `${result.contentAnalysis.metadata.videoCount} videos`,
+                            result.contentAnalysis.metadata.audioCount >= 1 && `${result.contentAnalysis.metadata.audioCount} audio`
+                          ].filter(Boolean).join(', ')}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -629,23 +764,7 @@ export default function DemoPage() {
               )}
 
               {/* Safe Keywords Found */}
-              {result.contentAnalysis.textAnalysis.safeKeywordsFound.length > 0 && (
-                <ScrollReveal delay={0.28}>
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
-                    <h3 className="text-base sm:text-lg font-bold text-primary mb-3 flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                      Safe Content Indicators
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {result.contentAnalysis.textAnalysis.safeKeywordsFound.map((kw, idx) => (
-                        <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-sm">
-                          {kw}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </ScrollReveal>
-              )}
+              {renderSafeKeywords()}
 
               {/* AI Analysis */}
               <ScrollReveal delay={0.3}>
@@ -683,67 +802,69 @@ export default function DemoPage() {
                             </span>
                           ))}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Vision AI Analysis */}
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
-                        <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                      </div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">Vision AI Analysis</h3>
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm text-text-dim mb-1">Visual Safety Score</p>
-                        <p className={`text-lg font-semibold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore)}`}>
-                          {isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore}/100
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-text-dim mb-2">Detected Objects</p>
-                        <div className="flex flex-wrap gap-2">
-                          {(isUnder16Blocked ? ['Flagged'] : result.contentAnalysis.visualAnalysis.detectedObjects).map((obj, idx) => (
-                            <span
-                              key={idx}
-                              className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
-                            >
-                              {obj}
-                            </span>
-                          ))}
+                  {/* Vision AI Analysis - Hidden when search fallback was used */}
+                  {!result.usedSearchFallback && (
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                         </div>
+                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">Vision AI Analysis</h3>
                       </div>
-                      {result.contentAnalysis.visualAnalysis.concerns.length > 0 && (
+                      <div className="space-y-3">
                         <div>
-                          <p className="text-sm text-text-dim mb-2">Visual Concerns</p>
-                          <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.visualAnalysis.concerns.map((concern, idx) => (
-                              <span key={idx} className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm">
-                                {concern}
-                              </span>
-                            ))}
-                          </div>
+                          <p className="text-sm text-text-dim mb-1">Visual Safety Score</p>
+                          <p className={`text-lg font-semibold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore)}`}>
+                            {isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore}/100
+                          </p>
                         </div>
-                      )}
-                      {result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 && (
                         <div>
-                          <p className="text-sm text-text-dim mb-2">Image Labels</p>
+                          <p className="text-sm text-text-dim mb-2">Detected Objects</p>
                           <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label, idx) => (
+                            {(isUnder16Blocked ? ['Flagged'] : result.contentAnalysis.visualAnalysis.detectedObjects).map((obj, idx) => (
                               <span
                                 key={idx}
-                                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
+                                className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm"
                               >
-                                {label}
+                                {obj}
                               </span>
                             ))}
                           </div>
                         </div>
-                      )}
+                        {result.contentAnalysis.visualAnalysis.concerns.length > 0 && (
+                          <div>
+                            <p className="text-sm text-text-dim mb-2">Visual Concerns</p>
+                            <div className="flex flex-wrap gap-2">
+                              {result.contentAnalysis.visualAnalysis.concerns.map((concern, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm">
+                                  {concern}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 && (
+                          <div>
+                            <p className="text-sm text-text-dim mb-2">Image Labels</p>
+                            <div className="flex flex-wrap gap-2">
+                              {result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
+                                >
+                                  {label}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </ScrollReveal>
 
@@ -804,7 +925,7 @@ export default function DemoPage() {
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                   <h2 className="text-2xl font-bold text-primary mb-6">Age-Appropriate Actions</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {Object.entries(result.ageGroupActions).map(([ageGroup, data]) => {
+                    {Object.entries(result.ageGroupScores).map(([ageGroup, data]) => {
                       const displayAction = isUnder16Blocked ? 'BLOCK' : data.action;
                       const displayScore = isUnder16Blocked ? 0 : data.score;
                       const displayReason = isUnder16Blocked
@@ -840,25 +961,23 @@ export default function DemoPage() {
                 </div>
               </ScrollReveal>
 
-              {/* Detected Categories */}
-              {Object.keys(result.categoryScores).length > 0 && (
+              {/* Content Risk Summary */}
+              {result.childSafetyAnalysis.riskCategories.length > 0 && (
                 <ScrollReveal delay={0.5}>
                   <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-                    <h2 className="text-2xl font-bold text-primary mb-6">Content Categories Detected</h2>
+                    <h2 className="text-2xl font-bold text-primary mb-6">Content Risk Summary</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.entries(result.categoryScores)
-                        .filter(([_, data]) => data.detected)
-                        .map(([category, data]) => (
-                          <div
-                            key={category}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200"
-                          >
-                            <span className="font-medium text-primary">{category}</span>
-                            <span className="text-sm text-text-dim">
-                              {isUnder16Blocked ? '0% confidence (blocked)' : `${Math.round(data.confidence * 100)}% confidence`}
-                            </span>
-                          </div>
-                        ))}
+                      {result.childSafetyAnalysis.riskCategories.map((risk, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200"
+                        >
+                          <span className="font-medium text-primary capitalize">{risk.category}</span>
+                          <span className={`text-sm px-2 py-1 rounded ${getSeverityColor(risk.severity)}`}>
+                            {risk.severity.toUpperCase()}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </ScrollReveal>
@@ -887,9 +1006,9 @@ export default function DemoPage() {
                       <Search className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                     </div>
                     <div className="text-left sm:text-center">
-                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">1. Enter URL</h3>
+                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">1. Enter URL or Keyword</h3>
                       <p className="text-xs sm:text-sm text-text-dim">
-                        Provide any website URL to analyze
+                        Provide any website URL or keyword to analyze
                       </p>
                     </div>
                   </div>
