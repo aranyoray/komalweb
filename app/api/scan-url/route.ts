@@ -74,7 +74,7 @@ async function fetchWebpageContent(url: string): Promise<string> {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; KomalBot/1.0; +https://komalkids.com)',
       },
-      signal: AbortSignal.timeout(10000), // 10 second timeout
+      signal: AbortSignal.timeout(6000), // 6 second timeout
     });
 
     if (!response.ok) {
@@ -151,7 +151,7 @@ async function captureScreenshot(url: string): Promise<Buffer | null> {
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 720 });
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 8000 });
 
     const screenshot = await page.screenshot({ type: 'png' });
     return screenshot as Buffer;
@@ -241,24 +241,18 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
       detectedObjects: [] as string[],
     };
 
-    // Analyze screenshot if available
-    if (screenshot) {
-      const [screenshotResult] = await visionClient.annotateImage({
-        image: { content: screenshot },
-        features: [
-          { type: 'LABEL_DETECTION', maxResults: 10 },
-          { type: 'SAFE_SEARCH_DETECTION' },
-          { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
-        ],
-      });
+    const screenshotPromise = screenshot
+      ? visionClient.annotateImage({
+          image: { content: screenshot },
+          features: [
+            { type: 'LABEL_DETECTION', maxResults: 10 },
+            { type: 'SAFE_SEARCH_DETECTION' },
+            { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
+          ],
+        })
+      : null;
 
-      results.labels = screenshotResult.labelAnnotations?.map((l) => l.description || '') || [];
-      results.safeSearchAnnotation = screenshotResult.safeSearchAnnotation;
-      results.detectedObjects = screenshotResult.localizedObjectAnnotations?.map((o) => o.name || '') || [];
-    }
-
-    // Analyze first few images from the page
-    for (const imageUrl of imageUrls.slice(0, 3)) {
+    const imagePromises = imageUrls.slice(0, 3).map(async (imageUrl) => {
       try {
         const [imageResult] = await visionClient.annotateImage({
           image: { source: { imageUri: imageUrl } },
@@ -268,26 +262,44 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
           ],
         });
 
-        const imageLabels = imageResult.labelAnnotations?.map((l) => l.description || '') || [];
-        results.labels.push(...imageLabels);
-
-        // Use the most restrictive safe search annotation
-        if (imageResult.safeSearchAnnotation) {
-          if (!results.safeSearchAnnotation) {
-            results.safeSearchAnnotation = imageResult.safeSearchAnnotation;
-          } else {
-            // Merge annotations (take worst case)
-            const current = results.safeSearchAnnotation;
-            const newAnnotation = imageResult.safeSearchAnnotation;
-            results.safeSearchAnnotation = {
-              adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
-              violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
-              racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
-            };
-          }
-        }
+        return imageResult;
       } catch (error) {
         console.error(`Error analyzing image ${imageUrl}:`, error);
+        return null;
+      }
+    });
+
+    const [screenshotResult, imageResults] = await Promise.all([
+      screenshotPromise,
+      Promise.all(imagePromises),
+    ]);
+
+    if (screenshotResult) {
+      results.labels = screenshotResult.labelAnnotations?.map((l) => l.description || '') || [];
+      results.safeSearchAnnotation = screenshotResult.safeSearchAnnotation;
+      results.detectedObjects = screenshotResult.localizedObjectAnnotations?.map((o) => o.name || '') || [];
+    }
+
+    for (const imageResult of imageResults) {
+      if (!imageResult) {
+        continue;
+      }
+
+      const imageLabels = imageResult.labelAnnotations?.map((l) => l.description || '') || [];
+      results.labels.push(...imageLabels);
+
+      if (imageResult.safeSearchAnnotation) {
+        if (!results.safeSearchAnnotation) {
+          results.safeSearchAnnotation = imageResult.safeSearchAnnotation;
+        } else {
+          const current = results.safeSearchAnnotation;
+          const newAnnotation = imageResult.safeSearchAnnotation;
+          results.safeSearchAnnotation = {
+            adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
+            violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
+            racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
+          };
+        }
       }
     }
 
@@ -485,17 +497,18 @@ function calculateSafetyScore(categoryScores: any) {
  */
 async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
   try {
-    // Fetch webpage content
+    const shouldCaptureScreenshot = Boolean(visionClient);
+
+    // Fetch webpage content and capture screenshot in parallel when needed
     console.log('Fetching webpage content...');
-    const html = await fetchWebpageContent(url);
+    const [html, screenshot] = await Promise.all([
+      fetchWebpageContent(url),
+      shouldCaptureScreenshot ? captureScreenshot(url) : Promise.resolve(null),
+    ]);
 
     // Parse HTML and extract metadata
     console.log('Parsing HTML and extracting metadata...');
     const metadata = parseHTMLMetadata(html, url);
-
-    // Capture screenshot
-    console.log('Capturing screenshot...');
-    const screenshot = await captureScreenshot(url);
 
     // Analyze text with NLP
     console.log('Analyzing text with NLP...');
