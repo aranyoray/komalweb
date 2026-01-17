@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Download, Mail, Calendar, X } from "lucide-react";
+import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
@@ -92,7 +92,6 @@ export default function DemoPage() {
   const [demoForm, setDemoForm] = useState({ name: '', email: '', organization: '' });
   const [sendingEmail, setSendingEmail] = useState(false);
   const [submittingDemo, setSubmittingDemo] = useState(false);
-  const [exportingPDF, setExportingPDF] = useState(false);
   const [modalMessage, setModalMessage] = useState({ type: '', text: '' });
 
   const reportRef = useRef<HTMLDivElement>(null);
@@ -132,252 +131,6 @@ export default function DemoPage() {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Export PDF functionality
-  const handleExportPDF = async () => {
-    if (!result) return;
-
-    setExportingPDF(true);
-
-    try {
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-
-      // Create a temporary div for PDF content with homepage-inspired design
-      const pdfContent = document.createElement('div');
-      pdfContent.style.padding = '0';
-      pdfContent.style.background = '#ffffff';
-      pdfContent.style.width = '800px';
-      pdfContent.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-      pdfContent.style.color = '#1a1a1a';
-      pdfContent.style.position = 'absolute';
-      pdfContent.style.left = '-9999px';
-      pdfContent.style.top = '0';
-
-      const getScoreColor = (score: number) => {
-        if (score >= 75) return '#22c55e';
-        if (score >= 50) return '#f59e0b';
-        return '#ef4444';
-      };
-
-      const getActionColor = (action: string) => {
-        if (action === 'BLOCK') return '#ef4444';
-        if (action === 'GATE') return '#f59e0b';
-        return '#22c55e';
-      };
-
-      // Primary color from homepage
-      const primaryColor = '#270263';
-      const primaryLight = 'rgba(39, 2, 99, 0.1)';
-      const purpleGradient = 'linear-gradient(135deg, #270263 0%, #6b4e71 100%)';
-
-      pdfContent.innerHTML = `
-        <!-- Header -->
-        <div style="background: ${primaryColor}; padding: 40px; text-align: center;">
-          <h1 style="color: white; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: -0.02em;">KOMAL</h1>
-          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">URL Safety Analysis Report</p>
-        </div>
-
-        <!-- Main Content -->
-        <div style="padding: 32px; background: white;">
-          <!-- URL and Metadata -->
-          <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; margin-bottom: 24px; border: 1px solid rgba(39, 2, 99, 0.1);">
-            <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Analyzed URL</p>
-            <p style="margin: 0 0 12px 0; font-size: 13px; color: ${primaryColor}; word-break: break-all; font-family: monospace; font-weight: 500;">${result.url}</p>
-            ${result.contentAnalysis.metadata ? `
-            <div style="border-top: 1px solid rgba(39, 2, 99, 0.1); padding-top: 12px; margin-top: 12px;">
-              ${result.contentAnalysis.metadata.title ? `<p style="margin: 0 0 4px 0; font-size: 11px; color: #333;"><strong>Title:</strong> ${result.contentAnalysis.metadata.title}</p>` : ''}
-              ${result.contentAnalysis.metadata.description ? `<p style="margin: 4px 0; font-size: 11px; color: #333; line-height: 1.4;"><strong>Description:</strong> ${result.contentAnalysis.metadata.description.substring(0, 150)}${result.contentAnalysis.metadata.description.length > 150 ? '...' : ''}</p>` : ''}
-              <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;"><strong>Stats:</strong> ${result.contentAnalysis.metadata.imageCount} images, ${result.contentAnalysis.metadata.linkCount} links</p>
-            </div>
-            ` : ''}
-            ${result.analysisMethod ? `
-            <div style="margin-top: 8px;">
-              <span style="background: ${result.analysisMethod === 'live' ? '#dcfce7' : '#fef3c7'}; color: ${result.analysisMethod === 'live' ? '#166534' : '#92400e'}; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">
-                ${result.analysisMethod === 'live' ? 'Live Analysis' : 'Demo Mode'}
-              </span>
-            </div>
-            ` : ''}
-          </div>
-
-          <!-- Overall Score -->
-          <div style="background: ${getScoreColor(result.overallScore)}15; border: 2px solid ${getScoreColor(result.overallScore)}40; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-            <p style="margin: 0 0 8px 0; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Overall Safety Score</p>
-            <div style="font-size: 56px; font-weight: 700; color: ${getScoreColor(result.overallScore)}; line-height: 1; margin-bottom: 12px;">
-              ${result.overallScore}<span style="font-size: 28px; color: #666; font-weight: 500;">/100</span>
-            </div>
-            <div style="background: #e5e5e5; border-radius: 6px; height: 8px; overflow: hidden;">
-              <div style="background: ${getScoreColor(result.overallScore)}; height: 100%; width: ${result.overallScore}%; border-radius: 6px;"></div>
-            </div>
-          </div>
-
-          <!-- Age Group Actions -->
-          <div style="margin-bottom: 24px;">
-            <h2 style="color: ${primaryColor}; font-size: 18px; font-weight: 700; margin: 0 0 16px 0;">Age-Appropriate Actions</h2>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-              ${Object.entries(result.ageGroupActions).map(([age, data]) => `
-                <div style="background: ${getActionColor(data.action)}15; border: 2px solid ${getActionColor(data.action)}40; border-radius: 12px; padding: 16px;">
-                  <div style="font-size: 11px; font-weight: 600; color: ${primaryColor}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">${age}</div>
-                  <div style="font-size: 24px; font-weight: 700; color: ${getActionColor(data.action)}; margin-bottom: 6px;">${data.action}</div>
-                  <div style="font-size: 11px; color: #666; margin-bottom: 8px; font-weight: 500;">Score: ${data.score}/100</div>
-                  ${data.reason ? `<div style="font-size: 9px; color: #666; line-height: 1.3; padding-top: 8px; border-top: 1px solid ${getActionColor(data.action)}20;">${data.reason}</div>` : ''}
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <!-- AI Analysis Grid -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-            <!-- NLP Text Analysis -->
-            <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; border: 1px solid rgba(39, 2, 99, 0.1);">
-              <h3 style="color: ${primaryColor}; font-size: 14px; font-weight: 700; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
-                <span style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; display: inline-block;"></span>
-                NLP Text Analysis
-              </h3>
-              <div style="space-y: 8px;">
-                <div style="margin-bottom: 10px;">
-                  <p style="margin: 0 0 4px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Sentiment</p>
-                  <p style="margin: 0; font-size: 13px; font-weight: 600; color: ${primaryColor};">${result.contentAnalysis.textAnalysis.sentiment}</p>
-                </div>
-                <div style="margin-bottom: 10px;">
-                  <p style="margin: 0 0 4px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Language Score</p>
-                  <p style="margin: 0; font-size: 13px; font-weight: 600; color: ${getScoreColor(result.contentAnalysis.textAnalysis.languageScore)};">${result.contentAnalysis.textAnalysis.languageScore}/100</p>
-                </div>
-                ${result.contentAnalysis.textAnalysis.entities && result.contentAnalysis.textAnalysis.entities.length > 0 ? `
-                <div>
-                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Entities</p>
-                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    ${result.contentAnalysis.textAnalysis.entities.slice(0, 3).map((entity: string) => `
-                      <span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${entity}</span>
-                    `).join('')}
-                  </div>
-                </div>
-                ` : ''}
-              </div>
-            </div>
-
-            <!-- Vision AI Analysis -->
-            <div style="background: #f5f5f7; border-radius: 12px; padding: 16px; border: 1px solid rgba(39, 2, 99, 0.1);">
-              <h3 style="color: ${primaryColor}; font-size: 14px; font-weight: 700; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
-                <span style="width: 8px; height: 8px; background: #9333ea; border-radius: 50%; display: inline-block;"></span>
-                Vision AI Analysis
-              </h3>
-              <div style="space-y: 8px;">
-                <div style="margin-bottom: 10px;">
-                  <p style="margin: 0 0 4px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Visual Safety Score</p>
-                  <p style="margin: 0; font-size: 13px; font-weight: 600; color: ${getScoreColor(result.contentAnalysis.visualAnalysis.safetyScore)};">${result.contentAnalysis.visualAnalysis.safetyScore}/100</p>
-                </div>
-                ${result.contentAnalysis.visualAnalysis.detectedObjects.length > 0 ? `
-                <div style="margin-bottom: 10px;">
-                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Detected Objects</p>
-                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    ${result.contentAnalysis.visualAnalysis.detectedObjects.slice(0, 7).map((obj: string) => `
-                      <span style="background: #f3e8ff; color: #7c3aed; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${obj}</span>
-                    `).join('')}
-                  </div>
-                </div>
-                ` : ''}
-                ${result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 ? `
-                <div>
-                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Image Labels</p>
-                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    ${result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label: string) => `
-                      <span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${label}</span>
-                    `).join('')}
-                  </div>
-                </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-
-          ${result.keywordSimilarityReport ? `
-          <!-- Keyword Analysis -->
-          <div style="margin-bottom: 24px;">
-            <h2 style="color: ${primaryColor}; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Keyword Analysis</h2>
-            <div style="background: ${primaryLight}; border-radius: 12px; padding: 16px; border: 1px solid rgba(39, 2, 99, 0.2);">
-              <p style="margin: 0 0 12px 0; font-size: 11px; color: ${primaryColor}; font-weight: 500; line-height: 1.5;">${result.keywordSimilarityReport.summary}</p>
-              ${result.keywordSimilarityReport.topCategories.length > 0 ? `
-              <div>
-                <p style="margin: 0 0 8px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Top Categories</p>
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                  ${result.keywordSimilarityReport.topCategories.slice(0, 5).map((cat: { category: string; matchCount: number; avgScore: number }) => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; border-radius: 6px;">
-                      <span style="font-size: 11px; color: ${primaryColor}; font-weight: 500;">${cat.category}</span>
-                      <span style="font-size: 10px; color: #666;">${cat.matchCount} matches</span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-              ` : ''}
-            </div>
-          </div>
-          ` : ''}
-
-          <!-- Footer -->
-          <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(39, 2, 99, 0.1); text-align: center;">
-            <p style="margin: 0; font-size: 10px; color: #999; font-weight: 500;">Report generated on ${new Date(result.timestamp).toLocaleString()}</p>
-            <p style="margin: 6px 0 0 0; font-size: 12px; font-weight: 700; color: ${primaryColor};">
-              Powered by KOMAL - Digital Guardian for Kids
-            </p>
-            <p style="margin: 2px 0 0 0; font-size: 10px; color: #999;">
-              komalkids.com
-            </p>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(pdfContent);
-
-      // Wait a bit for fonts and styles to render
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const canvas = await html2canvas(pdfContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        allowTaint: true,
-        windowWidth: 800,
-        windowHeight: pdfContent.scrollHeight,
-      });
-
-      document.body.removeChild(pdfContent);
-
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      // Handle multi-page PDF if content is too tall
-      if (imgHeight > pdfHeight) {
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-        }
-      } else {
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      }
-
-      pdf.save(`komal-safety-report-${new Date().toISOString().split('T')[0]}.pdf`);
-
-    } catch (err) {
-      console.error('Error exporting PDF:', err);
-      alert('Failed to export PDF. Please try again.');
-    } finally {
-      setExportingPDF(false);
     }
   };
 
@@ -742,19 +495,6 @@ export default function DemoPage() {
               {/* Action Buttons */}
               <ScrollReveal delay={0.15}>
                 <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-2 sm:gap-3">
-                  <Button
-                    onClick={handleExportPDF}
-                    disabled={exportingPDF}
-                    variant="outline"
-                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
-                  >
-                    {exportingPDF ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4 mr-2" />
-                    )}
-                    Export PDF
-                  </Button>
                   <Button
                     onClick={() => setShowEmailModal(true)}
                     variant="outline"
