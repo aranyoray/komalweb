@@ -68,6 +68,14 @@ interface ScanResult {
   };
   timestamp: string;
   analysisMethod?: 'live' | 'demo';
+  performanceMetrics?: {
+    totalTimeMs: number;
+    steps: {
+      name: string;
+      durationMs: number;
+      details?: string;
+    }[];
+  };
 }
 
 export default function DemoPage() {
@@ -142,8 +150,30 @@ export default function DemoPage() {
       }
 
       setResult(data);
+      
+      // Log performance metrics to browser console
+      if (data.performanceMetrics) {
+        const { totalTimeMs, steps } = data.performanceMetrics;
+        console.log('\n%c🔍 KOMAL URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
+        console.log(`%c📍 URL: ${normalizedUrl}`, 'color: #666;');
+        console.log(`%c⏱️  Total Time: ${(totalTimeMs / 1000).toFixed(3)}s`, 'color: #2196F3; font-weight: bold;');
+        console.log('%c\n📊 Step Breakdown:', 'color: #6B4E71; font-weight: bold;');
+        console.table(steps.map((step: { name: string; durationMs: number; details?: string }) => ({
+          Step: step.name,
+          'Duration (ms)': step.durationMs,
+          'Duration (s)': (step.durationMs / 1000).toFixed(3),
+          Details: step.details || '-'
+        })));
+        console.log(`%c\n✅ Analysis Method: ${data.analysisMethod?.toUpperCase() || 'UNKNOWN'}`, 'color: #4CAF50; font-weight: bold;');
+        console.log(`%c🎯 Safety Score: ${data.overallScore}/100 | Risk Level: ${data.childSafetyAnalysis?.overallRisk?.toUpperCase() || 'N/A'}`, 
+          data.overallScore >= 75 ? 'color: #4CAF50; font-weight: bold;' : 
+          data.overallScore >= 50 ? 'color: #FF9800; font-weight: bold;' : 
+          'color: #F44336; font-weight: bold;');
+        console.log('\n');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('%c❌ KOMAL Analysis Error:', 'color: #F44336; font-weight: bold;', err);
     } finally {
       setLoading(false);
     }

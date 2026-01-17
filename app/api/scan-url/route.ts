@@ -83,78 +83,220 @@ const SAFE_PATTERN = new RegExp(`\\b(${CHILD_SAFE_KEYWORDS.join('|')})`, 'gi');
 
 // ============================================================================
 // CONTEXT-AWARE KEYWORD ANALYSIS
-// Safe context patterns that indicate benign usage of potentially flagged words
+// Analyzes context to determine if keyword usage is safe or dangerous
 // ============================================================================
 
+// Safe context patterns - keyword is used innocuously
 const SAFE_CONTEXT_PATTERNS: { [keyword: string]: RegExp[] } = {
   // Violence-related words in safe contexts
-  'gun': [/water\s*gun/i, /glue\s*gun/i, /nail\s*gun/i, /spray\s*gun/i, /gun\s*control/i, /nerf\s*gun/i, /toy\s*gun/i, /starter\s*gun/i, /gun\s*safety/i],
-  'shoot': [/photo\s*shoot/i, /shoot\s*photos/i, /shoot\s*video/i, /basketball\s*shoot/i, /shoot\s*hoops/i, /shoot\s*for/i, /trouble\s*shoot/i],
+  'gun': [/water\s*gun/i, /glue\s*gun/i, /nail\s*gun/i, /spray\s*gun/i, /gun\s*control/i, /nerf\s*gun/i, /toy\s*gun/i, /starter\s*gun/i, /gun\s*safety/i, /top\s*gun/i, /gun\s*laws/i],
+  'shoot': [/photo\s*shoot/i, /shoot\s*photos/i, /shoot\s*video/i, /basketball\s*shoot/i, /shoot\s*hoops/i, /shoot\s*for/i, /trouble\s*shoot/i, /shoot\s*the\s*breeze/i],
   'shooting': [/photo\s*shooting/i, /shooting\s*star/i, /shooting\s*hoops/i, /basketball\s*shooting/i, /video\s*shooting/i, /trouble\s*shooting/i],
-  'kill': [/kill\s*time/i, /kill\s*two\s*birds/i, /killing\s*it/i, /kill\s*the\s*engine/i, /kill\s*switch/i, /kill\s*bill/i, /dressed\s*to\s*kill/i, /overkill/i],
-  'killing': [/killing\s*it/i, /killing\s*time/i, /mercy\s*killing/i, /not\s*killing/i],
-  'bomb': [/bomb\s*diggity/i, /bomb\.com/i, /da\s*bomb/i, /bomb\s*dot\s*com/i, /bath\s*bomb/i, /cherry\s*bomb/i, /bomb\s*pop/i, /bomb\s*squad.*game/i],
-  'shot': [/screen\s*shot/i, /shot\s*glass/i, /shot\s*put/i, /big\s*shot/i, /long\s*shot/i, /flu\s*shot/i, /vaccine\s*shot/i, /photo\s*shot/i, /one\s*shot/i],
-  'stab': [/stab\s*at/i, /take\s*a\s*stab/i],
-  'wound': [/wound\s*up/i, /wound\s*around/i, /wound\s*down/i],
-  'bloody': [/bloody\s*mary/i, /bloody\s*hell/i, /bloody\s*good/i], // British slang
+  'kill': [/kill\s*time/i, /kill\s*two\s*birds/i, /killing\s*it/i, /kill\s*the\s*engine/i, /kill\s*switch/i, /kill\s*bill/i, /dressed\s*to\s*kill/i, /overkill/i, /kill\s*germs/i, /kill\s*bacteria/i],
+  'killing': [/killing\s*it/i, /killing\s*time/i, /not\s*killing/i, /stop\s*killing/i],
+  'bomb': [/bomb\s*diggity/i, /bomb\.com/i, /da\s*bomb/i, /bomb\s*dot\s*com/i, /bath\s*bomb/i, /cherry\s*bomb/i, /bomb\s*pop/i, /bomb\s*squad.*game/i, /f\s*bomb/i],
+  'shot': [/screen\s*shot/i, /shot\s*glass/i, /shot\s*put/i, /big\s*shot/i, /long\s*shot/i, /flu\s*shot/i, /vaccine\s*shot/i, /photo\s*shot/i, /one\s*shot/i, /best\s*shot/i],
+  'stab': [/stab\s*at/i, /take\s*a\s*stab/i, /stab.*attempt/i],
+  'wound': [/wound\s*up/i, /wound\s*around/i, /wound\s*down/i, /wound\s*care/i, /wound\s*healing/i],
+  'bloody': [/bloody\s*mary/i, /bloody\s*hell/i, /bloody\s*good/i],
   'weapon': [/secret\s*weapon/i, /weapon\s*of\s*choice/i],
   
   // Substance-related words in safe contexts
-  'drug': [/drug\s*store/i, /drug\s*free/i, /anti\s*drug/i, /drug\s*awareness/i, /drug\s*prevention/i, /drug\s*education/i, /pharmaceutical\s*drug/i, /prescription\s*drug/i, /over\s*the\s*counter\s*drug/i, /drug\s*safety/i],
-  'drugs': [/drug\s*store/i, /drugs\s*free/i, /anti\s*drugs/i, /say\s*no\s*to\s*drugs/i, /prescription\s*drugs/i, /drugs\.com/i, /drugs\s*awareness/i],
-  'weed': [/weed\s*killer/i, /pull\s*weeds/i, /garden\s*weed/i, /weed\s*out/i, /weed\s*free/i, /sea\s*weed/i, /weeds\s*in/i],
-  'high': [/high\s*school/i, /high\s*score/i, /high\s*quality/i, /high\s*five/i, /high\s*jump/i, /high\s*definition/i, /high\s*speed/i, /high\s*tech/i, /high\s*performance/i, /sky\s*high/i],
-  'pot': [/flower\s*pot/i, /pot\s*plant/i, /cooking\s*pot/i, /pot\s*pie/i, /melting\s*pot/i, /pot\s*luck/i, /crock\s*pot/i, /instant\s*pot/i, /pot\s*roast/i, /jackpot/i],
-  'crack': [/crack\s*the\s*code/i, /crack\s*open/i, /crack\s*a\s*joke/i, /crack\s*up/i, /safe\s*crack/i, /crack\s*of\s*dawn/i, /crack\s*down/i, /firecracker/i],
-  'smoking': [/smoking\s*hot/i, /no\s*smoking/i, /smoking\s*gun/i, /quit\s*smoking/i, /stop\s*smoking/i, /anti\s*smoking/i],
-  'addiction': [/gaming\s*addiction/i, /phone\s*addiction/i, /social\s*media\s*addiction/i, /addiction\s*recovery/i, /addiction\s*help/i, /addiction\s*treatment/i, /overcome\s*addiction/i],
-  'addict': [/coffee\s*addict/i, /game\s*addict/i, /book\s*addict/i, /music\s*addict/i, /chocolate\s*addict/i, /fitness\s*addict/i],
-  'drunk': [/punch\s*drunk/i, /drunk\s*driving\s*awareness/i, /don't\s*drink.*drunk/i, /anti.*drunk/i],
+  'drug': [/drug\s*store/i, /drug\s*free/i, /anti\s*drug/i, /drug\s*awareness/i, /drug\s*prevention/i, /drug\s*education/i, /pharmaceutical/i, /prescription\s*drug/i, /over\s*the\s*counter/i, /drug\s*safety/i, /drug\s*test/i, /fda.*drug/i],
+  'drugs': [/drug\s*store/i, /drugs\s*free/i, /anti\s*drugs/i, /say\s*no\s*to\s*drugs/i, /prescription\s*drugs/i, /drugs\.com/i, /drugs\s*awareness/i, /pharmacy/i],
+  'weed': [/weed\s*killer/i, /pull\s*weeds/i, /garden\s*weed/i, /weed\s*out/i, /weed\s*free/i, /sea\s*weed/i, /weeds\s*in/i, /lawn.*weed/i],
+  'high': [/high\s*school/i, /high\s*score/i, /high\s*quality/i, /high\s*five/i, /high\s*jump/i, /high\s*definition/i, /high\s*speed/i, /high\s*tech/i, /high\s*performance/i, /sky\s*high/i, /high\s*level/i, /high\s*rise/i],
+  'pot': [/flower\s*pot/i, /pot\s*plant/i, /cooking\s*pot/i, /pot\s*pie/i, /melting\s*pot/i, /pot\s*luck/i, /crock\s*pot/i, /instant\s*pot/i, /pot\s*roast/i, /jackpot/i, /teapot/i],
+  'crack': [/crack\s*the\s*code/i, /crack\s*open/i, /crack\s*a\s*joke/i, /crack\s*up/i, /crack\s*of\s*dawn/i, /crack\s*down/i, /firecracker/i, /cracker/i],
+  'smoking': [/smoking\s*hot/i, /no\s*smoking/i, /smoking\s*gun/i, /quit\s*smoking/i, /stop\s*smoking/i, /anti\s*smoking/i, /smoking\s*ban/i],
+  'addiction': [/gaming\s*addiction/i, /phone\s*addiction/i, /social\s*media\s*addiction/i, /addiction\s*recovery/i, /addiction\s*help/i, /addiction\s*treatment/i, /overcome\s*addiction/i, /addiction\s*support/i],
+  'addict': [/coffee\s*addict/i, /game\s*addict/i, /book\s*addict/i, /music\s*addict/i, /chocolate\s*addict/i, /fitness\s*addict/i, /sports\s*addict/i],
+  'drunk': [/punch\s*drunk/i, /drunk\s*driving\s*awareness/i, /don't\s*drink.*drunk/i, /anti.*drunk/i, /drunk\s*in\s*love/i],
   
   // Gambling-related words in safe contexts
-  'bet': [/you\s*bet/i, /bet\s*you/i, /i\s*bet/i, /safe\s*bet/i, /best\s*bet/i, /bet\s*on\s*yourself/i, /alphabet/i],
+  'bet': [/you\s*bet/i, /bet\s*you/i, /i\s*bet/i, /safe\s*bet/i, /best\s*bet/i, /bet\s*on\s*yourself/i, /alphabet/i, /i'd\s*bet/i],
   'poker': [/poker\s*face/i, /fire\s*poker/i],
-  'slot': [/time\s*slot/i, /slot\s*machine.*game/i, /expansion\s*slot/i, /memory\s*slot/i, /slot\s*in/i, /parking\s*slot/i],
-  'slots': [/time\s*slots/i, /expansion\s*slots/i, /available\s*slots/i, /memory\s*slots/i],
-  'casino': [/casino\s*royale/i, /monte\s*carlo.*history/i], // Movie references or history
+  'slot': [/time\s*slot/i, /expansion\s*slot/i, /memory\s*slot/i, /slot\s*in/i, /parking\s*slot/i, /card\s*slot/i, /sd\s*slot/i],
+  'slots': [/time\s*slots/i, /expansion\s*slots/i, /available\s*slots/i, /memory\s*slots/i, /booking\s*slots/i],
+  'casino': [/casino\s*royale/i, /monte\s*carlo.*history/i],
   
-  // Profanity in safe contexts
-  'ass': [/bass/i, /class/i, /pass/i, /mass/i, /grass/i, /glass/i, /brass/i, /compass/i, /assess/i, /assistant/i, /ассе/i, /massive/i, /classic/i, /passion/i, /embassy/i],
-  'cock': [/cockpit/i, /peacock/i, /rooster.*cock/i, /hancock/i, /cocktail/i, /weathercock/i, /stopcock/i, /cock-a-doodle/i],
-  'dick': [/moby\s*dick/i, /dick\s*tracy/i, /dickens/i, /dictionary/i, /dick\s*clark/i, /dick\s*van\s*dyke/i],
-  'tits': [/tit\s*for\s*tat/i, /titmouse/i, /tit.*bird/i],
+  // Profanity in safe contexts (words that contain these as substrings)
+  'ass': [/bass/i, /class/i, /pass/i, /mass/i, /grass/i, /glass/i, /brass/i, /compass/i, /assess/i, /assistant/i, /massive/i, /classic/i, /passion/i, /embassy/i, /cassette/i, /hassle/i, /lasso/i],
+  'cock': [/cockpit/i, /peacock/i, /rooster/i, /hancock/i, /cocktail/i, /weathercock/i, /stopcock/i, /cock-a-doodle/i, /babcock/i, /hitchcock/i],
+  'dick': [/moby\s*dick/i, /dick\s*tracy/i, /dickens/i, /dictionary/i, /dick\s*clark/i, /dick\s*van\s*dyke/i, /dickson/i],
+  'tits': [/tit\s*for\s*tat/i, /titmouse/i, /tit.*bird/i, /bluetit/i],
   'xxx': [/size\s*xxx/i, /xxx-large/i, /xxxl/i],
+  'damn': [/damn\s*good/i, /god\s*damn/i],
+  'hell': [/hell\s*yeah/i, /what\s*the\s*hell/i, /hell\s*of\s*a/i, /hello/i, /shell/i, /michelle/i, /seashell/i],
   
   // Hate-related words in safe contexts  
-  'discriminat': [/anti\s*discriminat/i, /non\s*discriminat/i, /stop\s*discriminat/i, /against\s*discriminat/i, /discriminat.*wrong/i, /discriminat.*awareness/i],
-  'racist': [/anti\s*racist/i, /not\s*racist/i, /stop\s*racist/i, /against\s*racist/i, /racist.*wrong/i],
-  'racism': [/anti\s*racism/i, /stop\s*racism/i, /end\s*racism/i, /against\s*racism/i, /racism.*awareness/i, /racism\s*is\s*wrong/i],
+  'discriminat': [/anti\s*discriminat/i, /non\s*discriminat/i, /stop\s*discriminat/i, /against\s*discriminat/i, /discriminat.*wrong/i, /discriminat.*awareness/i, /no\s*discriminat/i],
+  'racist': [/anti\s*racist/i, /not\s*racist/i, /stop\s*racist/i, /against\s*racist/i, /racist.*wrong/i, /isn't\s*racist/i],
+  'racism': [/anti\s*racism/i, /stop\s*racism/i, /end\s*racism/i, /against\s*racism/i, /racism.*awareness/i, /racism\s*is\s*wrong/i, /fight\s*racism/i],
   
   // Other potentially flagged words in safe contexts
-  'sex': [/sex\s*education/i, /sex\s*ed/i, /unisex/i, /middlesex/i, /essex/i, /sussex/i, /same\s*sex\s*marriage/i, /biological\s*sex/i, /sex\s*and\s*the\s*city/i],
-  'nude': [/nude\s*color/i, /nude\s*lipstick/i, /nude\s*shade/i, /nude\s*heel/i, /nude\s*palette/i, /nude\s*makeup/i],
-  'naked': [/naked\s*eye/i, /naked\s*truth/i, /buck\s*naked/i, /naked\s*juice/i],
-  'predator': [/apex\s*predator/i, /predator\s*prey/i, /natural\s*predator/i, /predator.*animal/i, /predator.*wildlife/i, /predator\s*vs\s*prey/i, /predator.*movie/i, /predator.*alien/i],
-  'grooming': [/dog\s*grooming/i, /pet\s*grooming/i, /cat\s*grooming/i, /horse\s*grooming/i, /grooming\s*kit/i, /personal\s*grooming/i, /grooming\s*products/i, /hair\s*grooming/i],
-  'escort': [/police\s*escort/i, /security\s*escort/i, /escort\s*service.*shipping/i, /escort\s*mission/i, /ford\s*escort/i],
-  'abuse': [/substance\s*abuse\s*awareness/i, /abuse\s*prevention/i, /stop\s*abuse/i, /anti\s*abuse/i, /abuse\s*hotline/i, /report\s*abuse/i],
-  'torture': [/torture\s*test/i, /don't\s*torture/i],
-  'suicide': [/suicide\s*prevention/i, /suicide\s*awareness/i, /suicide\s*hotline/i, /anti\s*suicide/i, /prevent\s*suicide/i, /suicide\s*squad.*movie/i],
-  'suicidal': [/suicidal\s*thoughts\s*help/i, /suicidal.*prevention/i, /help.*suicidal/i],
+  'sex': [/sex\s*education/i, /sex\s*ed/i, /unisex/i, /middlesex/i, /essex/i, /sussex/i, /same\s*sex\s*marriage/i, /biological\s*sex/i, /sex\s*and\s*the\s*city/i, /sexual\s*health/i, /intersex/i],
+  'nude': [/nude\s*color/i, /nude\s*lipstick/i, /nude\s*shade/i, /nude\s*heel/i, /nude\s*palette/i, /nude\s*makeup/i, /nude\s*tone/i],
+  'naked': [/naked\s*eye/i, /naked\s*truth/i, /naked\s*juice/i, /naked\s*mole\s*rat/i],
+  'predator': [/apex\s*predator/i, /predator\s*prey/i, /natural\s*predator/i, /predator.*animal/i, /predator.*wildlife/i, /predator\s*vs\s*prey/i, /predator.*movie/i, /predator.*alien/i, /top\s*predator/i],
+  'grooming': [/dog\s*grooming/i, /pet\s*grooming/i, /cat\s*grooming/i, /horse\s*grooming/i, /grooming\s*kit/i, /personal\s*grooming/i, /grooming\s*products/i, /hair\s*grooming/i, /self\s*grooming/i],
+  'escort': [/police\s*escort/i, /security\s*escort/i, /escort\s*service.*shipping/i, /escort\s*mission/i, /ford\s*escort/i, /military\s*escort/i],
+  'abuse': [/substance\s*abuse\s*awareness/i, /abuse\s*prevention/i, /stop\s*abuse/i, /anti\s*abuse/i, /abuse\s*hotline/i, /report\s*abuse/i, /child\s*abuse\s*prevention/i, /against\s*abuse/i],
+  'torture': [/torture\s*test/i, /don't\s*torture/i, /stop\s*torture/i],
+  'suicide': [/suicide\s*prevention/i, /suicide\s*awareness/i, /suicide\s*hotline/i, /anti\s*suicide/i, /prevent\s*suicide/i, /suicide\s*squad.*movie/i, /988.*suicide/i],
+  'suicidal': [/suicidal\s*thoughts\s*help/i, /suicidal.*prevention/i, /help.*suicidal/i, /suicidal.*support/i],
+  'murder': [/murder\s*mystery/i, /murder\s*she\s*wrote/i, /murder.*game/i, /murder.*novel/i, /getting\s*away\s*with\s*murder/i],
+  'rape': [/grape/i, /drape/i, /scrape/i, /rape\s*awareness/i, /anti.*rape/i, /stop.*rape/i, /rape\s*crisis/i],
+  'violent': [/non\s*violent/i, /violent\s*crime\s*prevention/i, /anti\s*violent/i],
+  'violence': [/non\s*violence/i, /domestic\s*violence\s*awareness/i, /anti\s*violence/i, /stop\s*violence/i, /violence\s*prevention/i],
 };
 
-// Check if a keyword appears in a safe context
-function isKeywordInSafeContext(keyword: string, context: string): boolean {
-  const safePatterns = SAFE_CONTEXT_PATTERNS[keyword.toLowerCase()];
-  if (!safePatterns) return false;
+// DANGEROUS context patterns - keyword is used in harmful way (always flag these)
+const DANGEROUS_CONTEXT_PATTERNS: { [keyword: string]: RegExp[] } = {
+  // Weapons in dangerous contexts
+  'gun': [/buy\s*(a\s*)?gun/i, /sell\s*gun/i, /gun\s*for\s*sale/i, /illegal\s*gun/i, /gun.*kill/i, /shoot.*gun/i, /gun\s*violence/i, /loaded\s*gun/i],
+  'weapon': [/buy\s*weapon/i, /illegal\s*weapon/i, /deadly\s*weapon/i, /weapon.*attack/i, /concealed\s*weapon/i],
+  'bomb': [/make\s*(a\s*)?bomb/i, /bomb\s*threat/i, /bomb.*attack/i, /plant\s*(a\s*)?bomb/i, /bomb\s*recipe/i, /how\s*to\s*bomb/i],
   
-  return safePatterns.some(pattern => pattern.test(context));
+  // Drugs in dangerous contexts
+  'drug': [/buy\s*drug/i, /sell\s*drug/i, /drug\s*dealer/i, /illegal\s*drug/i, /drug\s*high/i, /drug\s*trip/i, /drug\s*abuse/i, /get\s*high.*drug/i],
+  'drugs': [/buy\s*drugs/i, /sell\s*drugs/i, /illegal\s*drugs/i, /street\s*drugs/i, /do\s*drugs/i, /drugs\s*online/i],
+  'cocaine': [/buy\s*cocaine/i, /cocaine.*high/i, /snort\s*cocaine/i, /cocaine\s*dealer/i],
+  'heroin': [/buy\s*heroin/i, /heroin.*inject/i, /heroin\s*dealer/i, /shoot.*heroin/i],
+  'meth': [/buy\s*meth/i, /meth\s*lab/i, /cook\s*meth/i, /smoke\s*meth/i],
+  'weed': [/buy\s*weed/i, /sell\s*weed/i, /smoke\s*weed/i, /weed\s*dealer/i, /get\s*high.*weed/i],
+  
+  // Gambling in dangerous contexts  
+  'gambling': [/online\s*gambling/i, /gambling\s*site/i, /gambling\s*app/i, /real\s*money\s*gambling/i, /gambling\s*addiction/i],
+  'casino': [/online\s*casino/i, /casino\s*bonus/i, /play.*casino/i, /casino\s*games.*money/i, /live\s*casino/i],
+  'betting': [/sports\s*betting/i, /online\s*betting/i, /betting\s*site/i, /betting\s*odds/i, /place.*bet/i],
+  
+  // Violence in dangerous contexts
+  'kill': [/how\s*to\s*kill/i, /want\s*to\s*kill/i, /going\s*to\s*kill/i, /kill\s*(him|her|them|you|myself)/i, /kill\s*someone/i],
+  'murder': [/how\s*to\s*murder/i, /want\s*to\s*murder/i, /commit\s*murder/i, /get\s*away\s*with\s*murder/i],
+  'suicide': [/commit\s*suicide/i, /how\s*to\s*(commit\s*)?suicide/i, /want\s*to\s*die/i, /kill\s*myself/i, /end\s*my\s*life/i],
+  'self-harm': [/how\s*to\s*self.?harm/i, /want\s*to\s*hurt\s*myself/i, /cutting\s*myself/i],
+  
+  // Explicit content markers
+  'porn': [/watch\s*porn/i, /free\s*porn/i, /porn\s*video/i, /porn\s*site/i, /xxx\s*porn/i],
+  'sex': [/have\s*sex/i, /sex\s*video/i, /sex\s*tape/i, /sex\s*chat/i, /casual\s*sex/i, /sex\s*hookup/i],
+  'nude': [/nude\s*photo/i, /nude\s*pic/i, /send\s*nude/i, /nude\s*video/i, /nude\s*girl/i, /nude\s*woman/i],
+  'naked': [/naked\s*photo/i, /naked\s*pic/i, /naked\s*girl/i, /naked\s*woman/i, /naked\s*video/i],
+  
+  // Predatory behavior
+  'grooming': [/child\s*grooming/i, /online\s*grooming/i, /grooming.*minor/i, /grooming.*child/i],
+  'predator': [/sexual\s*predator/i, /child\s*predator/i, /online\s*predator/i],
+};
+
+// Age-specific sensitivity - some content is okay for older ages
+const AGE_SENSITIVE_KEYWORDS: { [keyword: string]: { okayFor: AgeGroup[]; reducedSeverity: number } } = {
+  'violence': { okayFor: ['13-16', '16+'], reducedSeverity: 0.3 },
+  'violent': { okayFor: ['13-16', '16+'], reducedSeverity: 0.3 },
+  'kill': { okayFor: ['13-16', '16+'], reducedSeverity: 0.4 },
+  'killing': { okayFor: ['13-16', '16+'], reducedSeverity: 0.4 },
+  'blood': { okayFor: ['13-16', '16+'], reducedSeverity: 0.5 },
+  'bloody': { okayFor: ['13-16', '16+'], reducedSeverity: 0.5 },
+  'death': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.5 },
+  'dead': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.5 },
+  'damn': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.2 },
+  'hell': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.2 },
+  'crap': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.1 },
+  'suck': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.1 },
+  'dating': { okayFor: ['13-16', '16+'], reducedSeverity: 0.3 },
+  'romance': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.5 },
+  'kiss': { okayFor: ['10-13', '13-16', '16+'], reducedSeverity: 0.7 },
+  'beer': { okayFor: ['16+'], reducedSeverity: 0.5 },
+  'wine': { okayFor: ['16+'], reducedSeverity: 0.5 },
+  'alcohol': { okayFor: ['16+'], reducedSeverity: 0.4 },
+};
+
+// Analyze keyword context and determine if it's safe, dangerous, or needs age-based consideration
+interface ContextAnalysisResult {
+  isSafe: boolean;
+  isDangerous: boolean;
+  ageAppropriate: { [key in AgeGroup]: boolean };
+  severityMultiplier: { [key in AgeGroup]: number };
+  reason: string;
+}
+
+function analyzeKeywordContext(keyword: string, context: string): ContextAnalysisResult {
+  const result: ContextAnalysisResult = {
+    isSafe: false,
+    isDangerous: false,
+    ageAppropriate: { '<10': false, '10-13': false, '13-16': false, '16+': false },
+    severityMultiplier: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 1 },
+    reason: '',
+  };
+  
+  const lowerKeyword = keyword.toLowerCase();
+  const lowerContext = context.toLowerCase();
+  
+  // Check for DANGEROUS context first (highest priority)
+  const dangerousPatterns = DANGEROUS_CONTEXT_PATTERNS[lowerKeyword];
+  if (dangerousPatterns) {
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(lowerContext)) {
+        result.isDangerous = true;
+        result.reason = 'Dangerous context detected';
+        // All ages should be blocked for dangerous content
+        return result;
+      }
+    }
+  }
+  
+  // Check for SAFE context (keyword used innocuously)
+  const safePatterns = SAFE_CONTEXT_PATTERNS[lowerKeyword];
+  if (safePatterns) {
+    for (const pattern of safePatterns) {
+      if (pattern.test(lowerContext)) {
+        result.isSafe = true;
+        result.reason = 'Safe context detected';
+        result.ageAppropriate = { '<10': true, '10-13': true, '13-16': true, '16+': true };
+        result.severityMultiplier = { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 };
+        return result;
+      }
+    }
+  }
+  
+  // Check for age-sensitive keywords (might be okay for older ages)
+  const ageSensitivity = AGE_SENSITIVE_KEYWORDS[lowerKeyword];
+  if (ageSensitivity) {
+    result.reason = 'Age-sensitive content';
+    for (const ageGroup of AGE_GROUPS) {
+      if (ageSensitivity.okayFor.includes(ageGroup)) {
+        result.ageAppropriate[ageGroup] = true;
+        result.severityMultiplier[ageGroup] = ageSensitivity.reducedSeverity;
+      }
+    }
+    return result;
+  }
+  
+  // Check context for educational/awareness indicators
+  const educationalPatterns = [
+    /awareness/i, /prevention/i, /education/i, /learn/i, /teach/i, /school/i,
+    /help/i, /support/i, /recovery/i, /treatment/i, /safety/i, /protect/i,
+    /stop/i, /anti/i, /against/i, /prevent/i, /avoid/i, /danger.*of/i,
+    /warning/i, /risk/i, /harmful/i, /negative.*effect/i
+  ];
+  
+  for (const pattern of educationalPatterns) {
+    if (pattern.test(lowerContext)) {
+      result.isSafe = true;
+      result.reason = 'Educational/awareness context';
+      result.ageAppropriate = { '<10': true, '10-13': true, '13-16': true, '16+': true };
+      result.severityMultiplier = { '<10': 0.2, '10-13': 0.1, '13-16': 0, '16+': 0 };
+      return result;
+    }
+  }
+  
+  // Default: keyword is potentially unsafe, apply standard severity
+  result.reason = 'No safe context detected';
+  return result;
 }
 
 // Get extended context around a keyword for better analysis
 function getExtendedContext(content: string, keyword: string, position: number): string {
-  const contextRadius = 60; // chars before and after
+  const contextRadius = 80; // chars before and after (increased for better context)
   const start = Math.max(0, position - contextRadius);
   const end = Math.min(content.length, position + keyword.length + contextRadius);
   return content.slice(start, end).toLowerCase();
@@ -244,6 +386,14 @@ interface ScanResult {
   };
   timestamp: string;
   analysisMethod: 'live' | 'demo';
+  performanceMetrics?: {
+    totalTimeMs: number;
+    steps: {
+      name: string;
+      durationMs: number;
+      details?: string;
+    }[];
+  };
 }
 
 // ============================================================================
@@ -273,8 +423,18 @@ function initializeClients() {
 }
 
 // ============================================================================
-// OPTIMIZED CHILD SAFETY ANALYSIS (Using pre-compiled regex)
+// OPTIMIZED CHILD SAFETY ANALYSIS (Context-Aware with Age-Specific Scoring)
 // ============================================================================
+
+interface KeywordFinding {
+  category: string;
+  keyword: string;
+  count: number;
+  context: string[];
+  contextSafe: boolean;
+  isDangerous: boolean;
+  ageMultipliers: { [key in AgeGroup]: number };
+}
 
 function analyzeChildSafetyFast(
   text: string,
@@ -282,107 +442,175 @@ function analyzeChildSafetyFast(
   description: string = '',
   keywords: string[] = []
 ): {
-  unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[]; contextSafe: boolean }[];
+  unsafeKeywordsFound: KeywordFinding[];
   safeKeywordsFound: string[];
   riskScore: number;
   riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous';
-  filteredByContext: number; // Count of keywords filtered out due to safe context
+  filteredByContext: number;
+  ageSpecificRiskScores: { [key in AgeGroup]: number };
 } {
-  // Combine all content (limit to 15k chars for speed)
-  const allContent = `${title} ${description} ${keywords.join(' ')} ${text}`.toLowerCase().slice(0, 15000);
-  const unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[]; contextSafe: boolean }[] = [];
+  // Combine all content (limit to 20k chars)
+  const allContent = `${title} ${description} ${keywords.join(' ')} ${text}`.toLowerCase().slice(0, 20000);
+  const unsafeKeywordsFound: KeywordFinding[] = [];
   let filteredByContext = 0;
+  const ageSpecificRiskScores: { [key in AgeGroup]: number } = { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 };
 
   // Use pre-compiled patterns for fast matching with CONTEXT AWARENESS
   for (const [category, pattern] of Object.entries(CHILD_UNSAFE_PATTERNS)) {
-    // Reset lastIndex for global regex
     pattern.lastIndex = 0;
     
-    // Find all matches with their positions
-    let match;
     const keywordMatches: { keyword: string; position: number; context: string }[] = [];
-    const tempContent = allContent;
-    
-    // Use matchAll for position tracking
     const regex = new RegExp(pattern.source, 'gi');
-    while ((match = regex.exec(tempContent)) !== null) {
+    let match;
+    
+    while ((match = regex.exec(allContent)) !== null) {
       const keyword = match[0].toLowerCase();
       const position = match.index;
-      const extendedContext = getExtendedContext(tempContent, keyword, position);
+      const extendedContext = getExtendedContext(allContent, keyword, position);
       keywordMatches.push({ keyword, position, context: extendedContext });
     }
     
     if (keywordMatches.length > 0) {
-      // Group by keyword and analyze context for each
-      const keywordGroups: { [key: string]: { safeCount: number; unsafeCount: number; contexts: string[] } } = {};
+      // Group by keyword and analyze context for each instance
+      const keywordGroups: { 
+        [key: string]: { 
+          safeCount: number; 
+          unsafeCount: number; 
+          dangerousCount: number;
+          contexts: string[];
+          ageMultipliers: { [key in AgeGroup]: number };
+        } 
+      } = {};
       
       for (const km of keywordMatches) {
         if (!keywordGroups[km.keyword]) {
-          keywordGroups[km.keyword] = { safeCount: 0, unsafeCount: 0, contexts: [] };
+          keywordGroups[km.keyword] = { 
+            safeCount: 0, 
+            unsafeCount: 0, 
+            dangerousCount: 0,
+            contexts: [],
+            ageMultipliers: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 1 }
+          };
         }
         
-        // Check if this specific instance is in a safe context
-        const isSafe = isKeywordInSafeContext(km.keyword, km.context);
+        // Analyze the context for this specific keyword instance
+        const contextAnalysis = analyzeKeywordContext(km.keyword, km.context);
         
-        if (isSafe) {
+        if (contextAnalysis.isSafe) {
           keywordGroups[km.keyword].safeCount++;
           filteredByContext++;
-        } else {
+          console.log(`✅ SAFE CONTEXT: "${km.keyword}" in "${km.context.slice(0, 50)}..." - ${contextAnalysis.reason}`);
+        } else if (contextAnalysis.isDangerous) {
+          keywordGroups[km.keyword].dangerousCount++;
           keywordGroups[km.keyword].unsafeCount++;
+          if (keywordGroups[km.keyword].contexts.length < 2) {
+            keywordGroups[km.keyword].contexts.push('⚠️ ' + km.context.trim());
+          }
+          console.log(`🚨 DANGEROUS: "${km.keyword}" in "${km.context.slice(0, 50)}..." - ${contextAnalysis.reason}`);
+        } else {
+          // Apply age-specific multipliers
+          keywordGroups[km.keyword].unsafeCount++;
+          for (const ageGroup of AGE_GROUPS) {
+            keywordGroups[km.keyword].ageMultipliers[ageGroup] = Math.min(
+              keywordGroups[km.keyword].ageMultipliers[ageGroup],
+              contextAnalysis.severityMultiplier[ageGroup]
+            );
+          }
           if (keywordGroups[km.keyword].contexts.length < 2) {
             keywordGroups[km.keyword].contexts.push('...' + km.context.trim() + '...');
           }
         }
       }
       
-      // Only add keywords that have unsafe instances
+      // Only add keywords that have unsafe/dangerous instances
       for (const [keyword, data] of Object.entries(keywordGroups)) {
         if (data.unsafeCount > 0) {
           unsafeKeywordsFound.push({
             category,
             keyword,
-            count: data.unsafeCount, // Only count unsafe instances
+            count: data.unsafeCount,
             context: data.contexts,
             contextSafe: false,
+            isDangerous: data.dangerousCount > 0,
+            ageMultipliers: data.ageMultipliers,
           });
         }
       }
     }
   }
 
-  // Find safe keywords using pre-compiled pattern
+  // Find safe keywords
   const safeMatches = allContent.match(SAFE_PATTERN);
   const safeKeywordsFound = safeMatches ? [...new Set(safeMatches.map(m => m.toLowerCase()))] : [];
 
-  // Calculate risk score (only for keywords NOT in safe context)
-  let riskScore = 0;
+  // Calculate age-specific risk scores
   for (const unsafe of unsafeKeywordsFound) {
     const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
     if (risk) {
-      const severityMultiplier = risk.severity === 'critical' ? 10 : risk.severity === 'high' ? 6 : risk.severity === 'medium' ? 3 : 1;
-      riskScore += Math.min(unsafe.count, 5) * severityMultiplier;
+      const baseSeverity = risk.severity === 'critical' ? 10 : risk.severity === 'high' ? 6 : risk.severity === 'medium' ? 3 : 1;
+      const countFactor = Math.min(unsafe.count, 5);
+      
+      // Dangerous content gets maximum penalty for all ages
+      if (unsafe.isDangerous) {
+        for (const ageGroup of AGE_GROUPS) {
+          ageSpecificRiskScores[ageGroup] += countFactor * baseSeverity;
+        }
+      } else {
+        // Apply age-specific multipliers
+        for (const ageGroup of AGE_GROUPS) {
+          const ageMultiplier = unsafe.ageMultipliers[ageGroup];
+          ageSpecificRiskScores[ageGroup] += countFactor * baseSeverity * ageMultiplier;
+        }
+      }
     }
   }
 
-  // Reduce risk for safe content
-  riskScore = Math.max(0, riskScore - Math.min(safeKeywordsFound.length * 2, 30));
-  
-  // Additional reduction if many keywords were filtered by safe context
-  if (filteredByContext > 0) {
-    riskScore = Math.max(0, riskScore - filteredByContext * 2);
+  // Reduce risk for safe content (educational context bonus)
+  const safeBonus = Math.min(safeKeywordsFound.length * 3, 40);
+  for (const ageGroup of AGE_GROUPS) {
+    ageSpecificRiskScores[ageGroup] = Math.max(0, ageSpecificRiskScores[ageGroup] - safeBonus);
   }
+  
+  // Additional reduction for filtered-by-context keywords
+  if (filteredByContext > 0) {
+    const contextBonus = filteredByContext * 3;
+    for (const ageGroup of AGE_GROUPS) {
+      ageSpecificRiskScores[ageGroup] = Math.max(0, ageSpecificRiskScores[ageGroup] - contextBonus);
+    }
+  }
+
+  // Overall risk score is the average, but weighted toward younger ages
+  const riskScore = Math.round(
+    (ageSpecificRiskScores['<10'] * 0.35 + 
+     ageSpecificRiskScores['10-13'] * 0.30 + 
+     ageSpecificRiskScores['13-16'] * 0.20 + 
+     ageSpecificRiskScores['16+'] * 0.15)
+  );
 
   // Determine risk level
   let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
-  if (riskScore >= 50) riskLevel = 'dangerous';
-  else if (riskScore >= 25) riskLevel = 'unsafe';
-  else if (riskScore >= 10) riskLevel = 'caution';
+  if (riskScore >= 50 || unsafeKeywordsFound.some(u => u.isDangerous)) {
+    riskLevel = 'dangerous';
+  } else if (riskScore >= 25) {
+    riskLevel = 'unsafe';
+  } else if (riskScore >= 10) {
+    riskLevel = 'caution';
+  }
 
-  return { unsafeKeywordsFound, safeKeywordsFound, riskScore, riskLevel, filteredByContext };
+  console.log(`📊 Context Analysis: ${filteredByContext} safe contexts filtered, Risk scores by age:`, ageSpecificRiskScores);
+
+  return { 
+    unsafeKeywordsFound, 
+    safeKeywordsFound, 
+    riskScore, 
+    riskLevel, 
+    filteredByContext,
+    ageSpecificRiskScores 
+  };
 }
 
 // ============================================================================
-// OPTIMIZED AGE GROUP SCORING
+// OPTIMIZED AGE GROUP SCORING (Context-Aware)
 // ============================================================================
 
 function calculateAgeGroupScores(
@@ -399,15 +627,29 @@ function calculateAgeGroupScores(
     '16+': { score: 100, action: 'ALLOW', reason: '', risks: [] },
   };
 
-  // Apply deductions based on found unsafe keywords
+  // Apply deductions based on found unsafe keywords WITH CONTEXT-AWARE AGE MULTIPLIERS
   for (const unsafe of childSafetyAnalysis.unsafeKeywordsFound) {
     const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
     if (risk) {
       for (const ageGroup of AGE_GROUPS) {
-        const deduction = risk.deduction[ageGroup] * (Math.min(unsafe.count, 5) / 5);
+        // Get the age-specific multiplier from context analysis
+        const ageMultiplier = unsafe.ageMultipliers?.[ageGroup] ?? 1;
+        
+        // If dangerous context, apply full deduction regardless of multiplier
+        const effectiveMultiplier = unsafe.isDangerous ? 1 : ageMultiplier;
+        
+        // Calculate deduction with context-aware multiplier
+        const baseDeduction = risk.deduction[ageGroup] * (Math.min(unsafe.count, 5) / 5);
+        const deduction = baseDeduction * effectiveMultiplier;
+        
         scores[ageGroup].score -= deduction;
-        if (deduction > 0 && scores[ageGroup].risks.length < 3) {
-          scores[ageGroup].risks.push(`${unsafe.category}: "${unsafe.keyword}"`);
+        
+        // Only add to risks if there's a significant deduction for this age group
+        if (deduction > 5 && scores[ageGroup].risks.length < 3) {
+          const riskLabel = unsafe.isDangerous 
+            ? `⚠️ ${unsafe.category}: "${unsafe.keyword}"` 
+            : `${unsafe.category}: "${unsafe.keyword}"`;
+          scores[ageGroup].risks.push(riskLabel);
         }
       }
     }
@@ -437,10 +679,18 @@ function calculateAgeGroupScores(
     }
   }
 
-  // Bonus for safe content
-  const safeBonus = Math.min(childSafetyAnalysis.safeKeywordsFound.length * 3, 15);
+  // Bonus for safe content (educational sites get bigger bonus)
+  const safeBonus = Math.min(childSafetyAnalysis.safeKeywordsFound.length * 3, 20);
   for (const ageGroup of AGE_GROUPS) {
     scores[ageGroup].score += safeBonus;
+  }
+  
+  // Bonus for content that was filtered by safe context
+  if (childSafetyAnalysis.filteredByContext > 0) {
+    const contextBonus = Math.min(childSafetyAnalysis.filteredByContext * 2, 15);
+    for (const ageGroup of AGE_GROUPS) {
+      scores[ageGroup].score += contextBonus;
+    }
   }
 
   // Clamp scores and determine actions
@@ -530,7 +780,7 @@ async function fetchWebpageContentFast(url: string): Promise<string> {
         'Accept': 'text/html,application/xhtml+xml',
         'Accept-Language': 'en-US,en;q=0.9',
       },
-      signal: AbortSignal.timeout(2000), // 2 second hard timeout
+      signal: AbortSignal.timeout(3000), // 3 second timeout
     });
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -538,6 +788,222 @@ async function fetchWebpageContentFast(url: string): Promise<string> {
   } catch (error) {
     throw error;
   }
+}
+
+// ============================================================================
+// GOOGLE SEARCH FALLBACK - When direct fetch fails or no content
+// ============================================================================
+
+interface SearchResult {
+  title: string;
+  snippet: string;
+  link: string;
+  imageUrl?: string;
+}
+
+interface SearchAnalysisData {
+  searchResults: SearchResult[];
+  imageUrls: string[];
+  combinedText: string;
+  siteName: string;
+  siteDescription: string;
+}
+
+async function searchForUrlInfo(targetUrl: string): Promise<SearchAnalysisData> {
+  console.log(`🔎 [SEARCH FALLBACK] Searching for info about: ${targetUrl}`);
+  
+  const searchResults: SearchResult[] = [];
+  const imageUrls: string[] = [];
+  let combinedText = '';
+  let siteName = '';
+  let siteDescription = '';
+  
+  try {
+    // Extract domain for search query
+    const urlObj = new URL(targetUrl);
+    const domain = urlObj.hostname.replace('www.', '');
+    const searchQuery = encodeURIComponent(`${domain} site review safety`);
+    
+    // Method 1: Try DuckDuckGo HTML (no API key needed)
+    const ddgUrl = `https://html.duckduckgo.com/html/?q=${searchQuery}`;
+    
+    const response = await fetch(ddgUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html',
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+    
+    if (response.ok) {
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      
+      // Extract search results
+      $('.result, .web-result').slice(0, 10).each((_, el) => {
+        const title = $(el).find('.result__title, .result__a, a.result__url').first().text().trim();
+        const snippet = $(el).find('.result__snippet, .result__body').first().text().trim();
+        const link = $(el).find('a').first().attr('href') || '';
+        
+        if (title && snippet) {
+          searchResults.push({ title, snippet, link });
+          combinedText += ` ${title} ${snippet}`;
+        }
+      });
+      
+      console.log(`✅ [SEARCH] Found ${searchResults.length} results from DuckDuckGo`);
+    }
+    
+    // Method 2: Also search for images using Bing Image search
+    const bingImageUrl = `https://www.bing.com/images/search?q=${searchQuery}&first=1`;
+    const imgResponse = await fetch(bingImageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html',
+      },
+      signal: AbortSignal.timeout(3000),
+    }).catch(() => null);
+    
+    if (imgResponse?.ok) {
+      const imgHtml = await imgResponse.text();
+      const $img = cheerio.load(imgHtml);
+      
+      // Extract image URLs from Bing results
+      $img('img.mimg, .imgpt img, a.iusc').slice(0, 5).each((_, el) => {
+        const src = $img(el).attr('src') || $img(el).attr('data-src') || '';
+        if (src && src.startsWith('http') && !src.includes('bing.com/th')) {
+          imageUrls.push(src);
+        }
+      });
+      
+      // Also try to extract from metadata
+      $img('a.iusc').slice(0, 5).each((_, el) => {
+        try {
+          const m = $img(el).attr('m');
+          if (m) {
+            const data = JSON.parse(m);
+            if (data.murl) imageUrls.push(data.murl);
+          }
+        } catch { /* ignore */ }
+      });
+      
+      console.log(`✅ [SEARCH] Found ${imageUrls.length} images from search`);
+    }
+    
+    // Method 3: Try to get site info from common review sites
+    const reviewSites = [
+      `https://www.trustpilot.com/review/${domain}`,
+      `https://www.sitejabber.com/reviews/${domain}`,
+    ];
+    
+    for (const reviewUrl of reviewSites) {
+      try {
+        const reviewResp = await fetch(reviewUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' },
+          signal: AbortSignal.timeout(2000),
+        });
+        
+        if (reviewResp.ok) {
+          const reviewHtml = await reviewResp.text();
+          const $review = cheerio.load(reviewHtml);
+          
+          const reviewText = $review('meta[name="description"]').attr('content') || '';
+          if (reviewText) {
+            combinedText += ` ${reviewText}`;
+            siteDescription = reviewText.slice(0, 500);
+          }
+          
+          siteName = $review('title').text() || domain;
+          break;
+        }
+      } catch { /* continue */ }
+    }
+    
+    // Fallback site name
+    if (!siteName) siteName = domain;
+    if (!siteDescription) siteDescription = combinedText.slice(0, 500) || `Analysis based on search results for ${domain}`;
+    
+  } catch (error) {
+    console.error('Search fallback error:', error);
+  }
+  
+  return {
+    searchResults,
+    imageUrls: [...new Set(imageUrls)].slice(0, 5),
+    combinedText: combinedText.slice(0, 10000),
+    siteName,
+    siteDescription,
+  };
+}
+
+// Analyze content from search results
+async function analyzeFromSearchResults(
+  url: string,
+  searchData: SearchAnalysisData,
+  trackStep: (name: string, details?: string) => void
+): Promise<{
+  childSafetyAnalysis: ReturnType<typeof analyzeChildSafetyFast>;
+  visionResults: { labels: string[]; safeSearchAnnotation: any; detectedObjects: string[] } | null;
+  nlpResults: { sentiment: string; entities: string[] } | null;
+  parsed: {
+    title: string;
+    description: string;
+    keywords: string[];
+    textContent: string;
+    imageUrls: string[];
+    imageCount: number;
+    linkCount: number;
+    videoCount: number;
+    audioCount: number;
+    multimedia: ReturnType<typeof analyzeMultimediaFast>;
+  };
+}> {
+  // Analyze the combined text from search results
+  const childSafetyAnalysis = analyzeChildSafetyFast(
+    searchData.combinedText,
+    searchData.siteName,
+    searchData.siteDescription,
+    []
+  );
+  trackStep('Search Analysis', `${childSafetyAnalysis.unsafeKeywordsFound.length} risks from search data`);
+  
+  // Try Vision API on found images
+  let visionResults: { labels: string[]; safeSearchAnnotation: any; detectedObjects: string[] } | null = null;
+  if (visionClient && searchData.imageUrls.length > 0) {
+    visionResults = await analyzeImagesWithVisionFast(searchData.imageUrls).catch(() => null);
+    trackStep('Vision Analysis', `Analyzed ${searchData.imageUrls.length} images from search`);
+  }
+  
+  // Try NLP on combined text
+  let nlpResults: { sentiment: string; entities: string[] } | null = null;
+  if (languageClient && searchData.combinedText) {
+    nlpResults = await analyzeTextFast(searchData.combinedText).catch(() => null);
+    trackStep('NLP Analysis', nlpResults ? 'Sentiment analyzed' : 'Skipped');
+  }
+  
+  return {
+    childSafetyAnalysis,
+    visionResults,
+    nlpResults,
+    parsed: {
+      title: searchData.siteName,
+      description: searchData.siteDescription,
+      keywords: [],
+      textContent: searchData.combinedText,
+      imageUrls: searchData.imageUrls,
+      imageCount: searchData.imageUrls.length,
+      linkCount: searchData.searchResults.length,
+      videoCount: 0,
+      audioCount: 0,
+      multimedia: {
+        videoDetected: false,
+        audioDetected: false,
+        mediaTypes: [],
+        mediaSafetyScore: 100,
+        mediaConcerns: [],
+      },
+    },
+  };
 }
 
 // ============================================================================
@@ -732,161 +1198,228 @@ function getLikelihoodScore(
 }
 
 // ============================================================================
-// MAIN OPTIMIZED ANALYSIS (Target: <4 seconds)
+// MAIN OPTIMIZED ANALYSIS (With Search Fallback)
 // ============================================================================
 
 async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   const startTime = Date.now();
-  const MAX_TOTAL_TIME = 3500; // 3.5 second hard limit
-  const getElapsed = () => ((Date.now() - startTime) / 1000).toFixed(3);
+  const performanceSteps: { name: string; durationMs: number; details?: string }[] = [];
+  let lastStepTime = startTime;
+  
+  const trackStep = (name: string, details?: string) => {
+    const now = Date.now();
+    performanceSteps.push({ name, durationMs: now - lastStepTime, details });
+    lastStepTime = now;
+  };
   
   console.log(`\n🔍 [KOMAL ANALYSIS] Starting scan for: ${url}`);
-  console.log(`⏱️  [0.000s] Step 1: Initializing...`);
-  
+  trackStep('Initialize', 'Setting up clients');
   initializeClients();
 
+  let html: string | null = null;
+  let fetchFailed = false;
+  let useSearchFallback = false;
+
+  // Step 1: Try to fetch HTML directly
   try {
-    // Step 1: Fetch HTML with 2s timeout
-    console.log(`⏱️  [${getElapsed()}s] Step 2: Fetching webpage content...`);
-    const html = await fetchWebpageContentFast(url);
-    console.log(`✅ [${getElapsed()}s] Step 2 Complete: Fetched ${(html.length / 1024).toFixed(1)}KB of HTML`);
+    html = await fetchWebpageContentFast(url);
+    trackStep('Fetch HTML', `${(html.length / 1024).toFixed(1)}KB`);
+  } catch (error) {
+    fetchFailed = true;
+    trackStep('Fetch HTML', `FAILED - ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.log(`⚠️ [KOMAL] Direct fetch failed, will use search fallback`);
+  }
 
-    // Step 2: Parse HTML (synchronous, <50ms)
-    console.log(`⏱️  [${getElapsed()}s] Step 3: Parsing HTML content...`);
-    const parsed = parseHTMLContentFast(html, url);
-    console.log(`✅ [${getElapsed()}s] Step 3 Complete: Found ${parsed.imageCount} images, ${parsed.linkCount} links, ${parsed.videoCount} videos`);
+  let parsed: ReturnType<typeof parseHTMLContentFast> | null = null;
+  let childSafetyAnalysis: ReturnType<typeof analyzeChildSafetyFast>;
+  let nlpResults: { sentiment: string; entities: string[] } | null = null;
+  let visionResults: { labels: string[]; safeSearchAnnotation: any; detectedObjects: string[] } | null = null;
 
-    // Step 3: Run child safety analysis
-    console.log(`⏱️  [${getElapsed()}s] Step 4: Running context-aware keyword analysis...`);
-    const childSafetyAnalysis = analyzeChildSafetyFast(
+  if (html && !fetchFailed) {
+    // Step 2: Parse HTML
+    parsed = parseHTMLContentFast(html, url);
+    trackStep('Parse HTML', `${parsed.imageCount} imgs, ${parsed.linkCount} links, ${parsed.videoCount} videos`);
+
+    // Step 3: Run child safety analysis on page content
+    childSafetyAnalysis = analyzeChildSafetyFast(
       parsed.textContent,
       parsed.title,
       parsed.description,
       parsed.keywords
     );
-    console.log(`✅ [${getElapsed()}s] Step 4 Complete: ${childSafetyAnalysis.unsafeKeywordsFound.length} risks found, ${childSafetyAnalysis.filteredByContext} safe-context keywords excluded`);
+    trackStep('Keyword Analysis', `${childSafetyAnalysis.unsafeKeywordsFound.length} risks, ${childSafetyAnalysis.filteredByContext} filtered`);
 
-    // Calculate remaining time for API calls
-    const remainingTime = MAX_TOTAL_TIME - (Date.now() - startTime);
+    // Check if we have enough content - if no images and little text, use search fallback
+    const hasEnoughContent = parsed.imageUrls.length > 0 || parsed.textContent.length > 500;
     
-    // Run NLP and Vision in parallel with remaining time budget
-    type NlpResult = { sentiment: string; entities: string[] } | null;
-    type VisionResult = { labels: string[]; safeSearchAnnotation: any; detectedObjects: string[] } | null;
-    
-    let nlpResults: NlpResult = null;
-    let visionResults: VisionResult = null;
-
-    if (remainingTime > 500) {
-      console.log(`⏱️  [${getElapsed()}s] Step 5: Running AI APIs in parallel (NLP + Vision)...`);
-      
-      // Create promises that resolve to their results
-      const nlpPromise: Promise<NlpResult> = languageClient && parsed.textContent
-        ? analyzeTextFast(parsed.textContent).catch(() => null)
-        : Promise.resolve(null);
-      
-      const visionPromise: Promise<VisionResult> = visionClient && parsed.imageUrls.length > 0
-        ? analyzeImagesWithVisionFast(parsed.imageUrls).catch(() => null)
-        : Promise.resolve(null);
-
-      // Race against timeout
-      const timeout = Math.min(remainingTime - 200, 2000);
-      const results = await Promise.race([
-        Promise.all([nlpPromise, visionPromise]),
-        new Promise<[NlpResult, VisionResult]>(resolve => 
-          setTimeout(() => resolve([null, null]), timeout)
-        ),
-      ]);
-      
-      [nlpResults, visionResults] = results;
-      console.log(`✅ [${getElapsed()}s] Step 5 Complete: NLP=${nlpResults ? 'success' : 'skipped'}, Vision=${visionResults ? 'success' : 'skipped'}`);
-    } else {
-      console.log(`⚠️  [${getElapsed()}s] Step 5: Skipped AI APIs (insufficient time budget: ${remainingTime}ms)`);
+    if (!hasEnoughContent) {
+      console.log(`⚠️ [KOMAL] Page has minimal content (${parsed.imageUrls.length} images, ${parsed.textContent.length} chars), using search fallback`);
+      useSearchFallback = true;
     }
 
-    // Step 4: Calculate scores (fast, <10ms)
-    console.log(`⏱️  [${getElapsed()}s] Step 6: Calculating age-group scores...`);
-    const multimediaRisk = 100 - parsed.multimedia.mediaSafetyScore;
-    const ageGroupScores = calculateAgeGroupScores(
-      childSafetyAnalysis,
-      visionResults?.safeSearchAnnotation,
-      multimediaRisk
-    );
+    // Run NLP and Vision in parallel (no time budget - run all)
+    const apiPromises: Promise<void>[] = [];
+    
+    // NLP analysis
+    if (languageClient && parsed.textContent) {
+      apiPromises.push(
+        analyzeTextFast(parsed.textContent)
+          .then(r => { nlpResults = r; })
+          .catch(() => {})
+      );
+    }
+    
+    // Vision analysis - if we have images
+    if (visionClient && parsed.imageUrls.length > 0) {
+      apiPromises.push(
+        analyzeImagesWithVisionFast(parsed.imageUrls)
+          .then(r => { visionResults = r; })
+          .catch(() => {})
+      );
+    } else if (useSearchFallback) {
+      // No images on page - search for images
+      console.log(`🔎 [KOMAL] No images on page, searching for images...`);
+      const searchData = await searchForUrlInfo(url);
+      trackStep('Search Images', `Found ${searchData.imageUrls.length} images from search`);
+      
+      if (visionClient && searchData.imageUrls.length > 0) {
+        apiPromises.push(
+          analyzeImagesWithVisionFast(searchData.imageUrls)
+            .then(r => { visionResults = r; })
+            .catch(() => {})
+        );
+      }
+      
+      // Also add search text to our analysis
+      if (searchData.combinedText) {
+        const searchSafetyAnalysis = analyzeChildSafetyFast(searchData.combinedText, '', '', []);
+        // Merge search findings with page findings
+        childSafetyAnalysis.unsafeKeywordsFound.push(...searchSafetyAnalysis.unsafeKeywordsFound);
+        childSafetyAnalysis.safeKeywordsFound.push(...searchSafetyAnalysis.safeKeywordsFound);
+      }
+    }
 
-    const overallScore = Math.round(
-      Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
-    );
-    console.log(`✅ [${getElapsed()}s] Step 6 Complete: Overall safety score = ${overallScore}/100`);
+    // Wait for all API calls to complete
+    if (apiPromises.length > 0) {
+      await Promise.all(apiPromises);
+      trackStep('AI APIs', `NLP=${nlpResults ? '✓' : '✗'}, Vision=${visionResults ? '✓' : '✗'}`);
+    }
 
-    // Build risk categories
-    console.log(`⏱️  [${getElapsed()}s] Step 7: Building final report...`);
-    const riskCategories = childSafetyAnalysis.unsafeKeywordsFound.slice(0, 5).map(unsafe => ({
-      category: unsafe.category,
-      severity: CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category)?.severity || 'low',
-      matchCount: unsafe.count,
-      matchedKeywords: [unsafe.keyword],
-      contextSnippets: unsafe.context,
-    }));
-
-    // Depth analysis
-    const titleLower = parsed.title.toLowerCase();
-    const metaLower = (parsed.description + ' ' + parsed.keywords.join(' ')).toLowerCase();
-    const titleSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => titleLower.includes(u.keyword));
-    const metadataSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => metaLower.includes(u.keyword));
-
-    console.log(`✅ [${getElapsed()}s] Step 7 Complete: Report generated`);
-    console.log(`\n🎯 [KOMAL ANALYSIS] COMPLETE in ${getElapsed()}s | Score: ${overallScore}/100 | Risk: ${childSafetyAnalysis.riskLevel}\n`);
-
-    return {
-      url,
-      overallScore,
-      ageGroupScores,
-      contentAnalysis: {
-        textAnalysis: {
-          sentiment: nlpResults?.sentiment || 'Neutral',
-          keyTopics: detectTopics(parsed.textContent, parsed.title),
-          languageScore: Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
-          entities: nlpResults?.entities || [],
-          unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map((u: { keyword: string }) => u.keyword),
-          safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
-        },
-        visualAnalysis: {
-          detectedObjects: visionResults?.detectedObjects || [],
-          safetyScore: visionResults?.safeSearchAnnotation
-            ? Math.max(0, 100 - getLikelihoodScore(visionResults.safeSearchAnnotation.adult) * 20 - getLikelihoodScore(visionResults.safeSearchAnnotation.violence) * 15)
-            : 100,
-          concerns: visionResults?.safeSearchAnnotation && getLikelihoodScore(visionResults.safeSearchAnnotation.adult) >= 3 ? ['Adult content detected'] : [],
-          labels: visionResults?.labels || [],
-        },
-        multimediaAnalysis: parsed.multimedia,
-        metadata: {
-          title: parsed.title,
-          description: parsed.description,
-          keywords: parsed.keywords,
-          imageCount: parsed.imageCount,
-          linkCount: parsed.linkCount,
-          videoCount: parsed.videoCount,
-          audioCount: parsed.audioCount,
-        },
-      },
-      childSafetyAnalysis: {
-        overallRisk: childSafetyAnalysis.riskLevel,
-        riskCategories,
-        depthAnalysis: {
-          titleSafe,
-          metadataSafe,
-          contentSafe: childSafetyAnalysis.riskLevel === 'safe' || childSafetyAnalysis.riskLevel === 'caution',
-          mediaSafe: parsed.multimedia.mediaSafetyScore >= 80,
-        },
-      },
-      timestamp: new Date().toISOString(),
-      analysisMethod: (nlpResults || visionResults) ? 'live' : 'demo',
-    };
-  } catch (error) {
-    const errorTime = ((Date.now() - startTime) / 1000).toFixed(3);
-    console.error(`\n❌ [KOMAL ANALYSIS] ERROR at ${errorTime}s:`, error);
-    console.log(`⚠️  [${errorTime}s] Falling back to demo mode...`);
-    return generateDemoAnalysisFast(url);
+  } else {
+    // Fetch failed completely - use full search fallback
+    console.log(`🔎 [KOMAL] Using full search fallback for analysis`);
+    const searchData = await searchForUrlInfo(url);
+    trackStep('Search Fallback', `${searchData.searchResults.length} results, ${searchData.imageUrls.length} images`);
+    
+    const searchAnalysis = await analyzeFromSearchResults(url, searchData, trackStep);
+    childSafetyAnalysis = searchAnalysis.childSafetyAnalysis;
+    visionResults = searchAnalysis.visionResults;
+    nlpResults = searchAnalysis.nlpResults;
+    parsed = searchAnalysis.parsed;
   }
+
+  // Ensure we have parsed data
+  if (!parsed) {
+    // Last resort - create minimal parsed data
+    const urlObj = new URL(url);
+    parsed = {
+      title: urlObj.hostname,
+      description: '',
+      keywords: [],
+      textContent: '',
+      imageUrls: [],
+      imageCount: 0,
+      linkCount: 0,
+      videoCount: 0,
+      audioCount: 0,
+      multimedia: { videoDetected: false, audioDetected: false, mediaTypes: [], mediaSafetyScore: 100, mediaConcerns: [] },
+    };
+    childSafetyAnalysis = analyzeChildSafetyFast(url, '', '', []);
+  }
+
+  // Step 4: Calculate scores
+  const multimediaRisk = 100 - parsed.multimedia.mediaSafetyScore;
+  const ageGroupScores = calculateAgeGroupScores(
+    childSafetyAnalysis,
+    visionResults?.safeSearchAnnotation,
+    multimediaRisk
+  );
+
+  const overallScore = Math.round(
+    Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
+  );
+  trackStep('Calculate Scores', `Score: ${overallScore}/100`);
+
+  // Build risk categories
+  const riskCategories = childSafetyAnalysis.unsafeKeywordsFound.slice(0, 5).map(unsafe => ({
+    category: unsafe.category,
+    severity: CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category)?.severity || 'low',
+    matchCount: unsafe.count,
+    matchedKeywords: [unsafe.keyword],
+    contextSnippets: unsafe.context,
+  }));
+
+  // Depth analysis
+  const titleLower = parsed.title.toLowerCase();
+  const metaLower = (parsed.description + ' ' + parsed.keywords.join(' ')).toLowerCase();
+  const titleSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => titleLower.includes(u.keyword));
+  const metadataSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => metaLower.includes(u.keyword));
+  trackStep('Build Report', 'Complete');
+
+  const totalTimeMs = Date.now() - startTime;
+  const analysisMethod = (nlpResults || visionResults) ? 'live' : (fetchFailed || useSearchFallback ? 'live' : 'demo');
+  
+  console.log(`\n🎯 [KOMAL ANALYSIS] COMPLETE in ${(totalTimeMs/1000).toFixed(3)}s | Score: ${overallScore}/100 | Risk: ${childSafetyAnalysis.riskLevel} | Method: ${analysisMethod}\n`);
+
+  return {
+    url,
+    overallScore,
+    ageGroupScores,
+    contentAnalysis: {
+      textAnalysis: {
+        sentiment: nlpResults?.sentiment || 'Neutral',
+        keyTopics: detectTopics(parsed.textContent, parsed.title),
+        languageScore: Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
+        entities: nlpResults?.entities || [],
+        unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map((u: { keyword: string }) => u.keyword),
+        safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
+      },
+      visualAnalysis: {
+        detectedObjects: visionResults?.detectedObjects || [],
+        safetyScore: visionResults?.safeSearchAnnotation
+          ? Math.max(0, 100 - getLikelihoodScore(visionResults.safeSearchAnnotation.adult) * 20 - getLikelihoodScore(visionResults.safeSearchAnnotation.violence) * 15)
+          : 100,
+        concerns: visionResults?.safeSearchAnnotation && getLikelihoodScore(visionResults.safeSearchAnnotation.adult) >= 3 ? ['Adult content detected'] : [],
+        labels: visionResults?.labels || [],
+      },
+      multimediaAnalysis: parsed.multimedia,
+      metadata: {
+        title: parsed.title,
+        description: parsed.description,
+        keywords: parsed.keywords,
+        imageCount: parsed.imageCount,
+        linkCount: parsed.linkCount,
+        videoCount: parsed.videoCount,
+        audioCount: parsed.audioCount,
+      },
+    },
+    childSafetyAnalysis: {
+      overallRisk: childSafetyAnalysis.riskLevel,
+      riskCategories,
+      depthAnalysis: {
+        titleSafe,
+        metadataSafe,
+        contentSafe: childSafetyAnalysis.riskLevel === 'safe' || childSafetyAnalysis.riskLevel === 'caution',
+        mediaSafe: parsed.multimedia.mediaSafetyScore >= 80,
+      },
+    },
+    timestamp: new Date().toISOString(),
+    analysisMethod: analysisMethod as 'live' | 'demo',
+    performanceMetrics: {
+      totalTimeMs,
+      steps: performanceSteps,
+    },
+  };
 }
 
 // Fast topic detection without external API
@@ -919,21 +1452,22 @@ function detectTopics(text: string, title: string): string[] {
 // FAST DEMO ANALYSIS (When live fails)
 // ============================================================================
 
-function generateDemoAnalysisFast(url: string): ScanResult {
+function generateDemoAnalysisFast(url: string, priorTimeMs: number = 0): ScanResult {
   const startTime = Date.now();
-  const getElapsed = () => ((Date.now() - startTime) / 1000).toFixed(3);
+  const performanceSteps: { name: string; durationMs: number; details?: string }[] = [];
   
-  console.log(`\n🔍 [KOMAL DEMO MODE] Starting URL-based analysis for: ${url}`);
-  console.log(`⏱️  [${getElapsed()}s] Running keyword analysis on URL...`);
+  if (priorTimeMs > 0) {
+    performanceSteps.push({ name: 'Error Recovery', durationMs: priorTimeMs, details: 'Fallback to demo mode' });
+  }
   
   const urlLower = url.toLowerCase();
   const childSafetyAnalysis = analyzeChildSafetyFast(urlLower, '', '', []);
+  performanceSteps.push({ name: 'URL Analysis', durationMs: Date.now() - startTime, details: 'Keyword scan' });
 
   // Quick URL pattern detection
   const isEducational = /edu|learn|wiki|school|kids|child/i.test(urlLower);
   const isSocial = /facebook|instagram|tiktok|twitter|snapchat/i.test(urlLower);
-  
-  console.log(`✅ [${getElapsed()}s] Pattern detection: Educational=${isEducational}, Social=${isSocial}`);
+  performanceSteps.push({ name: 'Pattern Detection', durationMs: 1, details: `Edu=${isEducational}, Social=${isSocial}` });
 
   const ageGroupScores = calculateAgeGroupScores(childSafetyAnalysis, null, 0);
 
@@ -958,7 +1492,10 @@ function generateDemoAnalysisFast(url: string): ScanResult {
     Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
   );
   
-  console.log(`🎯 [KOMAL DEMO MODE] COMPLETE in ${getElapsed()}s | Score: ${overallScore}/100 | Risk: ${childSafetyAnalysis.riskLevel}\n`);
+  const totalTimeMs = priorTimeMs + (Date.now() - startTime);
+  performanceSteps.push({ name: 'Calculate Scores', durationMs: Date.now() - startTime, details: `Score: ${overallScore}` });
+  
+  console.log(`🎯 [KOMAL DEMO] COMPLETE in ${(totalTimeMs/1000).toFixed(3)}s | Score: ${overallScore}/100\n`);
 
   return {
     url,
@@ -989,6 +1526,10 @@ function generateDemoAnalysisFast(url: string): ScanResult {
     },
     timestamp: new Date().toISOString(),
     analysisMethod: 'demo',
+    performanceMetrics: {
+      totalTimeMs,
+      steps: performanceSteps,
+    },
   };
 }
 
