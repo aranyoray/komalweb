@@ -38,6 +38,17 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 GOOGLE_CLOUD_PROJECT_ID=your-project-id
 ```
 
+### Email Configuration (For Reports & Demo Requests)
+
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM="KOMAL" <noreply@komalkids.com>
+```
+
 ### Environment Variable Details
 
 | Variable | Required | Description |
@@ -45,8 +56,16 @@ GOOGLE_CLOUD_PROJECT_ID=your-project-id
 | `GOOGLE_CLOUD_API_KEY` | No* | API key for Google Cloud services |
 | `GOOGLE_APPLICATION_CREDENTIALS` | No* | Path to service account JSON file |
 | `GOOGLE_CLOUD_PROJECT_ID` | No | Your Google Cloud project ID |
+| `SMTP_HOST` | No** | SMTP server hostname |
+| `SMTP_PORT` | No** | SMTP server port (587 or 465) |
+| `SMTP_SECURE` | No** | Set to "true" for SSL (port 465) |
+| `SMTP_USER` | No** | SMTP authentication username |
+| `SMTP_PASS` | No** | SMTP authentication password |
+| `SMTP_FROM` | No** | From address for sent emails |
 
 \* **At least one** authentication method (API Key or Service Account) is required for live analysis. If neither is provided, the system runs in **demo mode** with pattern-based analysis.
+
+\*\* SMTP configuration is required for email features (Send Report, Book Demo). PDF export works without SMTP.
 
 ## Google Cloud Platform Setup
 
@@ -184,9 +203,27 @@ When Google Cloud APIs are configured, the system performs:
    - Educational content identification
 
 7. **Age-Appropriate Recommendations**
-   - 4 age groups: <10, 10-13, 13-16, 16+
+   - 4 age groups: <10, 10-13, 13-18, 18+
    - Actions: BLOCK, GATE, ALLOW
    - Individual scores and reasoning for each group
+
+### Export & Sharing Features
+
+1. **Export PDF**
+   - Generate PDF reports with full analysis results
+   - Uses html2canvas and jsPDF for client-side PDF generation
+   - KOMAL branded report with safety scores, age actions, and analysis summary
+
+2. **Send via Email**
+   - Email safety reports directly from the demo page
+   - Beautiful HTML email template with KOMAL branding
+   - Requires SMTP configuration in environment variables
+
+3. **Book a Demo**
+   - Contact form for requesting personalized demos
+   - Sends notification to sales@komalkids.com
+   - Sends confirmation email to the requester
+   - Fields: Name (required), Email (required), Organization (optional)
 
 ### Analysis Result Structure
 
@@ -265,6 +302,51 @@ Analyzes a URL for content safety.
 
 - `400`: Invalid or missing URL
 - `500`: Analysis failed
+
+### POST `/api/send-report`
+
+Sends a safety report via email.
+
+**Request Body:**
+
+```json
+{
+  "email": "user@example.com",
+  "report": { /* ScanResult object */ }
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Report sent successfully"
+}
+```
+
+### POST `/api/book-demo`
+
+Submits a demo request.
+
+**Request Body:**
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "organization": "Optional Company Name"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Demo request submitted successfully! Check your email for confirmation."
+}
+```
 
 ## Fallback Mode
 

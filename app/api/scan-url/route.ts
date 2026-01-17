@@ -9,12 +9,22 @@ import type { protos } from '@google-cloud/vision';
 interface ScanResult {
   url: string;
   overallScore: number;
+  ageGroupScores: {
+    [key in AgeGroup]: {
+      score: number;
+      action: 'BLOCK' | 'GATE' | 'ALLOW';
+      reason: string;
+      risks: string[];
+    };
+  };
   contentAnalysis: {
     textAnalysis: {
       sentiment: string;
       keyTopics: string[];
       languageScore: number;
       entities?: string[];
+      unsafeKeywordsFound: string[];
+      safeKeywordsFound: string[];
     };
     visualAnalysis: {
       detectedObjects: string[];
@@ -22,37 +32,51 @@ interface ScanResult {
       concerns: string[];
       labels?: string[];
     };
+    multimediaAnalysis?: {
+      videoDetected: boolean;
+      audioDetected: boolean;
+      mediaTypes: string[];
+      mediaSafetyScore: number;
+      mediaConcerns: string[];
+    };
     metadata: {
       title?: string;
       description?: string;
       keywords?: string[];
       imageCount: number;
       linkCount: number;
+      videoCount: number;
+      audioCount: number;
     };
   };
-  categoryScores: {
-    [category: string]: {
-      detected: boolean;
-      confidence: number;
-    };
-  };
-  ageGroupActions: {
-    [ageGroup: string]: {
-      action: 'BLOCK' | 'GATE' | 'ALLOW';
-      reason: string;
-      score: number;
+  childSafetyAnalysis: {
+    overallRisk: 'safe' | 'caution' | 'unsafe' | 'dangerous';
+    riskCategories: {
+      category: string;
+      severity: string;
+      matchCount: number;
+      matchedKeywords: string[];
+      contextSnippets: string[];
+    }[];
+    depthAnalysis: {
+      titleSafe: boolean;
+      metadataSafe: boolean;
+      contentSafe: boolean;
+      mediaSafe: boolean;
     };
   };
   timestamp: string;
   analysisMethod: 'live' | 'demo';
 }
 
-// Initialize Google Cloud clients (only if credentials are available)
+// ============================================================================
+// GOOGLE CLOUD CLIENTS
+// ============================================================================
+
 let visionClient: ImageAnnotatorClient | null = null;
 let languageClient: LanguageServiceClient | null = null;
 
 try {
-  // Check if Google Cloud credentials are configured
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_API_KEY) {
     visionClient = new ImageAnnotatorClient({
       apiKey: process.env.GOOGLE_CLOUD_API_KEY,
@@ -65,6 +89,318 @@ try {
   console.warn('Google Cloud APIs not configured, using demo mode:', error);
 }
 
+// ============================================================================
+// CHILD SAFETY ANALYSIS FUNCTIONS
+// ============================================================================
+
+/**
+ * Check content for child-unsafe keywords with context analysis
+ */
+function analyzeChildSafety(
+  text: string,
+  title: string = '',
+  description: string = '',
+  keywords: string[] = []
+): {
+  unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[] }[];
+  safeKeywordsFound: string[];
+  riskScore: number;
+  riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous';
+} {
+  const allContent = `${title} ${description} ${keywords.join(' ')} ${text}`.toLowerCase();
+  const unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[] }[] = [];
+  const safeKeywordsFound: string[] = [];
+
+  // Check for unsafe keywords in each category
+  for (const [category, keywords] of Object.entries(CHILD_UNSAFE_KEYWORDS)) {
+    for (const keyword of keywords) {
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      const matches = allContent.match(regex);
+      if (matches && matches.length > 0) {
+        // Extract context snippets
+        const contexts: string[] = [];
+        let searchIndex = 0;
+        const lowerContent = allContent.toLowerCase();
+        while (contexts.length < 3) {
+          const pos = lowerContent.indexOf(keyword.toLowerCase(), searchIndex);
+          if (pos === -1) break;
+          const start = Math.max(0, pos - 30);
+          const end = Math.min(allContent.length, pos + keyword.length + 30);
+          contexts.push('...' + allContent.slice(start, end).trim() + '...');
+          searchIndex = pos + 1;
+        }
+
+        unsafeKeywordsFound.push({
+          category,
+          keyword,
+          count: matches.length,
+          context: contexts,
+        });
+      }
+    }
+  }
+
+  // Check for safe keywords
+  for (const keyword of CHILD_SAFE_KEYWORDS) {
+    if (allContent.includes(keyword.toLowerCase())) {
+      safeKeywordsFound.push(keyword);
+    }
+  }
+
+  // Calculate risk score
+  let riskScore = 0;
+  for (const unsafe of unsafeKeywordsFound) {
+    const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
+    if (risk) {
+      const severityMultiplier = risk.severity === 'critical' ? 10 :
+                                  risk.severity === 'high' ? 6 :
+                                  risk.severity === 'medium' ? 3 : 1;
+      riskScore += unsafe.count * severityMultiplier;
+    }
+  }
+
+  // Reduce risk for safe content (max 30% reduction)
+  const safeReduction = Math.min(safeKeywordsFound.length * 2, 30);
+  riskScore = Math.max(0, riskScore - safeReduction);
+
+  // Determine risk level
+  let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
+  if (riskScore >= 50) riskLevel = 'dangerous';
+  else if (riskScore >= 25) riskLevel = 'unsafe';
+  else if (riskScore >= 10) riskLevel = 'caution';
+
+  return { unsafeKeywordsFound, safeKeywordsFound, riskScore, riskLevel };
+}
+
+/**
+ * Calculate age-specific scores based on child safety analysis
+ */
+function calculateAgeGroupScores(
+  childSafetyAnalysis: ReturnType<typeof analyzeChildSafety>,
+  visionSafeSearch: any,
+  multimediaRisk: number = 0
+): {
+  [key in AgeGroup]: {
+    score: number;
+    action: 'BLOCK' | 'GATE' | 'ALLOW';
+    reason: string;
+    risks: string[];
+  };
+} {
+  const scores: {
+    [key in AgeGroup]: {
+      score: number;
+      action: 'BLOCK' | 'GATE' | 'ALLOW';
+      reason: string;
+      risks: string[];
+    };
+  } = {
+    '<10': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+    '10-13': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+    '13-16': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+    '16+': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+  };
+
+  // Apply deductions based on found unsafe keywords
+  for (const unsafe of childSafetyAnalysis.unsafeKeywordsFound) {
+    const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
+    if (risk) {
+      for (const ageGroup of AGE_GROUPS) {
+        const deduction = risk.deduction[ageGroup] * (Math.min(unsafe.count, 5) / 5);
+        scores[ageGroup].score -= deduction;
+        if (deduction > 0) {
+          scores[ageGroup].risks.push(`${unsafe.category}: "${unsafe.keyword}" (${unsafe.count}x)`);
+        }
+      }
+    }
+  }
+
+  // Apply Vision API safe search results
+  if (visionSafeSearch) {
+    const adultScore = getLikelihoodScore(visionSafeSearch.adult);
+    const violenceScore = getLikelihoodScore(visionSafeSearch.violence);
+    const racyScore = getLikelihoodScore(visionSafeSearch.racy);
+
+    if (adultScore >= 3) {
+      scores['<10'].score -= 100;
+      scores['10-13'].score -= 100;
+      scores['13-16'].score -= 100;
+      scores['16+'].score -= 80;
+      for (const ag of AGE_GROUPS) {
+        scores[ag].risks.push('Adult content detected in images');
+      }
+    }
+    if (violenceScore >= 3) {
+      scores['<10'].score -= 70;
+      scores['10-13'].score -= 60;
+      scores['13-16'].score -= 40;
+      scores['16+'].score -= 20;
+      for (const ag of AGE_GROUPS) {
+        scores[ag].risks.push('Violence detected in images');
+      }
+    }
+    if (racyScore >= 3) {
+      scores['<10'].score -= 50;
+      scores['10-13'].score -= 40;
+      scores['13-16'].score -= 25;
+      scores['16+'].score -= 10;
+      for (const ag of AGE_GROUPS) {
+        scores[ag].risks.push('Racy content detected in images');
+      }
+    }
+  }
+
+  // Apply multimedia risk
+  if (multimediaRisk > 0) {
+    for (const ageGroup of AGE_GROUPS) {
+      scores[ageGroup].score -= multimediaRisk * (ageGroup === '<10' ? 1.5 : ageGroup === '10-13' ? 1.2 : 1);
+      if (multimediaRisk > 20) {
+        scores[ageGroup].risks.push('Potentially unsafe multimedia content');
+      }
+    }
+  }
+
+  // Bonus for safe content
+  const safeBonus = Math.min(childSafetyAnalysis.safeKeywordsFound.length * 3, 15);
+  for (const ageGroup of AGE_GROUPS) {
+    scores[ageGroup].score += safeBonus;
+  }
+
+  // Clamp scores and determine actions
+  for (const ageGroup of AGE_GROUPS) {
+    scores[ageGroup].score = Math.max(0, Math.min(100, Math.round(scores[ageGroup].score)));
+
+    if (scores[ageGroup].score >= 80) {
+      scores[ageGroup].action = 'ALLOW';
+      scores[ageGroup].reason = scores[ageGroup].risks.length === 0
+        ? 'Content appears safe for this age group'
+        : `Minor concerns detected but content is generally appropriate`;
+    } else if (scores[ageGroup].score >= 50) {
+      scores[ageGroup].action = 'GATE';
+      scores[ageGroup].reason = `Parental guidance recommended: ${scores[ageGroup].risks.slice(0, 3).join('; ')}`;
+    } else {
+      scores[ageGroup].action = 'BLOCK';
+      scores[ageGroup].reason = `Content not suitable: ${scores[ageGroup].risks.slice(0, 3).join('; ')}`;
+    }
+  }
+
+  return scores;
+}
+
+// ============================================================================
+// MULTIMEDIA ANALYSIS
+// ============================================================================
+
+/**
+ * Analyze multimedia content (video, audio) on the page
+ */
+function analyzeMultimedia(html: string, $: cheerio.CheerioAPI): {
+  videoDetected: boolean;
+  audioDetected: boolean;
+  mediaTypes: string[];
+  videoUrls: string[];
+  audioUrls: string[];
+  iframeUrls: string[];
+  mediaSafetyScore: number;
+  mediaConcerns: string[];
+} {
+  const mediaTypes: string[] = [];
+  const videoUrls: string[] = [];
+  const audioUrls: string[] = [];
+  const iframeUrls: string[] = [];
+  const mediaConcerns: string[] = [];
+  let mediaSafetyScore = 100;
+
+  // Detect video elements
+  $('video, video source').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src) {
+      videoUrls.push(src);
+      mediaTypes.push('video');
+    }
+  });
+
+  // Detect audio elements
+  $('audio, audio source').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src) {
+      audioUrls.push(src);
+      mediaTypes.push('audio');
+    }
+  });
+
+  // Detect iframes (YouTube, Vimeo, etc.)
+  $('iframe').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src) {
+      iframeUrls.push(src);
+      if (src.includes('youtube') || src.includes('youtu.be')) {
+        mediaTypes.push('youtube');
+      } else if (src.includes('vimeo')) {
+        mediaTypes.push('vimeo');
+      } else if (src.includes('dailymotion')) {
+        mediaTypes.push('dailymotion');
+      } else if (src.includes('twitch')) {
+        mediaTypes.push('twitch');
+      } else if (src.includes('tiktok')) {
+        mediaTypes.push('tiktok');
+        mediaConcerns.push('TikTok content detected - may contain age-inappropriate content');
+        mediaSafetyScore -= 20;
+      } else {
+        mediaTypes.push('iframe');
+      }
+    }
+  });
+
+  // Detect embedded objects
+  $('embed, object').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data') || $(el).attr('data-src');
+    if (src) {
+      mediaTypes.push('embedded');
+      if (src.includes('.swf')) {
+        mediaConcerns.push('Flash content detected - potentially outdated or insecure');
+        mediaSafetyScore -= 10;
+      }
+    }
+  });
+
+  // Check for potentially unsafe media sources
+  const allMediaUrls = [...videoUrls, ...audioUrls, ...iframeUrls];
+  for (const url of allMediaUrls) {
+    const urlLower = url.toLowerCase();
+
+    // Check for adult/unsafe domains in media URLs
+    for (const keyword of CHILD_UNSAFE_KEYWORDS.explicit.slice(0, 30)) {
+      if (urlLower.includes(keyword)) {
+        mediaConcerns.push(`Potentially adult media source detected`);
+        mediaSafetyScore -= 50;
+        break;
+      }
+    }
+  }
+
+  // Check for live streaming indicators
+  if (html.toLowerCase().includes('livestream') || html.toLowerCase().includes('live stream')) {
+    mediaConcerns.push('Live streaming content detected - content may be unpredictable');
+    mediaSafetyScore -= 15;
+  }
+
+  return {
+    videoDetected: videoUrls.length > 0 || iframeUrls.some(u => u.includes('youtube') || u.includes('vimeo')),
+    audioDetected: audioUrls.length > 0,
+    mediaTypes: [...new Set(mediaTypes)],
+    videoUrls,
+    audioUrls,
+    iframeUrls,
+    mediaSafetyScore: Math.max(0, mediaSafetyScore),
+    mediaConcerns,
+  };
+}
+
+// ============================================================================
+// CONTENT FETCHING & PARSING
+// ============================================================================
+
 /**
  * Fetch webpage content
  */
@@ -72,9 +408,9 @@ async function fetchWebpageContent(url: string): Promise<string> {
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; KomalBot/1.0; +https://komalkids.com)',
+        'User-Agent': 'Mozilla/5.0 (compatible; KomalSafetyBot/1.0; +https://komalkids.com)',
       },
-      signal: AbortSignal.timeout(10000), // 10 second timeout
+      signal: AbortSignal.timeout(7000),
     });
 
     if (!response.ok) {
@@ -89,9 +425,9 @@ async function fetchWebpageContent(url: string): Promise<string> {
 }
 
 /**
- * Parse HTML and extract metadata
+ * Parse HTML and extract all content for analysis
  */
-function parseHTMLMetadata(html: string, url: string) {
+function parseHTMLContent(html: string, url: string) {
   const $ = cheerio.load(html);
 
   // Extract metadata
@@ -103,21 +439,22 @@ function parseHTMLMetadata(html: string, url: string) {
   const keywordsStr = $('meta[name="keywords"]').attr('content') || '';
   const keywords = keywordsStr.split(',').map((k) => k.trim()).filter(Boolean);
 
-  // Extract main text content
-  $('script, style, nav, footer, header, aside').remove();
+  // Extract all text content
+  $('script, style').remove();
   const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
-  const textContent = bodyText.substring(0, 5000); // Limit to 5000 chars for analysis
+  const textContent = bodyText.substring(0, 10000); // Analyze up to 10k chars
 
-  // Count images and links
+  // Count media elements
   const imageCount = $('img').length;
   const linkCount = $('a').length;
+  const videoCount = $('video').length + $('iframe[src*="youtube"], iframe[src*="vimeo"]').length;
+  const audioCount = $('audio').length;
 
-  // Extract image URLs for Vision API analysis
+  // Extract image URLs
   const imageUrls: string[] = [];
   $('img').each((_, el) => {
-    const src = $(el).attr('src');
+    const src = $(el).attr('src') || $(el).attr('data-src');
     if (src) {
-      // Convert relative URLs to absolute
       try {
         const absoluteUrl = new URL(src, url).href;
         imageUrls.push(absoluteUrl);
@@ -127,14 +464,21 @@ function parseHTMLMetadata(html: string, url: string) {
     }
   });
 
+  // Analyze multimedia
+  const multimedia = analyzeMultimedia(html, $);
+
   return {
     title,
     description,
     keywords,
     textContent,
-    imageUrls: imageUrls.slice(0, 10), // Limit to first 10 images
+    imageUrls: imageUrls.slice(0, 10),
     imageCount,
     linkCount,
+    videoCount: videoCount + multimedia.videoUrls.length,
+    audioCount: audioCount + multimedia.audioUrls.length,
+    multimedia,
+    $,
   };
 }
 
@@ -151,7 +495,7 @@ async function captureScreenshot(url: string): Promise<Buffer | null> {
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 720 });
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 8000 });
 
     const screenshot = await page.screenshot({ type: 'png' });
     return screenshot as Buffer;
@@ -165,6 +509,10 @@ async function captureScreenshot(url: string): Promise<Buffer | null> {
   }
 }
 
+// ============================================================================
+// NLP & VISION ANALYSIS
+// ============================================================================
+
 /**
  * Analyze text using Google Cloud Natural Language API
  */
@@ -174,51 +522,30 @@ async function analyzeTextWithNLP(text: string) {
   }
 
   try {
-    // Analyze sentiment
-    const [sentimentResult] = await languageClient.analyzeSentiment({
-      document: {
-        content: text,
-        type: 'PLAIN_TEXT',
-      },
-    });
+    const truncatedText = text.substring(0, 5000);
 
-    // Analyze entities
-    const [entityResult] = await languageClient.analyzeEntities({
-      document: {
-        content: text,
-        type: 'PLAIN_TEXT',
-      },
-    });
+    const [sentimentResult, entityResult] = await Promise.all([
+      languageClient.analyzeSentiment({
+        document: { content: truncatedText, type: 'PLAIN_TEXT' },
+      }),
+      languageClient.analyzeEntities({
+        document: { content: truncatedText, type: 'PLAIN_TEXT' },
+      }),
+    ]);
 
-    // Classify content
-    const [classificationResult] = await languageClient.classifyText({
-      document: {
-        content: text,
-        type: 'PLAIN_TEXT',
-      },
-    });
-
-    const sentiment = sentimentResult.documentSentiment;
+    const sentiment = sentimentResult[0].documentSentiment;
     const sentimentScore = sentiment?.score || 0;
-    const sentimentMagnitude = sentiment?.magnitude || 0;
 
-    // Determine sentiment label
     let sentimentLabel = 'Neutral';
     if (sentimentScore > 0.25) sentimentLabel = 'Positive';
     else if (sentimentScore < -0.25) sentimentLabel = 'Concerning';
 
-    // Extract entities
-    const entities = entityResult.entities?.map((e) => e.name || '').filter(Boolean) || [];
-
-    // Extract categories/topics
-    const categories = classificationResult.categories?.map((c) => c.name || '').filter(Boolean) || [];
+    const entities = entityResult[0].entities?.map((e) => e.name || '').filter(Boolean) || [];
 
     return {
       sentiment: sentimentLabel,
       sentimentScore,
-      sentimentMagnitude,
       entities: entities.slice(0, 10),
-      categories,
     };
   } catch (error) {
     console.error('Error analyzing text with NLP:', error);
@@ -241,55 +568,69 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
       detectedObjects: [] as string[],
     };
 
-    // Analyze screenshot if available
-    if (screenshot) {
-      const [screenshotResult] = await visionClient.annotateImage({
-        image: { content: screenshot },
-        features: [
-          { type: 'LABEL_DETECTION', maxResults: 10 },
-          { type: 'SAFE_SEARCH_DETECTION' },
-          { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
-        ],
-      });
+    const requests: Promise<any>[] = [];
 
-      results.labels = screenshotResult.labelAnnotations?.map((l) => l.description || '') || [];
-      results.safeSearchAnnotation = screenshotResult.safeSearchAnnotation;
-      results.detectedObjects = screenshotResult.localizedObjectAnnotations?.map((o) => o.name || '') || [];
+    // Analyze screenshot
+    if (screenshot) {
+      requests.push(
+        visionClient.annotateImage({
+          image: { content: screenshot },
+          features: [
+            { type: 'LABEL_DETECTION', maxResults: 10 },
+            { type: 'SAFE_SEARCH_DETECTION' },
+            { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
+          ],
+        }).catch(() => [null])
+      );
     }
 
-    // Analyze first few images from the page
+    // Analyze page images
     for (const imageUrl of imageUrls.slice(0, 3)) {
-      try {
-        const [imageResult] = await visionClient.annotateImage({
+      requests.push(
+        visionClient.annotateImage({
           image: { source: { imageUri: imageUrl } },
           features: [
             { type: 'LABEL_DETECTION', maxResults: 5 },
             { type: 'SAFE_SEARCH_DETECTION' },
           ],
-        });
+        }).catch(() => [null])
+      );
+    }
 
-        const imageLabels = imageResult.labelAnnotations?.map((l) => l.description || '') || [];
-        results.labels.push(...imageLabels);
+    const allResults = await Promise.all(requests);
 
-        // Use the most restrictive safe search annotation
-        if (imageResult.safeSearchAnnotation) {
-          if (!results.safeSearchAnnotation) {
-            results.safeSearchAnnotation = imageResult.safeSearchAnnotation;
-          } else {
-            // Merge annotations (take worst case)
-            const current = results.safeSearchAnnotation;
-            const newAnnotation = imageResult.safeSearchAnnotation;
-            results.safeSearchAnnotation = {
-              adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
-              violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
-              racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
-            };
-          }
+    for (const [result] of allResults) {
+      if (!result) continue;
+
+      const highConfLabels = result.labelAnnotations
+        ?.filter((l: any) => (l.score || 0) > 0.7)
+        ?.map((l: any) => l.description || '') || [];
+      results.labels.push(...highConfLabels);
+
+      if (result.localizedObjectAnnotations) {
+        const objects = result.localizedObjectAnnotations
+          ?.filter((o: any) => (o.score || 0) > 0.6)
+          ?.map((o: any) => o.name || '') || [];
+        results.detectedObjects.push(...objects);
+      }
+
+      if (result.safeSearchAnnotation) {
+        if (!results.safeSearchAnnotation) {
+          results.safeSearchAnnotation = result.safeSearchAnnotation;
+        } else {
+          const current = results.safeSearchAnnotation;
+          const newAnnotation = result.safeSearchAnnotation;
+          results.safeSearchAnnotation = {
+            adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
+            violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
+            racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
+          };
         }
-      } catch (error) {
-        console.error(`Error analyzing image ${imageUrl}:`, error);
       }
     }
+
+    results.labels = [...new Set(results.labels)].slice(0, 10);
+    results.detectedObjects = [...new Set(results.detectedObjects)].slice(0, 8);
 
     return results;
   } catch (error) {
@@ -323,316 +664,283 @@ function getLikelihoodScore(
 
   switch (likelihood) {
     case 'VERY_UNLIKELY':
+    case '0':
       return 0;
     case 'UNLIKELY':
+    case '1':
       return 1;
     case 'POSSIBLE':
+    case '2':
       return 2;
     case 'LIKELY':
+    case '3':
       return 3;
     case 'VERY_LIKELY':
+    case '4':
       return 4;
     default:
       return 0;
   }
 }
 
-/**
- * Analyze content and determine safety categories
- */
-function determineSafetyCategories(
-  metadata: any,
-  nlpResults: any,
-  visionResults: any,
-  textContent: string
-): { [key: string]: { detected: boolean; confidence: number } } {
-  const categoryScores: { [key: string]: { detected: boolean; confidence: number } } = {};
+// ============================================================================
+// MAIN ANALYSIS FUNCTION
+// ============================================================================
 
-  // Analyze based on text content and NLP results
-  const textLower = (textContent + ' ' + metadata.title + ' ' + metadata.description).toLowerCase();
-
-  // Violence detection
-  const violenceKeywords = ['violence', 'violent', 'kill', 'murder', 'shooting', 'weapon', 'blood', 'gore', 'fight'];
-  const violenceCount = violenceKeywords.filter((k) => textLower.includes(k)).length;
-
-  if (visionResults?.safeSearchAnnotation?.violence >= 3 || violenceCount >= 3) {
-    categoryScores['Graphic Violence'] = { detected: true, confidence: 0.8 };
-  } else if (visionResults?.safeSearchAnnotation?.violence >= 2 || violenceCount >= 1) {
-    categoryScores['Non-Graphic Violence'] = { detected: true, confidence: 0.6 };
-  }
-
-  // Sports/Fighting
-  const sportsKeywords = ['boxing', 'mma', 'wrestling', 'fighting', 'combat sport'];
-  if (sportsKeywords.some((k) => textLower.includes(k))) {
-    categoryScores['Heavy Fighting (Sports)'] = { detected: true, confidence: 0.7 };
-  }
-
-  // Horror
-  const horrorKeywords = ['horror', 'scary', 'creepy', 'nightmare', 'haunted', 'terror'];
-  if (horrorKeywords.some((k) => textLower.includes(k))) {
-    categoryScores['Horror/Jumpscares'] = { detected: true, confidence: 0.65 };
-  }
-
-  // Crime
-  const crimeKeywords = ['crime', 'criminal', 'arrest', 'police', 'investigation', 'theft'];
-  if (crimeKeywords.some((k) => textLower.includes(k))) {
-    categoryScores['Crime Footage'] = { detected: true, confidence: 0.6 };
-  }
-
-  // Explicit content
-  if (visionResults?.safeSearchAnnotation?.adult >= 3 || visionResults?.safeSearchAnnotation?.racy >= 3) {
-    categoryScores['Explicit Content'] = { detected: true, confidence: 0.9 };
-  }
-
-  // Educational content
-  const eduKeywords = ['education', 'learn', 'tutorial', 'course', 'study', 'academic', 'university', 'school'];
-  const eduCount = eduKeywords.filter((k) => textLower.includes(k)).length;
-  if (eduCount >= 2 || nlpResults?.categories?.some((c: string) => c.includes('Education'))) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.85 };
-  }
-
-  // Language detection
-  const mildProfanity = ['damn', 'hell', 'crap', 'stupid'];
-  const strongProfanity = ['fuck', 'shit', 'bitch', 'ass', 'bastard'];
-  const mildCount = mildProfanity.filter((k) => textLower.includes(k)).length;
-  const strongCount = strongProfanity.filter((k) => textLower.includes(k)).length;
-
-  if (strongCount > 0) {
-    categoryScores['Strong Language'] = { detected: true, confidence: Math.min(0.5 + strongCount * 0.1, 0.95) };
-  } else if (mildCount > 0) {
-    categoryScores['Mild Language'] = { detected: true, confidence: Math.min(0.4 + mildCount * 0.1, 0.8) };
-  }
-
-  // Substance use
-  const substanceKeywords = ['alcohol', 'drug', 'marijuana', 'smoking', 'tobacco', 'beer', 'wine'];
-  const substanceCount = substanceKeywords.filter((k) => textLower.includes(k)).length;
-  if (substanceCount >= 2) {
-    categoryScores['Substance Use'] = { detected: true, confidence: 0.7 };
-  }
-
-  return categoryScores;
-}
-
-/**
- * Calculate overall safety score and age group actions
- */
-function calculateSafetyScore(categoryScores: any) {
-  let overallScore = 85; // Start with high score
-
-  // Deduct points based on detected categories
-  if (categoryScores['Graphic Violence']?.detected) overallScore -= 40;
-  if (categoryScores['Explicit Content']?.detected) overallScore -= 50;
-  if (categoryScores['Horror/Jumpscares']?.detected) overallScore -= 20;
-  if (categoryScores['Crime Footage']?.detected) overallScore -= 15;
-  if (categoryScores['Non-Graphic Violence']?.detected) overallScore -= 10;
-  if (categoryScores['Strong Language']?.detected) overallScore -= 15;
-  if (categoryScores['Mild Language']?.detected) overallScore -= 5;
-  if (categoryScores['Substance Use']?.detected) overallScore -= 20;
-
-  // Add points for educational content
-  if (categoryScores['Educational Content']?.detected) overallScore += 15;
-
-  // Clamp to 0-100
-  overallScore = Math.max(0, Math.min(100, overallScore));
-
-  // Generate age group actions
-  const ageGroupActions: {
-    [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number };
-  } = {};
-
-  CONTENT_RULES.ageGroups.forEach((ageGroup) => {
-    let worstAction: 'BLOCK' | 'GATE' | 'ALLOW' = 'ALLOW';
-    let reasons: string[] = [];
-    let ageScore = 100;
-
-    Object.entries(categoryScores).forEach(([category, data]: [string, any]) => {
-      if (data.detected && data.confidence > 0.5) {
-        const rule = CONTENT_RULES.categories[category as keyof typeof CONTENT_RULES.categories];
-        if (rule) {
-          const action = rule[ageGroup as keyof typeof rule];
-
-          if (action === 'BLOCK') {
-            worstAction = 'BLOCK';
-            ageScore = Math.min(ageScore, 30);
-            reasons.push(`${category} detected (blocked for this age)`);
-          } else if (action === 'GATE' && worstAction !== 'BLOCK') {
-            worstAction = 'GATE';
-            ageScore = Math.min(ageScore, 60);
-            reasons.push(`${category} detected (requires parent approval)`);
-          } else if (action === 'ALLOW') {
-            ageScore = Math.min(ageScore, 85);
-          }
-        }
-      }
-    });
-
-    if (reasons.length === 0) {
-      reasons.push('Content appears age-appropriate');
-    }
-
-    ageGroupActions[ageGroup] = {
-      action: worstAction,
-      reason: reasons.join('; '),
-      score: ageScore,
-    };
-  });
-
-  return { overallScore, ageGroupActions };
-}
-
-/**
- * Main analysis function - uses live data when possible
- */
-async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
+async function analyzeUrlForChildSafety(url: string): Promise<ScanResult> {
   try {
-    // Fetch webpage content
     console.log('Fetching webpage content...');
-    const html = await fetchWebpageContent(url);
+    const htmlPromise = fetchWebpageContent(url);
+    const screenshotPromise = visionClient ? captureScreenshot(url) : Promise.resolve(null);
+    const html = await htmlPromise;
 
-    // Parse HTML and extract metadata
-    console.log('Parsing HTML and extracting metadata...');
-    const metadata = parseHTMLMetadata(html, url);
+    console.log('Parsing HTML and extracting content...');
+    const parsedContent = parseHTMLContent(html, url);
 
-    // Capture screenshot
-    console.log('Capturing screenshot...');
-    const screenshot = await captureScreenshot(url);
-
-    // Analyze text with NLP
     console.log('Analyzing text with NLP...');
-    const nlpResults = await analyzeTextWithNLP(metadata.textContent);
+    const nlpPromise = analyzeTextWithNLP(parsedContent.textContent);
 
-    // Analyze images with Vision API
     console.log('Analyzing images with Vision API...');
-    const visionResults = await analyzeImagesWithVision(metadata.imageUrls, screenshot);
+    const visionPromise = screenshotPromise.then((screenshot) =>
+      analyzeImagesWithVision(parsedContent.imageUrls, screenshot)
+    );
 
-    // Determine safety categories
-    const categoryScores = determineSafetyCategories(metadata, nlpResults, visionResults, metadata.textContent);
+    console.log('Performing child safety analysis...');
+    const childSafetyAnalysis = analyzeChildSafety(
+      parsedContent.textContent,
+      parsedContent.title,
+      parsedContent.description,
+      parsedContent.keywords
+    );
 
-    // Calculate safety scores
-    const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores);
+    // Perform deep keyword vectorization analysis
+    console.log('Performing deep keyword analysis...');
+    const categoryKeywords = loadAndVectorizeKeywords();
+    const wordFrequencies = extractWordFrequencies(parsedContent.textContent);
+    const similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, parsedContent.textContent);
+    const similarityReport = generateSimilarityReport(similarityMatches, wordFrequencies);
 
-    // Prepare result
+    const [nlpResults, visionResults] = await Promise.all([nlpPromise, visionPromise]);
+
+    // Calculate multimedia risk
+    const multimediaRisk = 100 - parsedContent.multimedia.mediaSafetyScore;
+
+    // Calculate age group scores
+    const ageGroupScores = calculateAgeGroupScores(
+      childSafetyAnalysis,
+      visionResults?.safeSearchAnnotation,
+      multimediaRisk
+    );
+
+    // Calculate overall score (average of all age groups)
+    const overallScore = Math.round(
+      Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
+    );
+
+    // Build risk categories from analysis
+    const riskCategories = childSafetyAnalysis.unsafeKeywordsFound.map(unsafe => ({
+      category: unsafe.category,
+      severity: CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category)?.severity || 'low',
+      matchCount: unsafe.count,
+      matchedKeywords: [unsafe.keyword],
+      contextSnippets: unsafe.context,
+    }));
+
+    // Build depth analysis
+    const titleSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u =>
+      parsedContent.title.toLowerCase().includes(u.keyword)
+    );
+    const metadataSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u =>
+      (parsedContent.description + ' ' + parsedContent.keywords.join(' ')).toLowerCase().includes(u.keyword)
+    );
+    const contentSafe = childSafetyAnalysis.riskLevel === 'safe' || childSafetyAnalysis.riskLevel === 'caution';
+    const mediaSafe = parsedContent.multimedia.mediaSafetyScore >= 80;
+
     const result: ScanResult = {
       url,
       overallScore,
+      ageGroupScores,
       contentAnalysis: {
         textAnalysis: {
           sentiment: nlpResults?.sentiment || 'Neutral',
-          keyTopics: nlpResults?.categories || [],
-          languageScore: Math.floor(overallScore * 0.85 + Math.random() * 10),
+          keyTopics: similarityReport.topCategories.slice(0, 5).map(c => c.category),
+          languageScore: Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
           entities: nlpResults?.entities || [],
+          unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map(u => u.keyword),
+          safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
         },
         visualAnalysis: {
           detectedObjects: visionResults?.detectedObjects || [],
-          safetyScore: Math.floor(overallScore * 0.9 + Math.random() * 5),
-          concerns: Object.keys(categoryScores).filter((key) =>
-            key.includes('Violence') || key.includes('Horror') || key.includes('Crime') || key.includes('Explicit')
-          ),
+          safetyScore: visionResults?.safeSearchAnnotation
+            ? Math.max(0, 100 - getLikelihoodScore(visionResults.safeSearchAnnotation.adult) * 20
+                - getLikelihoodScore(visionResults.safeSearchAnnotation.violence) * 15)
+            : 100,
+          concerns: [],
           labels: visionResults?.labels || [],
         },
+        multimediaAnalysis: {
+          videoDetected: parsedContent.multimedia.videoDetected,
+          audioDetected: parsedContent.multimedia.audioDetected,
+          mediaTypes: parsedContent.multimedia.mediaTypes,
+          mediaSafetyScore: parsedContent.multimedia.mediaSafetyScore,
+          mediaConcerns: parsedContent.multimedia.mediaConcerns,
+        },
         metadata: {
-          title: metadata.title,
-          description: metadata.description,
-          keywords: metadata.keywords,
-          imageCount: metadata.imageCount,
-          linkCount: metadata.linkCount,
+          title: parsedContent.title,
+          description: parsedContent.description,
+          keywords: parsedContent.keywords,
+          imageCount: parsedContent.imageCount,
+          linkCount: parsedContent.linkCount,
+          videoCount: parsedContent.videoCount,
+          audioCount: parsedContent.audioCount,
         },
       },
-      categoryScores,
-      ageGroupActions,
+      childSafetyAnalysis: {
+        overallRisk: childSafetyAnalysis.riskLevel,
+        riskCategories,
+        depthAnalysis: {
+          titleSafe,
+          metadataSafe,
+          contentSafe,
+          mediaSafe,
+        },
+      },
       timestamp: new Date().toISOString(),
       analysisMethod: visionClient && languageClient ? 'live' : 'demo',
     };
 
+    // Add vision concerns if detected
+    if (visionResults?.safeSearchAnnotation) {
+      if (getLikelihoodScore(visionResults.safeSearchAnnotation.adult) >= 3) {
+        result.contentAnalysis.visualAnalysis.concerns.push('Adult content detected');
+      }
+      if (getLikelihoodScore(visionResults.safeSearchAnnotation.violence) >= 3) {
+        result.contentAnalysis.visualAnalysis.concerns.push('Violence detected');
+      }
+      if (getLikelihoodScore(visionResults.safeSearchAnnotation.racy) >= 3) {
+        result.contentAnalysis.visualAnalysis.concerns.push('Racy content detected');
+      }
+    }
+
     return result;
   } catch (error) {
     console.error('Error in live analysis, falling back to demo mode:', error);
-    // Fallback to demo mode if live analysis fails
     return generateDemoAnalysis(url);
   }
 }
 
 /**
- * Fallback demo analysis (used when Google Cloud APIs are not available)
+ * Fallback demo analysis when live analysis fails
  */
 function generateDemoAnalysis(url: string): ScanResult {
   const urlLower = url.toLowerCase();
 
-  const hasNews = urlLower.includes('news') || urlLower.includes('cnn') || urlLower.includes('bbc');
-  const hasGaming = urlLower.includes('game') || urlLower.includes('steam') || urlLower.includes('xbox');
-  const hasEducational = urlLower.includes('edu') || urlLower.includes('learn') || urlLower.includes('wiki');
-  const hasSocial = urlLower.includes('facebook') || urlLower.includes('instagram') || urlLower.includes('tiktok');
-  const hasVideo = urlLower.includes('youtube') || urlLower.includes('video') || urlLower.includes('vimeo');
+  // Check URL for unsafe keywords
+  const childSafetyAnalysis = analyzeChildSafety(urlLower, '', '', []);
 
-  const categoryScores: { [key: string]: { detected: boolean; confidence: number } } = {};
-  let detectedCategories: string[] = [];
+  // Basic URL pattern detection
+  const isEducational = /edu|learn|wiki|school|kids|child/i.test(urlLower);
+  const isNews = /news|cnn|bbc|times/i.test(urlLower);
+  const isSocial = /facebook|instagram|tiktok|twitter|snapchat/i.test(urlLower);
+  const isGaming = /game|steam|xbox|playstation|twitch/i.test(urlLower);
+  const isVideo = /youtube|vimeo|dailymotion/i.test(urlLower);
 
-  if (hasNews) {
-    categoryScores['Crime Footage'] = { detected: true, confidence: 0.65 };
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.45 };
-    detectedCategories.push('Crime Footage', 'Mild Language');
+  // Calculate base scores
+  let baseScore = 75;
+  if (isEducational) baseScore = 95;
+  else if (isSocial) baseScore = 60;
+  else if (isGaming) baseScore = 65;
+  else if (isNews) baseScore = 70;
+  else if (isVideo) baseScore = 70;
+
+  // Apply child safety deductions
+  baseScore -= childSafetyAnalysis.riskScore * 2;
+  baseScore = Math.max(0, Math.min(100, baseScore));
+
+  const ageGroupScores = calculateAgeGroupScores(childSafetyAnalysis, null, 0);
+
+  // Adjust demo scores based on URL patterns
+  if (isEducational) {
+    for (const ag of AGE_GROUPS) {
+      ageGroupScores[ag].score = Math.min(100, ageGroupScores[ag].score + 20);
+      if (ageGroupScores[ag].score >= 80) {
+        ageGroupScores[ag].action = 'ALLOW';
+        ageGroupScores[ag].reason = 'Educational content detected';
+      }
+    }
   }
 
-  if (hasGaming) {
-    categoryScores['Non-Graphic Violence'] = { detected: true, confidence: 0.72 };
-    categoryScores['Heavy Fighting (Sports)'] = { detected: true, confidence: 0.58 };
-    detectedCategories.push('Non-Graphic Violence');
+  if (isSocial) {
+    ageGroupScores['<10'].score = Math.max(0, ageGroupScores['<10'].score - 30);
+    ageGroupScores['10-13'].score = Math.max(0, ageGroupScores['10-13'].score - 20);
+    ageGroupScores['<10'].action = 'GATE';
+    ageGroupScores['<10'].reason = 'Social media requires parental supervision for young children';
+    ageGroupScores['10-13'].action = 'GATE';
+    ageGroupScores['10-13'].reason = 'Social media recommended with parental guidance';
   }
 
-  if (hasEducational) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.95 };
-    detectedCategories.push('Educational Content');
-  }
-
-  if (hasSocial) {
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.55 };
-    categoryScores['Strong Language'] = { detected: true, confidence: 0.35 };
-    detectedCategories.push('Mild Language');
-  }
-
-  if (hasVideo) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.40 };
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.50 };
-  }
-
-  if (detectedCategories.length === 0) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.70 };
-    categoryScores['Mild Language'] = { detected: true, confidence: 0.30 };
-    detectedCategories.push('Educational Content');
-  }
-
-  const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores);
+  const overallScore = Math.round(
+    Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
+  );
 
   return {
     url,
     overallScore,
+    ageGroupScores,
     contentAnalysis: {
       textAnalysis: {
-        sentiment: overallScore > 70 ? 'Positive' : overallScore > 40 ? 'Neutral' : 'Concerning',
-        keyTopics: detectedCategories.length > 0 ? detectedCategories : ['General Content'],
-        languageScore: Math.floor(overallScore * 0.8 + Math.random() * 15),
+        sentiment: 'Neutral',
+        keyTopics: isEducational ? ['Education'] : isNews ? ['News'] : isSocial ? ['Social Media'] : ['General'],
+        languageScore: baseScore,
+        unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map(u => u.keyword),
+        safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
       },
       visualAnalysis: {
-        detectedObjects: hasVideo ? ['people', 'text', 'indoor scene'] : ['webpage', 'text', 'images'],
-        safetyScore: Math.floor(overallScore * 0.85 + Math.random() * 10),
-        concerns: detectedCategories.filter((c) =>
-          c.includes('Violence') || c.includes('Horror') || c.includes('Crime') || c.includes('Explicit')
-        ),
+        detectedObjects: [],
+        safetyScore: baseScore,
+        concerns: [],
+      },
+      multimediaAnalysis: {
+        videoDetected: isVideo,
+        audioDetected: false,
+        mediaTypes: isVideo ? ['video'] : [],
+        mediaSafetyScore: 100,
+        mediaConcerns: [],
       },
       metadata: {
-        title: 'Demo Mode - No metadata available',
-        description: 'Using pattern-based analysis',
+        title: 'Demo Mode Analysis',
+        description: 'URL-based pattern analysis (live content not fetched)',
         keywords: [],
         imageCount: 0,
         linkCount: 0,
+        videoCount: isVideo ? 1 : 0,
+        audioCount: 0,
       },
     },
-    categoryScores,
-    ageGroupActions,
+    childSafetyAnalysis: {
+      overallRisk: childSafetyAnalysis.riskLevel,
+      riskCategories: childSafetyAnalysis.unsafeKeywordsFound.map(u => ({
+        category: u.category,
+        severity: CHILD_SAFETY_RISKS.find(r => r.category === u.category)?.severity || 'low',
+        matchCount: u.count,
+        matchedKeywords: [u.keyword],
+        contextSnippets: u.context,
+      })),
+      depthAnalysis: {
+        titleSafe: true,
+        metadataSafe: true,
+        contentSafe: childSafetyAnalysis.riskLevel === 'safe',
+        mediaSafe: true,
+      },
+    },
     timestamp: new Date().toISOString(),
     analysisMethod: 'demo',
   };
 }
+
+// ============================================================================
+// API ROUTE HANDLER
+// ============================================================================
 
 export async function POST(request: NextRequest) {
   try {
@@ -650,8 +958,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
     }
 
-    // Perform AI analysis
-    const result = await analyzeUrlWithAI(url);
+    // Perform child safety analysis
+    const result = await analyzeUrlForChildSafety(url);
 
     return NextResponse.json(result);
   } catch (error) {
