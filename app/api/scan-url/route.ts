@@ -160,6 +160,8 @@ const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
 // ============================================================================
 // INTERFACES
 // ============================================================================
+import { CONTENT_RULES } from '@/lib/content-rules';
+import type { protos } from '@google-cloud/vision';
 
 interface ScanResult {
   url: string;
@@ -797,10 +799,27 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
 /**
  * Convert Google Cloud Vision likelihood to numeric score
  */
-function getLikelihoodScore(likelihood: string | number | null | undefined): number {
-  const likelihoodStr = String(likelihood || 'VERY_UNLIKELY');
+function getLikelihoodScore(
+  likelihood: protos.google.cloud.vision.v1.Likelihood | string | null | undefined
+): number {
+  if (typeof likelihood === 'number') {
+    switch (likelihood) {
+      case 5:
+        return 4;
+      case 4:
+        return 3;
+      case 3:
+        return 2;
+      case 2:
+        return 1;
+      case 1:
+        return 0;
+      default:
+        return 0;
+    }
+  }
 
-  switch (likelihoodStr) {
+  switch (likelihood) {
     case 'VERY_UNLIKELY':
     case '0':
       return 0;
