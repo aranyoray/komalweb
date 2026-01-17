@@ -1255,7 +1255,7 @@ interface SearchAnalysisData {
   siteDescription: string;
 }
 
-async function searchForUrlInfo(targetUrl: string): Promise<SearchAnalysisData> {
+async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = false): Promise<SearchAnalysisData> {
   console.log(`🔎 [SEARCH FALLBACK] Searching for info about: ${targetUrl}`);
   
   const searchResults: SearchResult[] = [];
@@ -1265,10 +1265,15 @@ async function searchForUrlInfo(targetUrl: string): Promise<SearchAnalysisData> 
   let siteDescription = '';
   
   try {
-    // Extract domain for search query
-    const urlObj = new URL(targetUrl);
-    const domain = urlObj.hostname.replace('www.', '');
-    const searchQuery = encodeURIComponent(`${domain} site review safety`);
+    // For keyword search, use the keyword directly; for URLs, extract domain
+    let searchTerm: string;
+    if (isKeywordSearch) {
+      searchTerm = targetUrl; // targetUrl is actually a keyword in this case
+    } else {
+      const urlObj = new URL(targetUrl);
+      searchTerm = urlObj.hostname.replace('www.', '');
+    }
+    const searchQuery = encodeURIComponent(`${searchTerm} ${isKeywordSearch ? 'content safety for kids' : 'site review safety'}`);
     
     // Method 1: Try DuckDuckGo HTML (no API key needed)
     const ddgUrl = `https://html.duckduckgo.com/html/?q=${searchQuery}`;
@@ -1336,38 +1341,40 @@ async function searchForUrlInfo(targetUrl: string): Promise<SearchAnalysisData> 
       console.log(`✅ [SEARCH] Found ${imageUrls.length} images from search`);
     }
     
-    // Method 3: Try to get site info from common review sites
-    const reviewSites = [
-      `https://www.trustpilot.com/review/${domain}`,
-      `https://www.sitejabber.com/reviews/${domain}`,
-    ];
-    
-    for (const reviewUrl of reviewSites) {
-      try {
-        const reviewResp = await fetch(reviewUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' },
-          signal: AbortSignal.timeout(2000),
-        });
-        
-        if (reviewResp.ok) {
-          const reviewHtml = await reviewResp.text();
-          const $review = cheerio.load(reviewHtml);
+    // Method 3: Try to get site info from common review sites (only for URL searches)
+    if (!isKeywordSearch) {
+      const reviewSites = [
+        `https://www.trustpilot.com/review/${searchTerm}`,
+        `https://www.sitejabber.com/reviews/${searchTerm}`,
+      ];
+      
+      for (const reviewUrl of reviewSites) {
+        try {
+          const reviewResp = await fetch(reviewUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' },
+            signal: AbortSignal.timeout(2000),
+          });
           
-          const reviewText = $review('meta[name="description"]').attr('content') || '';
-          if (reviewText) {
-            combinedText += ` ${reviewText}`;
-            siteDescription = reviewText.slice(0, 500);
+          if (reviewResp.ok) {
+            const reviewHtml = await reviewResp.text();
+            const $review = cheerio.load(reviewHtml);
+            
+            const reviewText = $review('meta[name="description"]').attr('content') || '';
+            if (reviewText) {
+              combinedText += ` ${reviewText}`;
+              siteDescription = reviewText.slice(0, 500);
+            }
+            
+            siteName = $review('title').text() || searchTerm;
+            break;
           }
-          
-          siteName = $review('title').text() || domain;
-          break;
-        }
-      } catch { /* continue */ }
+        } catch { /* continue */ }
+      }
     }
     
     // Fallback site name
-    if (!siteName) siteName = domain;
-    if (!siteDescription) siteDescription = combinedText.slice(0, 500) || `Analysis based on search results for ${domain}`;
+    if (!siteName) siteName = isKeywordSearch ? `Keyword: ${searchTerm}` : searchTerm;
+    if (!siteDescription) siteDescription = combinedText.slice(0, 500) || `Analysis based on search results for ${searchTerm}`;
     
   } catch (error) {
     console.error('Search fallback error:', error);
@@ -1725,7 +1732,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     } else if (useSearchFallback) {
       // No images on page - search for images
       console.log(`🔎 [KOMAL] No images on page, searching for images...`);
-      const searchData = await searchForUrlInfo(url);
+      const searchData = await searchForUrlInfo(url, false);
       trackStep('Search Images', `Found ${searchData.imageUrls.length} images from search`);
       
       if (visionClient && searchData.imageUrls.length > 0) {
@@ -1754,8 +1761,14 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   } else {
     // Fetch failed completely - use full search fallback
     console.log(`🔎 [KOMAL] Using full search fallback for analysis`);
-    const searchData = await searchForUrlInfo(url);
+    const searchData = await searchForUrlInfo(url, false);
     trackStep('Search Fallback', `${searchData.searchResults.length} results, ${searchData.imageUrls.length} images`);
+    
+    // Check if we got any useful data from search
+    if (searchData.searchResults.length === 0 && searchData.combinedText.length < 50) {
+      console.log(`❌ [KOMAL] Search fallback returned no useful data`);
+      throw new Error('ANALYSIS_FAILED');
+    }
     
     const searchAnalysis = await analyzeFromSearchResults(url, searchData, trackStep);
     childSafetyAnalysis = searchAnalysis.childSafetyAnalysis;
@@ -2037,6 +2050,169 @@ function generateDemoAnalysisFast(url: string, priorTimeMs: number = 0): ScanRes
 }
 
 // ============================================================================
+// HELPER: Check if input is a valid URL
+// ============================================================================
+function isValidUrl(input: string): boolean {
+  try {
+    const url = new URL(input);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+// ============================================================================
+// KEYWORD ANALYSIS (Similar to URL analysis but uses search only)
+// ============================================================================
+async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
+  const startTime = Date.now();
+  const performanceSteps: { name: string; durationMs: number; details?: string }[] = [];
+  let lastStepTime = startTime;
+  
+  const trackStep = (name: string, details?: string) => {
+    const now = Date.now();
+    performanceSteps.push({ name, durationMs: now - lastStepTime, details });
+    lastStepTime = now;
+  };
+  
+  console.log(`\n🔍 [KOMAL ANALYSIS] Starting keyword analysis for: "${keyword}"`);
+  trackStep('Initialize', 'Setting up clients');
+  initializeClients();
+
+  // Use search fallback for keyword analysis
+  console.log(`🔎 [KOMAL] Performing keyword search analysis`);
+  const searchData = await searchForUrlInfo(keyword, true);
+  trackStep('Keyword Search', `${searchData.searchResults.length} results, ${searchData.imageUrls.length} images`);
+  
+  // Check if we got any useful data
+  if (searchData.searchResults.length === 0 && searchData.combinedText.length < 50) {
+    throw new Error('ANALYSIS_FAILED');
+  }
+  
+  const searchAnalysis = await analyzeFromSearchResults(keyword, searchData, trackStep);
+  const childSafetyAnalysisRaw = searchAnalysis.childSafetyAnalysis;
+  const visionResults = searchAnalysis.visionResults;
+  const nlpResults = searchAnalysis.nlpResults;
+  const parsed = searchAnalysis.parsed;
+
+  // Calculate scores - pass 0 for multimedia risk since we don't have multimedia for keywords
+  const ageGroupScores = calculateAgeGroupScores(
+    childSafetyAnalysisRaw,
+    visionResults?.safeSearchAnnotation || null,
+    0,
+    keyword // Use keyword for blocking checks
+  );
+
+  // Check if all ages are blocked
+  const allAgesBlocked = AGE_GROUPS.every(ag => ageGroupScores[ag].action === 'BLOCK');
+  
+  // Calculate overall score
+  let overallScore = allAgesBlocked 
+    ? 0 
+    : Math.round(Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length);
+
+  // Build risk categories (similar to analyzeUrlOptimized)
+  let riskCategories = childSafetyAnalysisRaw.unsafeKeywordsFound.slice(0, 5).map(unsafe => ({
+    category: unsafe.category,
+    severity: CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category)?.severity || 'low',
+    matchCount: unsafe.count,
+    matchedKeywords: [unsafe.keyword],
+    contextSnippets: unsafe.context,
+  }));
+
+  // Override risk level if all ages blocked
+  const finalRiskLevel = allAgesBlocked ? 'dangerous' : childSafetyAnalysisRaw.riskLevel;
+
+  // Depth analysis
+  const titleLower = (searchData.siteName || '').toLowerCase();
+  const metaLower = (searchData.siteDescription || '').toLowerCase();
+  const titleSafe = allAgesBlocked ? false : !childSafetyAnalysisRaw.unsafeKeywordsFound.some(u => titleLower.includes(u.keyword));
+  const metadataSafe = allAgesBlocked ? false : !childSafetyAnalysisRaw.unsafeKeywordsFound.some(u => metaLower.includes(u.keyword));
+  const contentSafe = allAgesBlocked ? false : (childSafetyAnalysisRaw.riskLevel === 'safe' || childSafetyAnalysisRaw.riskLevel === 'caution');
+
+  const totalTime = Date.now() - startTime;
+  trackStep('Complete', `Total: ${(totalTime / 1000).toFixed(2)}s`);
+
+  // Log performance to console
+  console.log(`\n📊 [KOMAL PERFORMANCE] Keyword Analysis: "${keyword}"`);
+  console.log(`   Total time: ${(totalTime / 1000).toFixed(2)}s`);
+  performanceSteps.forEach(step => {
+    console.log(`   ${step.name}: ${step.durationMs}ms ${step.details ? `(${step.details})` : ''}`);
+  });
+
+  // Calculate visual safety score
+  let visualSafetyScore = 85;
+  const visualConcerns: string[] = [];
+  if (visionResults?.safeSearchAnnotation) {
+    const ss = visionResults.safeSearchAnnotation;
+    let penalty = 0;
+    if (ss.adult === 'LIKELY' || ss.adult === 'VERY_LIKELY') penalty += 40;
+    if (ss.violence === 'LIKELY' || ss.violence === 'VERY_LIKELY') penalty += 30;
+    if (ss.racy === 'LIKELY' || ss.racy === 'VERY_LIKELY') penalty += 20;
+    visualSafetyScore = Math.max(0, 100 - penalty);
+    
+    if (ss.adult === 'LIKELY' || ss.adult === 'VERY_LIKELY') visualConcerns.push('Adult content detected');
+    if (ss.violence === 'LIKELY' || ss.violence === 'VERY_LIKELY') visualConcerns.push('Violence detected');
+    if (ss.racy === 'LIKELY' || ss.racy === 'VERY_LIKELY') visualConcerns.push('Suggestive content detected');
+  }
+
+  return {
+    url: keyword,
+    overallScore,
+    ageGroupScores,
+    contentAnalysis: {
+      textAnalysis: {
+        sentiment: allAgesBlocked ? 'Unsafe' : (nlpResults?.sentiment || 'Neutral'),
+        keyTopics: allAgesBlocked ? ['Flagged Content'] : (parsed.keywords.length > 0 ? parsed.keywords : ['General Content']),
+        languageScore: allAgesBlocked ? 0 : Math.max(0, 85 - childSafetyAnalysisRaw.unsafeKeywordsFound.length * 5),
+        entities: nlpResults?.entities || [],
+        unsafeKeywordsFound: childSafetyAnalysisRaw.unsafeKeywordsFound.map(k => k.keyword),
+        safeKeywordsFound: childSafetyAnalysisRaw.safeKeywordsFound,
+      },
+      visualAnalysis: {
+        safetyScore: allAgesBlocked ? 0 : visualSafetyScore,
+        detectedObjects: allAgesBlocked ? ['Blocked'] : (visionResults?.detectedObjects || []),
+        concerns: allAgesBlocked ? ['Content blocked for all age groups'] : visualConcerns,
+        labels: visionResults?.labels || [],
+      },
+      multimediaAnalysis: {
+        videoDetected: false,
+        audioDetected: false,
+        mediaTypes: [],
+        mediaSafetyScore: allAgesBlocked ? 0 : 85,
+        mediaConcerns: allAgesBlocked ? ['Content blocked'] : [],
+      },
+      metadata: {
+        title: searchData.siteName || `Search results for: ${keyword}`,
+        description: '', // No description for keyword analysis
+        keywords: parsed.keywords || [],
+        imageCount: searchData.imageUrls.length,
+        linkCount: searchData.searchResults.length,
+        videoCount: 0,
+        audioCount: 0,
+      },
+    },
+    childSafetyAnalysis: {
+      overallRisk: finalRiskLevel,
+      riskCategories,
+      depthAnalysis: {
+        titleSafe,
+        metadataSafe,
+        contentSafe,
+        mediaSafe: !allAgesBlocked,
+      },
+    },
+    timestamp: new Date().toISOString(),
+    analysisMethod: 'live',
+    usedSearchFallback: true,
+    performanceMetrics: {
+      totalTimeMs: totalTime,
+      steps: performanceSteps,
+    },
+  };
+}
+
+// ============================================================================
 // API ROUTE HANDLER
 // ============================================================================
 
@@ -2045,20 +2221,46 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { url } = body;
 
-    if (!url) {
-      return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+    if (!url || typeof url !== 'string' || url.trim().length === 0) {
+      return NextResponse.json({ error: 'URL or keyword is required' }, { status: 400 });
     }
 
-    try {
-      new URL(url);
-    } catch {
-      return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+    const input = url.trim();
+    
+    // Check if input is a valid URL or a keyword
+    if (isValidUrl(input)) {
+      // It's a valid URL - analyze it
+      try {
+        const result = await analyzeUrlOptimized(input);
+        return NextResponse.json(result);
+      } catch (error) {
+        // If URL analysis fails completely, return error
+        console.error('URL analysis failed:', error);
+        if (error instanceof Error && error.message === 'ANALYSIS_FAILED') {
+          return NextResponse.json({ 
+            error: 'The entered link could not be analyzed. Please re-check the URL and try again.' 
+          }, { status: 400 });
+        }
+        return NextResponse.json({ error: 'Failed to analyze URL' }, { status: 500 });
+      }
+    } else {
+      // Not a valid URL - treat as keyword search
+      console.log(`📝 [KOMAL] Input "${input}" is not a URL, treating as keyword search`);
+      try {
+        const result = await analyzeKeywordOptimized(input);
+        return NextResponse.json(result);
+      } catch (error) {
+        console.error('Keyword analysis failed:', error);
+        if (error instanceof Error && error.message === 'ANALYSIS_FAILED') {
+          return NextResponse.json({ 
+            error: 'The entered link/keyword could not be analyzed. Please re-check and try again.' 
+          }, { status: 400 });
+        }
+        return NextResponse.json({ error: 'Failed to analyze keyword' }, { status: 500 });
+      }
     }
-
-    const result = await analyzeUrlOptimized(url);
-    return NextResponse.json(result);
   } catch (error) {
-    console.error('Error scanning URL:', error);
-    return NextResponse.json({ error: 'Failed to scan URL' }, { status: 500 });
+    console.error('Error in scan endpoint:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }

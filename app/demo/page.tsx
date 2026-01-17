@@ -97,6 +97,7 @@ export default function DemoPage() {
   const [modalMessage, setModalMessage] = useState({ type: '', text: '' });
 
   const reportRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const safeKeywords = result?.contentAnalysis.textAnalysis.safeKeywordsFound ?? [];
   const renderSafeKeywords = () => {
     if (safeKeywords.length === 0) {
@@ -124,7 +125,7 @@ export default function DemoPage() {
 
   const handleScan = async () => {
     if (!url.trim()) {
-      setError('Please enter a URL');
+      setError('Please enter a URL or keyword');
       return;
     }
 
@@ -133,9 +134,24 @@ export default function DemoPage() {
     setResult(null);
 
     try {
-      let normalizedUrl = url.trim();
-      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-        normalizedUrl = 'https://' + normalizedUrl;
+      let input = url.trim();
+      
+      // Check if input looks like a URL (has domain-like pattern with dots or protocol)
+      const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(input) || 
+                          input.includes('.com') || 
+                          input.includes('.org') || 
+                          input.includes('.net') ||
+                          input.includes('.edu') ||
+                          input.includes('.gov') ||
+                          input.includes('.io') ||
+                          input.includes('.co') ||
+                          input.includes('.in') ||
+                          input.startsWith('http://') || 
+                          input.startsWith('https://');
+      
+      // Only normalize as URL if it looks like a URL
+      if (looksLikeUrl && !input.startsWith('http://') && !input.startsWith('https://')) {
+        input = 'https://' + input;
       }
 
       const response = await fetch('/api/scan-url', {
@@ -143,22 +159,27 @@ export default function DemoPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: normalizedUrl }),
+        body: JSON.stringify({ url: input }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to scan URL');
+        throw new Error(data.error || 'Failed to analyze');
       }
 
       setResult(data);
+      
+      // Scroll to results section after a brief delay for rendering
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       
       // Log performance metrics to browser console
       if (data.performanceMetrics) {
         const { totalTimeMs, steps } = data.performanceMetrics;
         console.log('\n%c🔍 KOMAL URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
-        console.log(`%c📍 URL: ${normalizedUrl}`, 'color: #666;');
+        console.log(`%c📍 Input: ${input}`, 'color: #666;');
         console.log(`%c⏱️  Total Time: ${(totalTimeMs / 1000).toFixed(3)}s`, 'color: #2196F3; font-weight: bold;');
         console.log('%c\n📊 Step Breakdown:', 'color: #6B4E71; font-weight: bold;');
         console.table(steps.map((step: { name: string; durationMs: number; details?: string }) => ({
@@ -198,7 +219,6 @@ export default function DemoPage() {
         body: JSON.stringify({
           email: emailInput.trim(),
           report: result,
-          senderEmail: emailInput.trim(),
         }),
       });
 
@@ -513,7 +533,7 @@ export default function DemoPage() {
                 </span>
               </h1>
               <p className="text-sm sm:text-base md:text-lg text-text-dim max-w-[700px] mx-auto px-2">
-                Enter any URL to analyze content safety for children using deep keyword analysis,
+                Enter any URL or keyword to analyze content safety for children using deep keyword analysis,
                 Vision AI, NLP, and multimedia scanning.
               </p>
             </div>
@@ -536,7 +556,7 @@ export default function DemoPage() {
                         handleScan();
                       }
                     }}
-                    placeholder="example.com"
+                    placeholder="Enter URL or keyword (e.g., example.com or violence)"
                     className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:border-primary transition-colors"
                     disabled={loading}
                   />
@@ -550,12 +570,12 @@ export default function DemoPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Scanning...
+                      Analyzing...
                     </>
                   ) : (
                     <>
                       <Search className="w-5 h-5 mr-2" />
-                      Scan URL
+                      Analyze
                     </>
                   )}
                 </Button>
@@ -615,7 +635,7 @@ export default function DemoPage() {
 
               {/* Overall Score & Child Safety Risk */}
               <ScrollReveal delay={0.2}>
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
+                <div ref={resultsRef} className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-primary">Overall Safety Score</h2>
                     <div className={`${getScoreBackground(displayOverallScore)} px-6 py-3 rounded-2xl`}>
@@ -986,9 +1006,9 @@ export default function DemoPage() {
                       <Search className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                     </div>
                     <div className="text-left sm:text-center">
-                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">1. Enter URL</h3>
+                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">1. Enter URL or Keyword</h3>
                       <p className="text-xs sm:text-sm text-text-dim">
-                        Provide any website URL to analyze
+                        Provide any website URL or keyword to analyze
                       </p>
                     </div>
                   </div>
