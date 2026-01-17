@@ -3,125 +3,184 @@ import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 import puppeteer from 'puppeteer';
-import { loadContentRulesFromCSV, parseAction, CategoryRule } from '@/lib/content-rules';
 import {
   loadAndVectorizeKeywords,
   extractWordFrequencies,
   findSimilarKeywords,
-  generateSimilarityReport,
   deepContextSearch,
+  generateSimilarityReport,
   SimilarityMatch,
+  CategoryKeywords,
 } from '@/lib/keyword-vectorization';
 
-// Content safety rules based on komalkids.com/content-safety
-const CONTENT_RULES = {
-  ageGroups: ['<10', '10-13', '13-18', '18+'],
-  categories: {
-    'Graphic Violence': {
-      '<10': 'BLOCK',
-      '10-13': 'BLOCK',
-      '13-18': 'BLOCK',
-      '18+': 'GATE',
-    },
-    'Non-Graphic Violence': {
-      '<10': 'GATE',
-      '10-13': 'GATE',
-      '13-18': 'ALLOW',
-      '18+': 'ALLOW',
-    },
-    'Heavy Fighting (Sports)': {
-      '<10': 'GATE',
-      '10-13': 'GATE',
-      '13-18': 'ALLOW',
-      '18+': 'ALLOW',
-    },
-    'Horror/Jumpscares': {
-      '<10': 'BLOCK',
-      '10-13': 'GATE',
-      '13-18': 'GATE',
-      '18+': 'ALLOW',
-    },
-    'Crime Footage': {
-      '<10': 'BLOCK',
-      '10-13': 'GATE',
-      '13-18': 'GATE',
-      '18+': 'ALLOW',
-    },
-    'Explicit Content': {
-      '<10': 'BLOCK',
-      '10-13': 'BLOCK',
-      '13-18': 'BLOCK',
-      '18+': 'GATE',
-    },
-    'Educational Content': {
-      '<10': 'ALLOW',
-      '10-13': 'ALLOW',
-      '13-18': 'ALLOW',
-      '18+': 'ALLOW',
-    },
-    'Mild Language': {
-      '<10': 'GATE',
-      '10-13': 'GATE',
-      '13-18': 'ALLOW',
-      '18+': 'ALLOW',
-    },
-    'Strong Language': {
-      '<10': 'BLOCK',
-      '10-13': 'GATE',
-      '13-18': 'GATE',
-      '18+': 'ALLOW',
-    },
-    'Substance Use': {
-      '<10': 'BLOCK',
-      '10-13': 'BLOCK',
-      '13-18': 'GATE',
-      '18+': 'ALLOW',
-    },
-  },
+// ============================================================================
+// CHILD SAFETY FOCUSED SCORING SYSTEM
+// ============================================================================
+
+// Age groups for content safety analysis
+const AGE_GROUPS = ['<10', '10-13', '13-16', '16+'] as const;
+type AgeGroup = typeof AGE_GROUPS[number];
+
+// Comprehensive list of adult/unsafe keywords for child safety
+const CHILD_UNSAFE_KEYWORDS = {
+  // Explicit adult content
+  explicit: [
+    'porn', 'xxx', 'sex', 'nsfw', 'nude', 'naked', 'erotic', 'fetish',
+    'cam', 'webcam', 'livecam', 'chaturbate', 'onlyfans', 'fansly', 'manyvids',
+    'xvideos', 'xnxx', 'pornhub', 'redtube', 'youporn', 'xhamster', 'brazzers',
+    'hentai', 'rule34', 'e621', 'gelbooru', 'danbooru', 'nhentai',
+    'escort', 'hooker', 'prostitut', 'brothel', 'stripper',
+    'milf', 'anal', 'blowjob', 'cumshot', 'orgasm', 'masturbat',
+    'stripchat', 'bongacams', 'livejasmin', 'camsoda',
+    'slutty', 'horny', 'kinky', 'bdsm', 'bondage', 'dominat', 'submissive',
+    'threesome', 'gangbang', 'orgy', 'incest', 'rape', 'molest',
+    'penis', 'vagina', 'cock', 'dick', 'pussy', 'tits', 'boobs', 'breasts',
+    'f*ck', 'fuk', 'fuq', 'phuck', 'fck',
+  ],
+  // Violence and gore
+  violence: [
+    'gore', 'gory', 'mutilat', 'dismember', 'decapitat', 'behead',
+    'torture', 'tortur', 'brutal', 'savage', 'slaughter', 'massacre',
+    'murder', 'kill', 'killing', 'death', 'dead', 'corpse', 'cadaver',
+    'blood', 'bloody', 'bleeding', 'wound', 'injury', 'trauma',
+    'weapon', 'gun', 'firearm', 'knife', 'sword', 'bomb', 'explosive',
+    'shoot', 'shooting', 'shot', 'stab', 'stabbing', 'attack',
+    'suicide', 'suicidal', 'self-harm', 'selfharm', 'cutting',
+    'terrorist', 'terrorism', 'extremist', 'radical',
+  ],
+  // Drugs and substances
+  substances: [
+    'drug', 'drugs', 'cocaine', 'heroin', 'meth', 'methamphetamine',
+    'marijuana', 'cannabis', 'weed', 'pot', 'hash', 'hashish',
+    'lsd', 'acid', 'ecstasy', 'mdma', 'ketamine', 'pcp',
+    'opioid', 'opiate', 'fentanyl', 'morphine', 'overdose',
+    'alcohol', 'drunk', 'intoxicat', 'beer', 'wine', 'liquor', 'vodka', 'whiskey',
+    'smoking', 'cigarette', 'tobacco', 'vape', 'vaping', 'juul',
+    'addiction', 'addict', 'rehab', 'withdrawal',
+  ],
+  // Gambling
+  gambling: [
+    'gambling', 'gamble', 'casino', 'bet', 'betting', 'poker',
+    'slot', 'slots', 'roulette', 'blackjack', 'lottery',
+    'sportsbook', 'bookmaker', 'wager', 'odds',
+  ],
+  // Hate and discrimination
+  hate: [
+    'racist', 'racism', 'nazi', 'fascist', 'supremacist',
+    'hate', 'hatred', 'bigot', 'discriminat', 'prejudice',
+    'slur', 'derogatory', 'offensive',
+    'antisemit', 'islamophob', 'homophob', 'transphob',
+  ],
+  // Profanity (strong)
+  profanity: [
+    'fuck', 'shit', 'ass', 'asshole', 'bitch', 'bastard',
+    'damn', 'crap', 'piss', 'cunt', 'whore', 'slut',
+    'nigger', 'nigga', 'faggot', 'retard',
+  ],
+  // Dangerous activities
+  dangerous: [
+    'challenge', 'dare', 'stunt', 'prank', 'dangerous',
+    'blackout', 'choking', 'tide pod', 'cinnamon challenge',
+    'fire challenge', 'skull breaker',
+  ],
+  // Predatory behavior indicators
+  predatory: [
+    'grooming', 'predator', 'pedophil', 'minor', 'underage',
+    'child abuse', 'trafficking', 'exploit',
+  ],
 };
 
-// Adult keywords to detect in domain names - results in immediate 0 score and BLOCK for all ages
-const ADULT_DOMAIN_KEYWORDS = [
-  'porn', 'xxx', 'sex', 'adult', 'nsfw', 'nude', 'naked', 'erotic', 'fetish',
-  'cam', 'webcam', 'livecam', 'chaturbate', 'onlyfans', 'fansly', 'manyvids',
-  'xvideos', 'xnxx', 'pornhub', 'redtube', 'youporn', 'xhamster', 'brazzers',
-  'hentai', 'rule34', 'e621', 'gelbooru', 'danbooru',
-  'escort', 'hooker', 'prostitut', 'brothel',
-  'milf', 'teen', 'anal', 'blowjob', 'cumshot', 'orgasm',
-  'stripchat', 'bongacams', 'livejasmin', 'camsoda',
-  'slutty', 'horny', 'kinky', 'bdsm', 'bondage',
+// Safe/educational content indicators
+const CHILD_SAFE_KEYWORDS = [
+  'educational', 'education', 'learn', 'learning', 'teach', 'teaching',
+  'school', 'homework', 'study', 'student', 'classroom',
+  'kids', 'children', 'family', 'parents', 'child-friendly',
+  'cartoon', 'animation', 'animated', 'disney', 'pixar', 'nickelodeon',
+  'science', 'math', 'history', 'geography', 'reading', 'writing',
+  'arts', 'crafts', 'music', 'dance', 'sports', 'games',
+  'nature', 'animals', 'wildlife', 'environment',
+  'safe', 'appropriate', 'suitable', 'wholesome',
+  'pbs', 'sesame', 'national geographic kids', 'discovery kids',
 ];
 
-/**
- * Check if domain contains adult keywords
- */
-function isAdultDomain(url: string): { isAdult: boolean; matchedKeyword?: string } {
-  try {
-    const urlObj = new URL(url);
-    const domain = urlObj.hostname.toLowerCase();
-    const pathname = urlObj.pathname.toLowerCase();
-    const fullUrl = (domain + pathname).toLowerCase();
-
-    for (const keyword of ADULT_DOMAIN_KEYWORDS) {
-      if (fullUrl.includes(keyword)) {
-        return { isAdult: true, matchedKeyword: keyword };
-      }
-    }
-    return { isAdult: false };
-  } catch {
-    return { isAdult: false };
-  }
+// Child safety risk levels
+interface ChildSafetyRisk {
+  category: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  deduction: {
+    '<10': number;
+    '10-13': number;
+    '13-16': number;
+    '16+': number;
+  };
 }
+
+const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
+  {
+    category: 'explicit',
+    severity: 'critical',
+    deduction: { '<10': 100, '10-13': 100, '13-16': 100, '16+': 80 },
+  },
+  {
+    category: 'predatory',
+    severity: 'critical',
+    deduction: { '<10': 100, '10-13': 100, '13-16': 100, '16+': 100 },
+  },
+  {
+    category: 'violence',
+    severity: 'high',
+    deduction: { '<10': 80, '10-13': 70, '13-16': 50, '16+': 30 },
+  },
+  {
+    category: 'substances',
+    severity: 'high',
+    deduction: { '<10': 90, '10-13': 80, '13-16': 60, '16+': 40 },
+  },
+  {
+    category: 'gambling',
+    severity: 'high',
+    deduction: { '<10': 90, '10-13': 85, '13-16': 70, '16+': 50 },
+  },
+  {
+    category: 'hate',
+    severity: 'high',
+    deduction: { '<10': 90, '10-13': 85, '13-16': 75, '16+': 60 },
+  },
+  {
+    category: 'profanity',
+    severity: 'medium',
+    deduction: { '<10': 60, '10-13': 50, '13-16': 30, '16+': 15 },
+  },
+  {
+    category: 'dangerous',
+    severity: 'high',
+    deduction: { '<10': 85, '10-13': 75, '13-16': 55, '16+': 35 },
+  },
+];
+
+// ============================================================================
+// INTERFACES
+// ============================================================================
 
 interface ScanResult {
   url: string;
   overallScore: number;
+  ageGroupScores: {
+    [key in AgeGroup]: {
+      score: number;
+      action: 'BLOCK' | 'GATE' | 'ALLOW';
+      reason: string;
+      risks: string[];
+    };
+  };
   contentAnalysis: {
     textAnalysis: {
       sentiment: string;
       keyTopics: string[];
       languageScore: number;
       entities?: string[];
+      unsafeKeywordsFound: string[];
+      safeKeywordsFound: string[];
     };
     visualAnalysis: {
       detectedObjects: string[];
@@ -129,45 +188,51 @@ interface ScanResult {
       concerns: string[];
       labels?: string[];
     };
+    multimediaAnalysis?: {
+      videoDetected: boolean;
+      audioDetected: boolean;
+      mediaTypes: string[];
+      mediaSafetyScore: number;
+      mediaConcerns: string[];
+    };
     metadata: {
       title?: string;
       description?: string;
       keywords?: string[];
       imageCount: number;
       linkCount: number;
+      videoCount: number;
+      audioCount: number;
     };
   };
-  categoryScores: {
-    [category: string]: {
-      detected: boolean;
-      confidence: number;
+  childSafetyAnalysis: {
+    overallRisk: 'safe' | 'caution' | 'unsafe' | 'dangerous';
+    riskCategories: {
+      category: string;
+      severity: string;
+      matchCount: number;
+      matchedKeywords: string[];
+      contextSnippets: string[];
+    }[];
+    depthAnalysis: {
+      titleSafe: boolean;
+      metadataSafe: boolean;
+      contentSafe: boolean;
+      mediaSafe: boolean;
     };
   };
-  ageGroupActions: {
-    [ageGroup: string]: {
-      action: 'BLOCK' | 'GATE' | 'ALLOW';
-      reason: string;
-      score: number;
-    };
-  };
-  keywordSimilarityReport?: {
-    topCategories: Array<{ category: string; matchCount: number; avgScore: number }>;
-    topKeywords: SimilarityMatch[];
-    topWords: Array<{ word: string; frequency: number }>;
-    summary: string;
-    totalMatches: number;
-  };
-  searchSources?: Array<{ url: string; title: string; snippet: string }>;
   timestamp: string;
-  analysisMethod: 'live' | 'demo' | 'search-fallback';
+  analysisMethod: 'live' | 'demo';
 }
 
-// Initialize Google Cloud clients (only if credentials are available)
+// ============================================================================
+// GOOGLE CLOUD CLIENTS
+// ============================================================================
+
 let visionClient: ImageAnnotatorClient | null = null;
 let languageClient: LanguageServiceClient | null = null;
 
 try {
-  // Check if Google Cloud credentials are configured
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_API_KEY) {
     visionClient = new ImageAnnotatorClient({
       apiKey: process.env.GOOGLE_CLOUD_API_KEY,
@@ -180,272 +245,345 @@ try {
   console.warn('Google Cloud APIs not configured, using demo mode:', error);
 }
 
-// Cache vectorized keywords (load once, reuse for all requests)
-let cachedCategoryKeywords: ReturnType<typeof loadAndVectorizeKeywords> | null = null;
-
-function getVectorizedKeywords() {
-  if (!cachedCategoryKeywords) {
-    console.log('Loading and vectorizing keywords from CSV...');
-    cachedCategoryKeywords = loadAndVectorizeKeywords();
-    console.log(`Loaded ${cachedCategoryKeywords.length} categories with keywords`);
-  }
-  return cachedCategoryKeywords;
-}
+// ============================================================================
+// CHILD SAFETY ANALYSIS FUNCTIONS
+// ============================================================================
 
 /**
- * Fetch webpage content with retry logic
+ * Check content for child-unsafe keywords with context analysis
  */
-async function fetchWebpageContent(url: string, retries: number = 2): Promise<string> {
-  const userAgents = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (compatible; KomalBot/1.0; +https://komalkids.com)',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-  ];
+function analyzeChildSafety(
+  text: string,
+  title: string = '',
+  description: string = '',
+  keywords: string[] = []
+): {
+  unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[] }[];
+  safeKeywordsFound: string[];
+  riskScore: number;
+  riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous';
+} {
+  const allContent = `${title} ${description} ${keywords.join(' ')} ${text}`.toLowerCase();
+  const unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[] }[] = [];
+  const safeKeywordsFound: string[] = [];
 
-  let lastError: Error | null = null;
+  // Check for unsafe keywords in each category
+  for (const [category, keywords] of Object.entries(CHILD_UNSAFE_KEYWORDS)) {
+    for (const keyword of keywords) {
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      const matches = allContent.match(regex);
+      if (matches && matches.length > 0) {
+        // Extract context snippets
+        const contexts: string[] = [];
+        let searchIndex = 0;
+        const lowerContent = allContent.toLowerCase();
+        while (contexts.length < 3) {
+          const pos = lowerContent.indexOf(keyword.toLowerCase(), searchIndex);
+          if (pos === -1) break;
+          const start = Math.max(0, pos - 30);
+          const end = Math.min(allContent.length, pos + keyword.length + 30);
+          contexts.push('...' + allContent.slice(start, end).trim() + '...');
+          searchIndex = pos + 1;
+        }
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': userAgents[attempt % userAgents.length],
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Connection': 'keep-alive',
-        },
-        signal: controller.signal,
-        redirect: 'follow',
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const text = await response.text();
-      if (text && text.trim().length > 0) {
-        return text;
-      }
-      throw new Error('Empty response received');
-    } catch (error) {
-      lastError = error as Error;
-      console.error(`Fetch attempt ${attempt + 1} failed:`, error);
-
-      if (attempt < retries) {
-        // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        unsafeKeywordsFound.push({
+          category,
+          keyword,
+          count: matches.length,
+          context: contexts,
+        });
       }
     }
   }
 
-  throw lastError || new Error('Failed to fetch webpage after retries');
+  // Check for safe keywords
+  for (const keyword of CHILD_SAFE_KEYWORDS) {
+    if (allContent.includes(keyword.toLowerCase())) {
+      safeKeywordsFound.push(keyword);
+    }
+  }
+
+  // Calculate risk score
+  let riskScore = 0;
+  for (const unsafe of unsafeKeywordsFound) {
+    const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
+    if (risk) {
+      const severityMultiplier = risk.severity === 'critical' ? 10 :
+                                  risk.severity === 'high' ? 6 :
+                                  risk.severity === 'medium' ? 3 : 1;
+      riskScore += unsafe.count * severityMultiplier;
+    }
+  }
+
+  // Reduce risk for safe content (max 30% reduction)
+  const safeReduction = Math.min(safeKeywordsFound.length * 2, 30);
+  riskScore = Math.max(0, riskScore - safeReduction);
+
+  // Determine risk level
+  let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
+  if (riskScore >= 50) riskLevel = 'dangerous';
+  else if (riskScore >= 25) riskLevel = 'unsafe';
+  else if (riskScore >= 10) riskLevel = 'caution';
+
+  return { unsafeKeywordsFound, safeKeywordsFound, riskScore, riskLevel };
 }
 
 /**
- * Search Google for information about a URL/domain and get top results
+ * Calculate age-specific scores based on child safety analysis
  */
-async function searchGoogleForUrl(url: string): Promise<string[]> {
-  try {
-    // Extract domain name for search
-    const urlObj = new URL(url);
-    const domain = urlObj.hostname.replace('www.', '');
-    const searchQuery = encodeURIComponent(`${domain} site information reviews`);
+function calculateAgeGroupScores(
+  childSafetyAnalysis: ReturnType<typeof analyzeChildSafety>,
+  visionSafeSearch: any,
+  multimediaRisk: number = 0
+): {
+  [key in AgeGroup]: {
+    score: number;
+    action: 'BLOCK' | 'GATE' | 'ALLOW';
+    reason: string;
+    risks: string[];
+  };
+} {
+  const scores: {
+    [key in AgeGroup]: {
+      score: number;
+      action: 'BLOCK' | 'GATE' | 'ALLOW';
+      reason: string;
+      risks: string[];
+    };
+  } = {
+    '<10': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+    '10-13': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+    '13-16': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+    '16+': { score: 100, action: 'ALLOW', reason: '', risks: [] },
+  };
 
-    // Try Google Custom Search API if available
-    if (process.env.GOOGLE_SEARCH_API_KEY && process.env.GOOGLE_SEARCH_ENGINE_ID) {
-      const apiUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${searchQuery}&num=10`;
-
-      const response = await fetch(apiUrl, {
-        signal: AbortSignal.timeout(15000),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.items && data.items.length > 0) {
-          return data.items.map((item: any) => item.link).slice(0, 10);
+  // Apply deductions based on found unsafe keywords
+  for (const unsafe of childSafetyAnalysis.unsafeKeywordsFound) {
+    const risk = CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category);
+    if (risk) {
+      for (const ageGroup of AGE_GROUPS) {
+        const deduction = risk.deduction[ageGroup] * (Math.min(unsafe.count, 5) / 5);
+        scores[ageGroup].score -= deduction;
+        if (deduction > 0) {
+          scores[ageGroup].risks.push(`${unsafe.category}: "${unsafe.keyword}" (${unsafe.count}x)`);
         }
       }
     }
-
-    // Fallback: Use DuckDuckGo HTML search (no API key needed)
-    const ddgUrl = `https://html.duckduckgo.com/html/?q=${searchQuery}`;
-    const response = await fetch(ddgUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-      signal: AbortSignal.timeout(15000),
-    });
-
-    if (response.ok) {
-      const html = await response.text();
-      const $ = cheerio.load(html);
-      const links: string[] = [];
-
-      // Extract result links from DuckDuckGo
-      $('a.result__a').each((_, el) => {
-        const href = $(el).attr('href');
-        if (href && href.startsWith('http') && !href.includes('duckduckgo.com')) {
-          links.push(href);
-        }
-      });
-
-      // Also try extracting from result snippets
-      $('a.result__url').each((_, el) => {
-        const href = $(el).attr('href');
-        if (href && href.startsWith('http')) {
-          links.push(href);
-        }
-      });
-
-      return [...new Set(links)].slice(0, 10); // Unique links, max 10
-    }
-
-    return [];
-  } catch (error) {
-    console.error('Error searching for URL:', error);
-    return [];
   }
+
+  // Apply Vision API safe search results
+  if (visionSafeSearch) {
+    const adultScore = getLikelihoodScore(visionSafeSearch.adult);
+    const violenceScore = getLikelihoodScore(visionSafeSearch.violence);
+    const racyScore = getLikelihoodScore(visionSafeSearch.racy);
+
+    if (adultScore >= 3) {
+      scores['<10'].score -= 100;
+      scores['10-13'].score -= 100;
+      scores['13-16'].score -= 100;
+      scores['16+'].score -= 80;
+      for (const ag of AGE_GROUPS) {
+        scores[ag].risks.push('Adult content detected in images');
+      }
+    }
+    if (violenceScore >= 3) {
+      scores['<10'].score -= 70;
+      scores['10-13'].score -= 60;
+      scores['13-16'].score -= 40;
+      scores['16+'].score -= 20;
+      for (const ag of AGE_GROUPS) {
+        scores[ag].risks.push('Violence detected in images');
+      }
+    }
+    if (racyScore >= 3) {
+      scores['<10'].score -= 50;
+      scores['10-13'].score -= 40;
+      scores['13-16'].score -= 25;
+      scores['16+'].score -= 10;
+      for (const ag of AGE_GROUPS) {
+        scores[ag].risks.push('Racy content detected in images');
+      }
+    }
+  }
+
+  // Apply multimedia risk
+  if (multimediaRisk > 0) {
+    for (const ageGroup of AGE_GROUPS) {
+      scores[ageGroup].score -= multimediaRisk * (ageGroup === '<10' ? 1.5 : ageGroup === '10-13' ? 1.2 : 1);
+      if (multimediaRisk > 20) {
+        scores[ageGroup].risks.push('Potentially unsafe multimedia content');
+      }
+    }
+  }
+
+  // Bonus for safe content
+  const safeBonus = Math.min(childSafetyAnalysis.safeKeywordsFound.length * 3, 15);
+  for (const ageGroup of AGE_GROUPS) {
+    scores[ageGroup].score += safeBonus;
+  }
+
+  // Clamp scores and determine actions
+  for (const ageGroup of AGE_GROUPS) {
+    scores[ageGroup].score = Math.max(0, Math.min(100, Math.round(scores[ageGroup].score)));
+
+    if (scores[ageGroup].score >= 80) {
+      scores[ageGroup].action = 'ALLOW';
+      scores[ageGroup].reason = scores[ageGroup].risks.length === 0
+        ? 'Content appears safe for this age group'
+        : `Minor concerns detected but content is generally appropriate`;
+    } else if (scores[ageGroup].score >= 50) {
+      scores[ageGroup].action = 'GATE';
+      scores[ageGroup].reason = `Parental guidance recommended: ${scores[ageGroup].risks.slice(0, 3).join('; ')}`;
+    } else {
+      scores[ageGroup].action = 'BLOCK';
+      scores[ageGroup].reason = `Content not suitable: ${scores[ageGroup].risks.slice(0, 3).join('; ')}`;
+    }
+  }
+
+  return scores;
 }
 
+// ============================================================================
+// MULTIMEDIA ANALYSIS
+// ============================================================================
+
 /**
- * Fetch content from multiple URLs and combine them
+ * Analyze multimedia content (video, audio) on the page
  */
-async function fetchMultiplePages(urls: string[], maxPages: number = 5): Promise<{
-  combinedContent: string;
-  sources: Array<{ url: string; title: string; snippet: string }>;
-  successCount: number;
-}> {
-  const sources: Array<{ url: string; title: string; snippet: string }> = [];
-  const contentParts: string[] = [];
-  let successCount = 0;
+function analyzeMultimedia(html: string, $: cheerio.CheerioAPI): {
+  videoDetected: boolean;
+  audioDetected: boolean;
+  mediaTypes: string[];
+  videoUrls: string[];
+  audioUrls: string[];
+  iframeUrls: string[];
+  mediaSafetyScore: number;
+  mediaConcerns: string[];
+} {
+  const mediaTypes: string[] = [];
+  const videoUrls: string[] = [];
+  const audioUrls: string[] = [];
+  const iframeUrls: string[] = [];
+  const mediaConcerns: string[] = [];
+  let mediaSafetyScore = 100;
 
-  // Fetch pages in parallel with a limit
-  const fetchPromises = urls.slice(0, maxPages).map(async (pageUrl) => {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s per page
-
-      const response = await fetch(pageUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) return null;
-
-      const html = await response.text();
-      const $ = cheerio.load(html);
-
-      // Extract title
-      const title = $('title').text().trim() || $('h1').first().text().trim() || 'Untitled';
-
-      // Remove unwanted elements
-      $('script, style, nav, footer, header, aside, iframe, noscript').remove();
-
-      // Extract main content
-      const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
-      const snippet = bodyText.substring(0, 500);
-      const content = bodyText.substring(0, 2000); // Limit per page
-
-      return { url: pageUrl, title, snippet, content };
-    } catch (error) {
-      console.error(`Failed to fetch ${pageUrl}:`, error);
-      return null;
+  // Detect video elements
+  $('video, video source').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src) {
+      videoUrls.push(src);
+      mediaTypes.push('video');
     }
   });
 
-  const results = await Promise.all(fetchPromises);
-
-  for (const result of results) {
-    if (result) {
-      sources.push({ url: result.url, title: result.title, snippet: result.snippet });
-      contentParts.push(`[Source: ${result.title}]\n${result.content}`);
-      successCount++;
+  // Detect audio elements
+  $('audio, audio source').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src) {
+      audioUrls.push(src);
+      mediaTypes.push('audio');
     }
+  });
+
+  // Detect iframes (YouTube, Vimeo, etc.)
+  $('iframe').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src');
+    if (src) {
+      iframeUrls.push(src);
+      if (src.includes('youtube') || src.includes('youtu.be')) {
+        mediaTypes.push('youtube');
+      } else if (src.includes('vimeo')) {
+        mediaTypes.push('vimeo');
+      } else if (src.includes('dailymotion')) {
+        mediaTypes.push('dailymotion');
+      } else if (src.includes('twitch')) {
+        mediaTypes.push('twitch');
+      } else if (src.includes('tiktok')) {
+        mediaTypes.push('tiktok');
+        mediaConcerns.push('TikTok content detected - may contain age-inappropriate content');
+        mediaSafetyScore -= 20;
+      } else {
+        mediaTypes.push('iframe');
+      }
+    }
+  });
+
+  // Detect embedded objects
+  $('embed, object').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data') || $(el).attr('data-src');
+    if (src) {
+      mediaTypes.push('embedded');
+      if (src.includes('.swf')) {
+        mediaConcerns.push('Flash content detected - potentially outdated or insecure');
+        mediaSafetyScore -= 10;
+      }
+    }
+  });
+
+  // Check for potentially unsafe media sources
+  const allMediaUrls = [...videoUrls, ...audioUrls, ...iframeUrls];
+  for (const url of allMediaUrls) {
+    const urlLower = url.toLowerCase();
+
+    // Check for adult/unsafe domains in media URLs
+    for (const keyword of CHILD_UNSAFE_KEYWORDS.explicit.slice(0, 30)) {
+      if (urlLower.includes(keyword)) {
+        mediaConcerns.push(`Potentially adult media source detected`);
+        mediaSafetyScore -= 50;
+        break;
+      }
+    }
+  }
+
+  // Check for live streaming indicators
+  if (html.toLowerCase().includes('livestream') || html.toLowerCase().includes('live stream')) {
+    mediaConcerns.push('Live streaming content detected - content may be unpredictable');
+    mediaSafetyScore -= 15;
   }
 
   return {
-    combinedContent: contentParts.join('\n\n---\n\n'),
-    sources,
-    successCount,
+    videoDetected: videoUrls.length > 0 || iframeUrls.some(u => u.includes('youtube') || u.includes('vimeo')),
+    audioDetected: audioUrls.length > 0,
+    mediaTypes: [...new Set(mediaTypes)],
+    videoUrls,
+    audioUrls,
+    iframeUrls,
+    mediaSafetyScore: Math.max(0, mediaSafetyScore),
+    mediaConcerns,
   };
 }
 
+// ============================================================================
+// CONTENT FETCHING & PARSING
+// ============================================================================
+
 /**
- * Fallback analysis using Google search results
+ * Fetch webpage content
  */
-async function analyzeViaSearchFallback(url: string): Promise<{
-  success: boolean;
-  metadata: {
-    title: string;
-    description: string;
-    keywords: string[];
-    textContent: string;
-    imageUrls: string[];
-    imageCount: number;
-    linkCount: number;
-  };
-  sources: Array<{ url: string; title: string; snippet: string }>;
-} | null> {
-  console.log('Attempting search-based fallback analysis...');
-
+async function fetchWebpageContent(url: string): Promise<string> {
   try {
-    // Search for information about the URL
-    const searchResults = await searchGoogleForUrl(url);
-
-    if (searchResults.length === 0) {
-      console.log('No search results found');
-      return null;
-    }
-
-    console.log(`Found ${searchResults.length} search results, fetching top pages...`);
-
-    // Fetch content from top search results
-    const { combinedContent, sources, successCount } = await fetchMultiplePages(searchResults, 5);
-
-    if (successCount === 0 || combinedContent.length < 100) {
-      console.log('Insufficient content from search results');
-      return null;
-    }
-
-    console.log(`Successfully fetched ${successCount} pages with ${combinedContent.length} chars of content`);
-
-    // Extract domain for title
-    const urlObj = new URL(url);
-    const domain = urlObj.hostname.replace('www.', '');
-
-    // Create metadata from combined content
-    return {
-      success: true,
-      metadata: {
-        title: `Analysis of ${domain} (via search)`,
-        description: `Content aggregated from ${successCount} sources about ${domain}`,
-        keywords: sources.map(s => s.title.split(' ').slice(0, 3).join(' ')),
-        textContent: combinedContent,
-        imageUrls: [],
-        imageCount: 0,
-        linkCount: sources.length,
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; KomalSafetyBot/1.0; +https://komalkids.com)',
       },
-      sources,
-    };
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.text();
   } catch (error) {
-    console.error('Search fallback failed:', error);
-    return null;
+    console.error('Error fetching webpage:', error);
+    throw error;
   }
 }
 
 /**
- * Parse HTML and extract metadata
+ * Parse HTML and extract all content for analysis
  */
-function parseHTMLMetadata(html: string, url: string) {
+function parseHTMLContent(html: string, url: string) {
   const $ = cheerio.load(html);
 
   // Extract metadata
@@ -457,21 +595,22 @@ function parseHTMLMetadata(html: string, url: string) {
   const keywordsStr = $('meta[name="keywords"]').attr('content') || '';
   const keywords = keywordsStr.split(',').map((k) => k.trim()).filter(Boolean);
 
-  // Extract main text content
-  $('script, style, nav, footer, header, aside').remove();
+  // Extract all text content
+  $('script, style').remove();
   const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
-  const textContent = bodyText.substring(0, 5000); // Limit to 5000 chars for analysis
+  const textContent = bodyText.substring(0, 10000); // Analyze up to 10k chars
 
-  // Count images and links
+  // Count media elements
   const imageCount = $('img').length;
   const linkCount = $('a').length;
+  const videoCount = $('video').length + $('iframe[src*="youtube"], iframe[src*="vimeo"]').length;
+  const audioCount = $('audio').length;
 
-  // Extract image URLs for Vision API analysis
+  // Extract image URLs
   const imageUrls: string[] = [];
   $('img').each((_, el) => {
-    const src = $(el).attr('src');
+    const src = $(el).attr('src') || $(el).attr('data-src');
     if (src) {
-      // Convert relative URLs to absolute
       try {
         const absoluteUrl = new URL(src, url).href;
         imageUrls.push(absoluteUrl);
@@ -481,14 +620,21 @@ function parseHTMLMetadata(html: string, url: string) {
     }
   });
 
+  // Analyze multimedia
+  const multimedia = analyzeMultimedia(html, $);
+
   return {
     title,
     description,
     keywords,
     textContent,
-    imageUrls: imageUrls.slice(0, 10), // Limit to first 10 images
+    imageUrls: imageUrls.slice(0, 10),
     imageCount,
     linkCount,
+    videoCount: videoCount + multimedia.videoUrls.length,
+    audioCount: audioCount + multimedia.audioUrls.length,
+    multimedia,
+    $,
   };
 }
 
@@ -519,6 +665,10 @@ async function captureScreenshot(url: string): Promise<Buffer | null> {
   }
 }
 
+// ============================================================================
+// NLP & VISION ANALYSIS
+// ============================================================================
+
 /**
  * Analyze text using Google Cloud Natural Language API
  */
@@ -528,77 +678,30 @@ async function analyzeTextWithNLP(text: string) {
   }
 
   try {
-    // Limit text length for faster processing (API has limits anyway)
     const truncatedText = text.substring(0, 5000);
 
-    // Run all NLP analyses in PARALLEL for speed
-    const [sentimentResult, entityResult, classificationResult] = await Promise.all([
-      // Sentiment analysis with encoding type for better accuracy
+    const [sentimentResult, entityResult] = await Promise.all([
       languageClient.analyzeSentiment({
-        document: {
-          content: truncatedText,
-          type: 'PLAIN_TEXT',
-          language: 'en', // Optimize by specifying language
-        },
-        encodingType: 'UTF8',
-      }).catch(() => [null]),
-
-      // Entity analysis with salience filtering
+        document: { content: truncatedText, type: 'PLAIN_TEXT' },
+      }),
       languageClient.analyzeEntities({
-        document: {
-          content: truncatedText,
-          type: 'PLAIN_TEXT',
-          language: 'en',
-        },
-        encodingType: 'UTF8',
-      }).catch(() => [null]),
-
-      // Content classification (requires at least 20 words)
-      truncatedText.split(/\s+/).length >= 20
-        ? languageClient.classifyText({
-            document: {
-              content: truncatedText,
-              type: 'PLAIN_TEXT',
-              language: 'en',
-            },
-            classificationModelOptions: {
-              v2Model: {
-                contentCategoriesVersion: 'V2', // Use latest classification model
-              },
-            },
-          }).catch(() => [null])
-        : Promise.resolve([null]),
+        document: { content: truncatedText, type: 'PLAIN_TEXT' },
+      }),
     ]);
 
-    const sentiment = sentimentResult?.[0]?.documentSentiment;
+    const sentiment = sentimentResult[0].documentSentiment;
     const sentimentScore = sentiment?.score || 0;
-    const sentimentMagnitude = sentiment?.magnitude || 0;
 
-    // Determine sentiment label with finer granularity
     let sentimentLabel = 'Neutral';
-    if (sentimentScore > 0.5) sentimentLabel = 'Very Positive';
-    else if (sentimentScore > 0.25) sentimentLabel = 'Positive';
-    else if (sentimentScore < -0.5) sentimentLabel = 'Very Concerning';
+    if (sentimentScore > 0.25) sentimentLabel = 'Positive';
     else if (sentimentScore < -0.25) sentimentLabel = 'Concerning';
 
-    // Extract entities sorted by salience (importance)
-    const entities = entityResult?.[0]?.entities
-      ?.sort((a: any, b: any) => (b.salience || 0) - (a.salience || 0))
-      ?.map((e: any) => e.name || '')
-      ?.filter(Boolean) || [];
-
-    // Extract categories/topics with confidence threshold
-    const categories = classificationResult?.[0]?.categories
-      ?.filter((c: any) => (c.confidence || 0) > 0.5) // Only high-confidence categories
-      ?.map((c: any) => c.name || '')
-      ?.filter(Boolean) || [];
+    const entities = entityResult[0].entities?.map((e) => e.name || '').filter(Boolean) || [];
 
     return {
       sentiment: sentimentLabel,
       sentimentScore,
-      sentimentMagnitude,
-      entities: entities.slice(0, 15), // Top 15 entities by salience
-      categories,
+      entities: entities.slice(0, 10),
     };
   } catch (error) {
     console.error('Error analyzing text with NLP:', error);
@@ -607,7 +710,7 @@ async function analyzeTextWithNLP(text: string) {
 }
 
 /**
- * Analyze images using Google Cloud Vision API (optimized with parallel processing)
+ * Analyze images using Google Cloud Vision API
  */
 async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer | null) {
   if (!visionClient) {
@@ -621,50 +724,45 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
       detectedObjects: [] as string[],
     };
 
-    // Prepare all image analysis requests
-    const imageRequests: Promise<any>[] = [];
+    const requests: Promise<any>[] = [];
 
-    // Screenshot analysis
+    // Analyze screenshot
     if (screenshot) {
-      imageRequests.push(
+      requests.push(
         visionClient.annotateImage({
           image: { content: screenshot },
           features: [
-            { type: 'LABEL_DETECTION', maxResults: 6 }, // Limit to 6 labels
+            { type: 'LABEL_DETECTION', maxResults: 10 },
             { type: 'SAFE_SEARCH_DETECTION' },
-            { type: 'OBJECT_LOCALIZATION', maxResults: 5 },
+            { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
           ],
         }).catch(() => [null])
       );
     }
 
-    // Page image analysis (limit to 2 for speed)
-    for (const imageUrl of imageUrls.slice(0, 2)) {
-      imageRequests.push(
+    // Analyze page images
+    for (const imageUrl of imageUrls.slice(0, 3)) {
+      requests.push(
         visionClient.annotateImage({
           image: { source: { imageUri: imageUrl } },
           features: [
-            { type: 'LABEL_DETECTION', maxResults: 3 },
+            { type: 'LABEL_DETECTION', maxResults: 5 },
             { type: 'SAFE_SEARCH_DETECTION' },
           ],
         }).catch(() => [null])
       );
     }
 
-    // Run all image analysis in PARALLEL
-    const imageResults = await Promise.all(imageRequests);
+    const allResults = await Promise.all(requests);
 
-    // Process results
-    for (const [result] of imageResults) {
+    for (const [result] of allResults) {
       if (!result) continue;
 
-      // Extract labels with confidence threshold > 0.7
       const highConfLabels = result.labelAnnotations
         ?.filter((l: any) => (l.score || 0) > 0.7)
         ?.map((l: any) => l.description || '') || [];
       results.labels.push(...highConfLabels);
 
-      // Extract detected objects
       if (result.localizedObjectAnnotations) {
         const objects = result.localizedObjectAnnotations
           ?.filter((o: any) => (o.score || 0) > 0.6)
@@ -672,7 +770,6 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
         results.detectedObjects.push(...objects);
       }
 
-      // Merge safe search annotations (take worst case)
       if (result.safeSearchAnnotation) {
         if (!results.safeSearchAnnotation) {
           results.safeSearchAnnotation = result.safeSearchAnnotation;
@@ -683,16 +780,13 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
             adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
             violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
             racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
-            medical: Math.max(getLikelihoodScore(current.medical), getLikelihoodScore(newAnnotation.medical)),
-            spoof: Math.max(getLikelihoodScore(current.spoof), getLikelihoodScore(newAnnotation.spoof)),
           };
         }
       }
     }
 
-    // Deduplicate and limit results
-    results.labels = [...new Set(results.labels)].slice(0, 6);
-    results.detectedObjects = [...new Set(results.detectedObjects)].slice(0, 5);
+    results.labels = [...new Set(results.labels)].slice(0, 10);
+    results.detectedObjects = [...new Set(results.detectedObjects)].slice(0, 8);
 
     return results;
   } catch (error) {
@@ -705,9 +799,8 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
  * Convert Google Cloud Vision likelihood to numeric score
  */
 function getLikelihoodScore(likelihood: string | number | null | undefined): number {
-  // Convert to string (handles both enum and string types)
   const likelihoodStr = String(likelihood || 'VERY_UNLIKELY');
-  
+
   switch (likelihoodStr) {
     case 'VERY_UNLIKELY':
     case '0':
@@ -729,733 +822,262 @@ function getLikelihoodScore(likelihood: string | number | null | undefined): num
   }
 }
 
-/**
- * Map CSV category names to internal category names
- */
-function mapCsvCategoryToInternalCategory(csvCategory: string): string[] {
-  const categoryMap: { [key: string]: string[] } = {
-    '1. Violence & Disturbing Content': ['Graphic Violence', 'Non-Graphic Violence', 'Heavy Fighting (Sports)', 'Horror/Jumpscares', 'Crime Footage'],
-    '2. Explicit & Body-Related Content': ['Explicit Content'],
-    '3. Substances & Addictive Behavior': ['Substance Use'],
-    '4. Financial & Commercial Content': ['Financial & Commercial Content'],
-    '5. Media & Platform-Native Risks': ['Media & Platform-Native Risks', 'Strong Language', 'Mild Language'],
-    '6. Social & Cultural Topics': ['Social & Cultural Topics'],
-  };
+// ============================================================================
+// MAIN ANALYSIS FUNCTION
+// ============================================================================
 
-  return categoryMap[csvCategory] || [];
-}
-
-/**
- * Analyze content and determine safety categories using keyword vectorization
- */
-function determineSafetyCategories(
-  metadata: any,
-  nlpResults: any,
-  visionResults: any,
-  textContent: string,
-  similarityMatches?: SimilarityMatch[]
-): { [key: string]: { detected: boolean; confidence: number } } {
-  const categoryScores: { [key: string]: { detected: boolean; confidence: number } } = {};
-
-  // If we have similarity matches, use them to determine categories
-  if (similarityMatches && similarityMatches.length > 0) {
-    // Group matches by CSV category
-    const categoryMatchGroups = new Map<string, SimilarityMatch[]>();
-    
-    for (const match of similarityMatches) {
-      const existing = categoryMatchGroups.get(match.category) || [];
-      existing.push(match);
-      categoryMatchGroups.set(match.category, existing);
-    }
-
-    // Process each CSV category and map to internal categories
-    for (const [csvCategory, matches] of categoryMatchGroups.entries()) {
-      const internalCategories = mapCsvCategoryToInternalCategory(csvCategory);
-      
-      if (internalCategories.length === 0) continue;
-
-      // Calculate confidence based on match scores
-      // Use average similarity and match count
-      const avgSimilarity = matches.reduce((sum, m) => sum + m.similarity, 0) / matches.length;
-      const totalScore = matches.reduce((sum, m) => sum + m.score, 0);
-      const matchCount = matches.length;
-      
-      // Confidence is based on average similarity, match count, and total score
-      // Higher similarity, more matches, and higher scores = higher confidence
-      const baseConfidence = Math.min(0.95, avgSimilarity * 0.7 + Math.min(matchCount / 10, 0.3));
-      const confidence = Math.min(0.95, baseConfidence + (totalScore / 100) * 0.1);
-
-      // Apply to all mapped internal categories
-      for (const internalCategory of internalCategories) {
-        // If category already exists, take the higher confidence
-        if (!categoryScores[internalCategory] || categoryScores[internalCategory].confidence < confidence) {
-          categoryScores[internalCategory] = {
-            detected: true,
-            confidence: confidence,
-          };
-        }
-      }
-
-      // Special handling for violence categories based on match strength
-      if (csvCategory === '1. Violence & Disturbing Content') {
-        // If high similarity matches (>0.8) or many matches, mark as Graphic Violence
-        const highConfidenceMatches = matches.filter(m => m.similarity > 0.8);
-        if (highConfidenceMatches.length >= 3 || totalScore > 50) {
-          categoryScores['Graphic Violence'] = {
-            detected: true,
-            confidence: Math.min(0.95, confidence + 0.1),
-          };
-        } else if (matches.length >= 2) {
-          categoryScores['Non-Graphic Violence'] = {
-            detected: true,
-            confidence: confidence,
-          };
-        }
-      }
-    }
-  }
-
-  // Still use vision results for explicit content detection (visual analysis)
-  if (visionResults?.safeSearchAnnotation?.adult >= 3 || visionResults?.safeSearchAnnotation?.racy >= 3) {
-    categoryScores['Explicit Content'] = {
-      detected: true,
-      confidence: Math.max(
-        categoryScores['Explicit Content']?.confidence || 0,
-        0.9
-      ),
-    };
-  }
-
-  // Use vision results for violence detection as additional signal
-  if (visionResults?.safeSearchAnnotation?.violence >= 3) {
-    if (!categoryScores['Graphic Violence']) {
-      categoryScores['Graphic Violence'] = { detected: true, confidence: 0.8 };
-    } else {
-      categoryScores['Graphic Violence'].confidence = Math.max(
-        categoryScores['Graphic Violence'].confidence,
-        0.8
-      );
-    }
-  } else if (visionResults?.safeSearchAnnotation?.violence >= 2) {
-    if (!categoryScores['Non-Graphic Violence']) {
-      categoryScores['Non-Graphic Violence'] = { detected: true, confidence: 0.6 };
-    }
-  }
-
-  // Check for educational content using NLP (if available)
-  if (nlpResults?.categories?.some((c: string) => c.includes('Education'))) {
-    categoryScores['Educational Content'] = { detected: true, confidence: 0.85 };
-  }
-
-  return categoryScores;
-}
-
-/**
- * Calculate overall safety score and age group actions using keyword matches only
- */
-function calculateSafetyScore(
-  categoryScores: any,
-  similarityMatches?: SimilarityMatch[]
-) {
-  let overallScore = 85; // Start with high score
-
-  // If we have keyword matches, prioritize non-child-safe keywords
-  if (similarityMatches && similarityMatches.length > 0) {
-    // Separate matches into high-priority (non-child-safe) and low-priority (safe/neutral)
-    const highPriorityMatches = similarityMatches.filter(m => m.priority >= 5.0);
-    const lowPriorityMatches = similarityMatches.filter(m => m.priority < 5.0);
-    
-    // Group matches by category and calculate impact
-    const categoryImpact = new Map<string, { totalScore: number; matchCount: number; maxSimilarity: number; avgPriority: number }>();
-    
-    // Process high-priority matches first (non-child-safe keywords)
-    for (const match of highPriorityMatches) {
-      const existing = categoryImpact.get(match.category) || { totalScore: 0, matchCount: 0, maxSimilarity: 0, avgPriority: 0 };
-      categoryImpact.set(match.category, {
-        totalScore: existing.totalScore + match.score,
-        matchCount: existing.matchCount + 1,
-        maxSimilarity: Math.max(existing.maxSimilarity, match.similarity),
-        avgPriority: (existing.avgPriority * existing.matchCount + match.priority) / (existing.matchCount + 1),
-      });
-    }
-    
-    // Process low-priority matches with minimal impact (only if no high-priority matches exist)
-    if (highPriorityMatches.length === 0) {
-      for (const match of lowPriorityMatches) {
-        const existing = categoryImpact.get(match.category) || { totalScore: 0, matchCount: 0, maxSimilarity: 0, avgPriority: 0 };
-        categoryImpact.set(match.category, {
-          totalScore: existing.totalScore + (match.score * 0.1), // Reduce impact by 90%
-          matchCount: existing.matchCount + 1,
-          maxSimilarity: Math.max(existing.maxSimilarity, match.similarity),
-          avgPriority: (existing.avgPriority * existing.matchCount + match.priority) / (existing.matchCount + 1),
-        });
-      }
-    }
-
-    // Calculate score deductions - prioritize non-child-safe categories heavily
-    for (const [csvCategory, impact] of categoryImpact.entries()) {
-      const priorityWeight = impact.avgPriority / 10.0; // Normalize to 0-1 scale
-      
-      // Non-child-safe categories get much higher deductions based on priority
-      if (csvCategory === '1. Violence & Disturbing Content') {
-        // Highest priority - severe deductions
-        if (impact.maxSimilarity > 0.8 || impact.totalScore > 50) {
-          overallScore -= Math.min(60, 40 + (impact.totalScore / 8) * priorityWeight); // Graphic violence
-        } else {
-          overallScore -= Math.min(35, 20 + (impact.totalScore / 12) * priorityWeight); // Non-graphic violence
-        }
-      } else if (csvCategory === '2. Explicit & Body-Related Content') {
-        // Very high priority - severe deductions
-        overallScore -= Math.min(60, 40 + (impact.totalScore / 6) * priorityWeight); // Explicit content
-      } else if (csvCategory === '3. Substances & Addictive Behavior') {
-        // High priority - significant deductions
-        overallScore -= Math.min(35, 20 + (impact.totalScore / 10) * priorityWeight); // Substance use
-      } else if (csvCategory === '4. Financial & Commercial Content') {
-        // Medium-high priority - moderate deductions
-        overallScore -= Math.min(20, 10 + (impact.totalScore / 15) * priorityWeight); // Financial content
-      } else if (csvCategory === '5. Media & Platform-Native Risks') {
-        // Medium priority - moderate deductions
-        overallScore -= Math.min(25, 12 + (impact.totalScore / 12) * priorityWeight); // Media risks
-      } else if (csvCategory === '6. Social & Cultural Topics') {
-        // Lower priority - minimal deductions
-        overallScore -= Math.min(12, 5 + (impact.totalScore / 20) * priorityWeight); // Social topics
-      }
-    }
-  } else {
-    // Fallback to category-based scoring if no keyword matches
-    if (categoryScores['Graphic Violence']?.detected) overallScore -= 40;
-    if (categoryScores['Explicit Content']?.detected) overallScore -= 50;
-    if (categoryScores['Horror/Jumpscares']?.detected) overallScore -= 20;
-    if (categoryScores['Crime Footage']?.detected) overallScore -= 15;
-    if (categoryScores['Non-Graphic Violence']?.detected) overallScore -= 10;
-    if (categoryScores['Strong Language']?.detected) overallScore -= 15;
-    if (categoryScores['Mild Language']?.detected) overallScore -= 5;
-    if (categoryScores['Substance Use']?.detected) overallScore -= 20;
-  }
-
-  // Add points for educational content
-  if (categoryScores['Educational Content']?.detected) overallScore += 15;
-
-  // Clamp to 0-100
-  overallScore = Math.max(0, Math.min(100, overallScore));
-
-  // Generate age group actions based on granular categories from CSV
-  const ageGroupActions: {
-    [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number };
-  } = {};
-
-  // Age group mapping: <10, 10-13, 13-18, 18+ -> CSV columns
-  // Process in order from youngest to oldest for cascading effect
-  const ageGroupMap: { [key: string]: keyof CategoryRule['rules'] } = {
-    '<10': '<10',
-    '10-13': '10-13',
-    '13-18': '13-16', // Map 13-18 to 13-16 from CSV
-    '18+': '16-18', // Map 18+ to 16-18 from CSV
-  };
-
-  const ageGroupOrder = ['<10', '10-13', '13-18', '18+']; // Process from youngest to oldest
-
-  // Process each age group in order (youngest to oldest)
-  ageGroupOrder.forEach((ageGroup) => {
-    let worstAction: 'BLOCK' | 'GATE' | 'ALLOW' = 'ALLOW';
-    let reasons: string[] = [];
-    let ageScore = 100;
-
-    // Check if a lower age group already marked this as ALLOW (cascade effect)
-    const currentIndex = ageGroupOrder.indexOf(ageGroup);
-    let cascadedFromYounger = false;
-    
-    if (currentIndex > 0) {
-      // Check all previous (younger) age groups
-      for (let i = 0; i < currentIndex; i++) {
-        const youngerAgeGroup = ageGroupOrder[i];
-        const youngerAction = ageGroupActions[youngerAgeGroup];
-        if (youngerAction && youngerAction.action === 'ALLOW') {
-          // If younger age group is ALLOW, automatically ALLOW for older groups
-          worstAction = 'ALLOW';
-          ageScore = youngerAction.score; // Use the score from the younger age group
-          reasons.push(`Content is age-appropriate for ${youngerAgeGroup}, automatically approved for ${ageGroup}`);
-          cascadedFromYounger = true;
-          break; // Stop checking once we find an ALLOW
-        }
-      }
-    }
-
-    // Only process keyword matches if not already cascaded from younger age group
-    if (!cascadedFromYounger && similarityMatches && similarityMatches.length > 0) {
-      // Separate high-priority (non-child-safe) and low-priority matches
-      const highPriorityMatches = similarityMatches.filter(m => m.priority >= 5.0);
-      const matchesToProcess = highPriorityMatches.length > 0 ? highPriorityMatches : similarityMatches;
-      
-      // Group matches by CSV category
-      const categoryMatches = new Map<string, SimilarityMatch[]>();
-      for (const match of matchesToProcess) {
-        const existing = categoryMatches.get(match.category) || [];
-        existing.push(match);
-        categoryMatches.set(match.category, existing);
-      }
-
-      // Process each category with matches
-      for (const [csvCategory, matches] of categoryMatches.entries()) {
-        // Load content rules to get age group actions
-        const contentRules = loadContentRulesFromCSV();
-        const matchedRule = contentRules.find(r => r.category === csvCategory);
-        
-        if (matchedRule) {
-          const csvAgeGroup = ageGroupMap[ageGroup];
-          const actionStr = matchedRule.rules[csvAgeGroup] || '';
-          const action = parseAction(actionStr);
-          
-          // Calculate match strength with priority weighting
-          const avgSimilarity = matches.reduce((sum, m) => sum + m.similarity, 0) / matches.length;
-          const totalScore = matches.reduce((sum, m) => sum + m.score, 0);
-          const matchCount = matches.length;
-          const avgPriority = matches.reduce((sum, m) => sum + m.priority, 0) / matches.length;
-          const priorityWeight = avgPriority / 10.0; // Normalize priority to 0-1
-          
-          // Match strength calculation - prioritize non-child-safe keywords
-          // Higher priority categories get boosted match strength
-          const baseMatchStrength = avgSimilarity * 0.5 + (Math.min(totalScore / 100, 1)) * 0.3 + (Math.min(matchCount / 20, 1)) * 0.2;
-          const matchStrength = baseMatchStrength * (0.7 + priorityWeight * 0.3); // Boost by priority
-
-          // Lower threshold for high-priority (non-child-safe) matches, higher for low-priority
-          const threshold = avgPriority >= 5.0 ? 0.2 : 0.4; // Non-child-safe: 0.2, Safe: 0.4
-          
-          if (matchStrength > threshold) {
-            if (action === 'BLOCK') {
-              worstAction = 'BLOCK';
-              ageScore = Math.min(ageScore, Math.max(0, 30 - (matchStrength * 20)));
-              const topKeywords = matches
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 3)
-                .map(m => m.keyword.length > 30 ? m.keyword.substring(0, 30) + '...' : m.keyword)
-                .join(', ');
-              reasons.push(`${csvCategory} detected via keywords (${matchCount} matches): ${topKeywords} (blocked for this age)`);
-            } else if (action === 'GATE' && worstAction !== 'BLOCK') {
-              worstAction = 'GATE';
-              ageScore = Math.min(ageScore, Math.max(30, 60 - (matchStrength * 15)));
-              const topKeywords = matches
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 3)
-                .map(m => m.keyword.length > 30 ? m.keyword.substring(0, 30) + '...' : m.keyword)
-                .join(', ');
-              reasons.push(`${csvCategory} detected via keywords (${matchCount} matches): ${topKeywords} (requires parent approval)`);
-            } else if (action === 'ALLOW') {
-              ageScore = Math.min(ageScore, 85);
-            }
-          }
-        }
-      }
-    }
-
-    // If no keyword matches and not cascaded, default to ALLOW
-    if (!cascadedFromYounger && (!similarityMatches || similarityMatches.length === 0)) {
-      // No keyword matches found - content appears safe
-      if (reasons.length === 0) {
-        reasons.push('Content appears age-appropriate');
-      }
-    }
-    
-    // Ensure we have at least one reason
-    if (reasons.length === 0) {
-      reasons.push('Content appears age-appropriate');
-    }
-
-    ageGroupActions[ageGroup] = {
-      action: worstAction,
-      reason: reasons.join('; '),
-      score: ageScore,
-    };
-  });
-
-  // Calculate overall score as average of all age group scores
-  const ageGroupScores = Object.values(ageGroupActions).map(action => action.score);
-  if (ageGroupScores.length > 0) {
-    overallScore = Math.round(ageGroupScores.reduce((sum, score) => sum + score, 0) / ageGroupScores.length);
-  }
-
-  // Clamp to 0-100
-  overallScore = Math.max(0, Math.min(100, overallScore));
-
-  return { overallScore, ageGroupActions };
-}
-
-/**
- * Generate gated result when no content could be fetched or analyzed
- */
-function generateNoContentResult(url: string, reason: string): ScanResult {
-  const gatedAgeGroupActions: { [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number } } = {};
-
-  CONTENT_RULES.ageGroups.forEach((ageGroup) => {
-    gatedAgeGroupActions[ageGroup] = {
-      action: 'GATE',
-      reason: `Unable to analyze content: ${reason}`,
-      score: 0,
-    };
-  });
-
-  return {
-    url,
-    overallScore: 0,
-    contentAnalysis: {
-      textAnalysis: {
-        sentiment: 'Unknown',
-        keyTopics: ['Unable to Analyze'],
-        languageScore: 0,
-        entities: [],
-      },
-      visualAnalysis: {
-        detectedObjects: [],
-        safetyScore: 0,
-        concerns: ['Content could not be analyzed'],
-        labels: ['Unknown Content'],
-      },
-      metadata: {
-        title: 'Unable to Fetch Content',
-        description: reason,
-        keywords: [],
-        imageCount: 0,
-        linkCount: 0,
-      },
-    },
-    categoryScores: {
-      'Unknown Content': { detected: true, confidence: 1.0 },
-    },
-    ageGroupActions: gatedAgeGroupActions,
-    timestamp: new Date().toISOString(),
-    analysisMethod: 'live',
-  };
-}
-
-/**
- * Generate blocked result for adult domains
- */
-function generateAdultDomainBlockedResult(url: string, matchedKeyword: string): ScanResult {
-  const blockedAgeGroupActions: { [key: string]: { action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; score: number } } = {};
-
-  CONTENT_RULES.ageGroups.forEach((ageGroup) => {
-    blockedAgeGroupActions[ageGroup] = {
-      action: 'BLOCK',
-      reason: `Adult content detected in domain (keyword: "${matchedKeyword}")`,
-      score: 0,
-    };
-  });
-
-  return {
-    url,
-    overallScore: 0,
-    contentAnalysis: {
-      textAnalysis: {
-        sentiment: 'Blocked',
-        keyTopics: ['Adult Content', 'Explicit Content'],
-        languageScore: 0,
-        entities: [],
-      },
-      visualAnalysis: {
-        detectedObjects: [],
-        safetyScore: 0,
-        concerns: ['Adult Content Detected'],
-        labels: ['Adult Content', 'Explicit Content'],
-      },
-      metadata: {
-        title: 'Blocked - Adult Content',
-        description: `Domain contains adult keyword: "${matchedKeyword}"`,
-        keywords: ['adult', 'blocked'],
-        imageCount: 0,
-        linkCount: 0,
-      },
-    },
-    categoryScores: {
-      'Explicit Content': { detected: true, confidence: 1.0 },
-      'Adult Domain': { detected: true, confidence: 1.0 },
-    },
-    ageGroupActions: blockedAgeGroupActions,
-    timestamp: new Date().toISOString(),
-    analysisMethod: 'live',
-  };
-}
-
-/**
- * Main analysis function - uses live data when possible with optimized parallel processing
- */
-async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
-  // Check for adult keywords in domain FIRST - immediate block
-  const adultCheck = isAdultDomain(url);
-  if (adultCheck.isAdult) {
-    console.log(`Adult domain detected: ${adultCheck.matchedKeyword}`);
-    return generateAdultDomainBlockedResult(url, adultCheck.matchedKeyword || 'unknown');
-  }
-
-  let metadata: ReturnType<typeof parseHTMLMetadata> | null = null;
-  let searchSources: Array<{ url: string; title: string; snippet: string }> | undefined;
-  let usedSearchFallback = false;
-
+async function analyzeUrlForChildSafety(url: string): Promise<ScanResult> {
   try {
-    // Fetch webpage content
     console.log('Fetching webpage content...');
     const html = await fetchWebpageContent(url);
 
-    // Check if we got any content
-    if (html && html.trim().length > 0) {
-      // Parse HTML and extract metadata
-      console.log('Parsing HTML and extracting metadata...');
-      metadata = parseHTMLMetadata(html, url);
-    }
+    console.log('Parsing HTML and extracting content...');
+    const parsedContent = parseHTMLContent(html, url);
 
-    // If no content or insufficient text, try search fallback
-    if (!metadata || !metadata.textContent || metadata.textContent.trim().length < 50) {
-      console.log('Insufficient direct content, trying search fallback...');
-      const searchResult = await analyzeViaSearchFallback(url);
+    console.log('Capturing screenshot...');
+    const screenshot = await captureScreenshot(url);
 
-      if (searchResult && searchResult.success) {
-        metadata = searchResult.metadata;
-        searchSources = searchResult.sources;
-        usedSearchFallback = true;
-        console.log(`Search fallback successful: ${searchResult.sources.length} sources`);
-      }
-    }
-  } catch (fetchError) {
-    console.error('Direct fetch failed, trying search fallback:', fetchError);
+    console.log('Analyzing text with NLP...');
+    const nlpResults = await analyzeTextWithNLP(parsedContent.textContent);
 
-    // Try search fallback when direct fetch fails
-    const searchResult = await analyzeViaSearchFallback(url);
+    console.log('Analyzing images with Vision API...');
+    const visionResults = await analyzeImagesWithVision(parsedContent.imageUrls, screenshot);
 
-    if (searchResult && searchResult.success) {
-      metadata = searchResult.metadata;
-      searchSources = searchResult.sources;
-      usedSearchFallback = true;
-      console.log(`Search fallback successful: ${searchResult.sources.length} sources`);
-    }
-  }
-
-  // If still no content, fall back to demo mode
-  if (!metadata || !metadata.textContent || metadata.textContent.trim().length < 50) {
-    console.log('All fetch methods failed, falling back to demo mode...');
-    return generateDemoAnalysis(url);
-  }
-
-  try {
-    // Run screenshot, NLP, and Vision API in PARALLEL for speed optimization
-    console.log('Running parallel analysis (screenshot, NLP, Vision)...');
-    const startTime = Date.now();
-
-    const [screenshot, nlpResults, visionResults] = await Promise.all([
-      // Screenshot capture (skip if using search fallback)
-      usedSearchFallback ? Promise.resolve(null) : captureScreenshot(url).catch(err => {
-        console.error('Screenshot failed:', err);
-        return null;
-      }),
-      // NLP analysis
-      analyzeTextWithNLP(metadata.textContent).catch(err => {
-        console.error('NLP analysis failed:', err);
-        return null;
-      }),
-      // Vision analysis (skip if using search fallback)
-      usedSearchFallback ? Promise.resolve(null) : analyzeImagesWithVision(metadata.imageUrls, null).catch(err => {
-        console.error('Vision analysis failed:', err);
-        return null;
-      }),
-    ]);
-
-    console.log(`Parallel analysis completed in ${Date.now() - startTime}ms`);
-
-    // Perform keyword vectorization and similarity search FIRST
-    let similarityMatches: SimilarityMatch[] = [];
-    let keywordSimilarityReport: ScanResult['keywordSimilarityReport'] | undefined;
-    
-    try {
-      console.log('Performing keyword similarity analysis...');
-      const categoryKeywords = getVectorizedKeywords();
-      
-      if (categoryKeywords && categoryKeywords.length > 0) {
-        // Combine all text content for analysis
-        const combinedText = [
-          metadata.title,
-          metadata.description,
-          metadata.textContent,
-          ...(metadata.keywords || []),
-        ].filter(Boolean).join(' ');
-
-        // Extract word frequencies from URL content
-        const wordFrequencies = extractWordFrequencies(combinedText);
-
-        if (wordFrequencies.length > 0) {
-          // Find similar keywords with full text for context/depth scoring
-          similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, combinedText);
-          
-          if (similarityMatches.length > 0) {
-            // Generate similarity report
-            const report = generateSimilarityReport(similarityMatches, wordFrequencies);
-            
-            keywordSimilarityReport = {
-              topCategories: report.topCategories,
-              topKeywords: report.topKeywords,
-              topWords: report.topWords,
-              summary: report.summary,
-              totalMatches: similarityMatches.length,
-            };
-            
-            console.log(`Found ${similarityMatches.length} keyword matches`);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error in keyword similarity analysis:', error);
-      // Continue without keyword matches if it fails
-    }
-
-    // Determine safety categories using keyword vectorization results
-    const categoryScores = determineSafetyCategories(
-      metadata,
-      nlpResults,
-      visionResults,
-      metadata.textContent,
-      similarityMatches
+    console.log('Performing child safety analysis...');
+    const childSafetyAnalysis = analyzeChildSafety(
+      parsedContent.textContent,
+      parsedContent.title,
+      parsedContent.description,
+      parsedContent.keywords
     );
 
-    // Calculate safety scores using keyword matches only
-    const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, similarityMatches);
+    // Perform deep keyword vectorization analysis
+    console.log('Performing deep keyword analysis...');
+    const categoryKeywords = loadAndVectorizeKeywords();
+    const wordFrequencies = extractWordFrequencies(parsedContent.textContent);
+    const similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, parsedContent.textContent);
+    const depthSearch = deepContextSearch(parsedContent.textContent, categoryKeywords, 50);
+    const similarityReport = generateSimilarityReport(similarityMatches, wordFrequencies);
 
-    // Extract detected category names for display
-    const detectedCategoryNames = Object.keys(categoryScores).filter(
-      (key) => categoryScores[key]?.detected && categoryScores[key]?.confidence > 0.5
+    // Calculate multimedia risk
+    const multimediaRisk = 100 - parsedContent.multimedia.mediaSafetyScore;
+
+    // Calculate age group scores
+    const ageGroupScores = calculateAgeGroupScores(
+      childSafetyAnalysis,
+      visionResults?.safeSearchAnnotation,
+      multimediaRisk
     );
 
-    // Prepare result
+    // Calculate overall score (average of all age groups)
+    const overallScore = Math.round(
+      Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
+    );
+
+    // Build risk categories from analysis
+    const riskCategories = childSafetyAnalysis.unsafeKeywordsFound.map(unsafe => ({
+      category: unsafe.category,
+      severity: CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category)?.severity || 'low',
+      matchCount: unsafe.count,
+      matchedKeywords: [unsafe.keyword],
+      contextSnippets: unsafe.context,
+    }));
+
+    // Build depth analysis
+    const titleSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u =>
+      parsedContent.title.toLowerCase().includes(u.keyword)
+    );
+    const metadataSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u =>
+      (parsedContent.description + ' ' + parsedContent.keywords.join(' ')).toLowerCase().includes(u.keyword)
+    );
+    const contentSafe = childSafetyAnalysis.riskLevel === 'safe' || childSafetyAnalysis.riskLevel === 'caution';
+    const mediaSafe = parsedContent.multimedia.mediaSafetyScore >= 80;
+
     const result: ScanResult = {
       url,
       overallScore,
+      ageGroupScores,
       contentAnalysis: {
         textAnalysis: {
           sentiment: nlpResults?.sentiment || 'Neutral',
-          keyTopics: nlpResults?.categories?.length ? nlpResults.categories : detectedCategoryNames.length ? detectedCategoryNames : ['General Content'],
-          languageScore: Math.floor(overallScore * 0.85 + Math.random() * 10),
+          keyTopics: similarityReport.topCategories.slice(0, 5).map(c => c.category),
+          languageScore: Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
           entities: nlpResults?.entities || [],
+          unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map(u => u.keyword),
+          safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
         },
         visualAnalysis: {
-          detectedObjects: visionResults?.detectedObjects?.length ? visionResults.detectedObjects : ['webpage', 'text', 'images'],
-          safetyScore: Math.floor(overallScore * 0.9 + Math.random() * 5),
-          concerns: Object.keys(categoryScores).filter((key) =>
-            key.includes('Violence') || key.includes('Horror') || key.includes('Crime') || key.includes('Explicit')
-          ),
-          labels: visionResults?.labels?.length ? visionResults.labels : detectedCategoryNames,
+          detectedObjects: visionResults?.detectedObjects || [],
+          safetyScore: visionResults?.safeSearchAnnotation
+            ? Math.max(0, 100 - getLikelihoodScore(visionResults.safeSearchAnnotation.adult) * 20
+                - getLikelihoodScore(visionResults.safeSearchAnnotation.violence) * 15)
+            : 100,
+          concerns: [],
+          labels: visionResults?.labels || [],
+        },
+        multimediaAnalysis: {
+          videoDetected: parsedContent.multimedia.videoDetected,
+          audioDetected: parsedContent.multimedia.audioDetected,
+          mediaTypes: parsedContent.multimedia.mediaTypes,
+          mediaSafetyScore: parsedContent.multimedia.mediaSafetyScore,
+          mediaConcerns: parsedContent.multimedia.mediaConcerns,
         },
         metadata: {
-          title: metadata.title,
-          description: metadata.description,
-          keywords: metadata.keywords,
-          imageCount: metadata.imageCount,
-          linkCount: metadata.linkCount,
+          title: parsedContent.title,
+          description: parsedContent.description,
+          keywords: parsedContent.keywords,
+          imageCount: parsedContent.imageCount,
+          linkCount: parsedContent.linkCount,
+          videoCount: parsedContent.videoCount,
+          audioCount: parsedContent.audioCount,
         },
       },
-      categoryScores,
-      ageGroupActions,
-      keywordSimilarityReport,
-      searchSources,
+      childSafetyAnalysis: {
+        overallRisk: childSafetyAnalysis.riskLevel,
+        riskCategories,
+        depthAnalysis: {
+          titleSafe,
+          metadataSafe,
+          contentSafe,
+          mediaSafe,
+        },
+      },
       timestamp: new Date().toISOString(),
-      analysisMethod: usedSearchFallback ? 'search-fallback' : (visionClient && languageClient ? 'live' : 'demo'),
+      analysisMethod: visionClient && languageClient ? 'live' : 'demo',
     };
+
+    // Add vision concerns if detected
+    if (visionResults?.safeSearchAnnotation) {
+      if (getLikelihoodScore(visionResults.safeSearchAnnotation.adult) >= 3) {
+        result.contentAnalysis.visualAnalysis.concerns.push('Adult content detected');
+      }
+      if (getLikelihoodScore(visionResults.safeSearchAnnotation.violence) >= 3) {
+        result.contentAnalysis.visualAnalysis.concerns.push('Violence detected');
+      }
+      if (getLikelihoodScore(visionResults.safeSearchAnnotation.racy) >= 3) {
+        result.contentAnalysis.visualAnalysis.concerns.push('Racy content detected');
+      }
+    }
 
     return result;
   } catch (error) {
     console.error('Error in live analysis, falling back to demo mode:', error);
-    // Fall back to demo mode (URL pattern analysis) when live analysis fails
-    console.log('Attempting demo mode analysis based on URL patterns...');
     return generateDemoAnalysis(url);
   }
 }
 
 /**
- * Fallback demo analysis (used when Google Cloud APIs are not available)
+ * Fallback demo analysis when live analysis fails
  */
 function generateDemoAnalysis(url: string): ScanResult {
-  // Check for adult keywords in domain FIRST - immediate block
-  const adultCheck = isAdultDomain(url);
-  if (adultCheck.isAdult) {
-    return generateAdultDomainBlockedResult(url, adultCheck.matchedKeyword || 'unknown');
-  }
+  const urlLower = url.toLowerCase();
 
-  // Perform keyword vectorization and similarity search FIRST
-  let similarityMatches: SimilarityMatch[] = [];
-  let keywordSimilarityReport: ScanResult['keywordSimilarityReport'] | undefined;
-  
-  try {
-    const categoryKeywords = getVectorizedKeywords();
-    
-    if (categoryKeywords && categoryKeywords.length > 0) {
-      // Use URL for analysis in demo mode
-      const wordFrequencies = extractWordFrequencies(url);
+  // Check URL for unsafe keywords
+  const childSafetyAnalysis = analyzeChildSafety(urlLower, '', '', []);
 
-      if (wordFrequencies.length > 0) {
-        // Pass URL as context for demo mode
-        similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, url);
-        
-        if (similarityMatches.length > 0) {
-          const report = generateSimilarityReport(similarityMatches, wordFrequencies);
-          
-          keywordSimilarityReport = {
-            topCategories: report.topCategories,
-            topKeywords: report.topKeywords,
-            topWords: report.topWords,
-            summary: report.summary,
-            totalMatches: similarityMatches.length,
-          };
-        }
+  // Basic URL pattern detection
+  const isEducational = /edu|learn|wiki|school|kids|child/i.test(urlLower);
+  const isNews = /news|cnn|bbc|times/i.test(urlLower);
+  const isSocial = /facebook|instagram|tiktok|twitter|snapchat/i.test(urlLower);
+  const isGaming = /game|steam|xbox|playstation|twitch/i.test(urlLower);
+  const isVideo = /youtube|vimeo|dailymotion/i.test(urlLower);
+
+  // Calculate base scores
+  let baseScore = 75;
+  if (isEducational) baseScore = 95;
+  else if (isSocial) baseScore = 60;
+  else if (isGaming) baseScore = 65;
+  else if (isNews) baseScore = 70;
+  else if (isVideo) baseScore = 70;
+
+  // Apply child safety deductions
+  baseScore -= childSafetyAnalysis.riskScore * 2;
+  baseScore = Math.max(0, Math.min(100, baseScore));
+
+  const ageGroupScores = calculateAgeGroupScores(childSafetyAnalysis, null, 0);
+
+  // Adjust demo scores based on URL patterns
+  if (isEducational) {
+    for (const ag of AGE_GROUPS) {
+      ageGroupScores[ag].score = Math.min(100, ageGroupScores[ag].score + 20);
+      if (ageGroupScores[ag].score >= 80) {
+        ageGroupScores[ag].action = 'ALLOW';
+        ageGroupScores[ag].reason = 'Educational content detected';
       }
     }
-  } catch (error) {
-    console.error('Error in keyword similarity analysis (demo):', error);
   }
 
-  // Determine safety categories using keyword vectorization results
-  const categoryScores = determineSafetyCategories(
-    { title: '', description: '', keywords: [], textContent: url, imageCount: 0, linkCount: 0 },
-    null,
-    null,
-    url,
-    similarityMatches
-  );
+  if (isSocial) {
+    ageGroupScores['<10'].score = Math.max(0, ageGroupScores['<10'].score - 30);
+    ageGroupScores['10-13'].score = Math.max(0, ageGroupScores['10-13'].score - 20);
+    ageGroupScores['<10'].action = 'GATE';
+    ageGroupScores['<10'].reason = 'Social media requires parental supervision for young children';
+    ageGroupScores['10-13'].action = 'GATE';
+    ageGroupScores['10-13'].reason = 'Social media recommended with parental guidance';
+  }
 
-  // Calculate safety scores using keyword matches only
-  const { overallScore, ageGroupActions } = calculateSafetyScore(categoryScores, similarityMatches);
-
-  // Extract detected category names for display
-  const detectedCategories = Object.keys(categoryScores).filter(
-    (key) => categoryScores[key]?.detected && categoryScores[key]?.confidence > 0.5
+  const overallScore = Math.round(
+    Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
   );
 
   return {
     url,
     overallScore,
+    ageGroupScores,
     contentAnalysis: {
       textAnalysis: {
-        sentiment: overallScore > 70 ? 'Positive' : overallScore > 40 ? 'Neutral' : 'Concerning',
-        keyTopics: detectedCategories.length > 0 ? detectedCategories : ['General Content'],
-        languageScore: Math.floor(overallScore * 0.8 + Math.random() * 15),
+        sentiment: 'Neutral',
+        keyTopics: isEducational ? ['Education'] : isNews ? ['News'] : isSocial ? ['Social Media'] : ['General'],
+        languageScore: baseScore,
+        unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map(u => u.keyword),
+        safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
       },
       visualAnalysis: {
-        detectedObjects: ['webpage', 'text', 'images'],
-        safetyScore: Math.floor(overallScore * 0.85 + Math.random() * 10),
-        concerns: detectedCategories.filter((c) =>
-          c.includes('Violence') || c.includes('Horror') || c.includes('Crime') || c.includes('Explicit')
-        ),
-        labels: detectedCategories.length > 0 ? detectedCategories : ['General Content'],
+        detectedObjects: [],
+        safetyScore: baseScore,
+        concerns: [],
+      },
+      multimediaAnalysis: {
+        videoDetected: isVideo,
+        audioDetected: false,
+        mediaTypes: isVideo ? ['video'] : [],
+        mediaSafetyScore: 100,
+        mediaConcerns: [],
       },
       metadata: {
-        title: 'Demo Mode - No metadata available',
-        description: 'Using pattern-based analysis',
+        title: 'Demo Mode Analysis',
+        description: 'URL-based pattern analysis (live content not fetched)',
         keywords: [],
         imageCount: 0,
         linkCount: 0,
+        videoCount: isVideo ? 1 : 0,
+        audioCount: 0,
       },
     },
-    categoryScores,
-    ageGroupActions,
-    keywordSimilarityReport,
+    childSafetyAnalysis: {
+      overallRisk: childSafetyAnalysis.riskLevel,
+      riskCategories: childSafetyAnalysis.unsafeKeywordsFound.map(u => ({
+        category: u.category,
+        severity: CHILD_SAFETY_RISKS.find(r => r.category === u.category)?.severity || 'low',
+        matchCount: u.count,
+        matchedKeywords: [u.keyword],
+        contextSnippets: u.context,
+      })),
+      depthAnalysis: {
+        titleSafe: true,
+        metadataSafe: true,
+        contentSafe: childSafetyAnalysis.riskLevel === 'safe',
+        mediaSafe: true,
+      },
+    },
     timestamp: new Date().toISOString(),
     analysisMethod: 'demo',
   };
 }
+
+// ============================================================================
+// API ROUTE HANDLER
+// ============================================================================
 
 export async function POST(request: NextRequest) {
   try {
@@ -1473,8 +1095,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
     }
 
-    // Perform AI analysis
-    const result = await analyzeUrlWithAI(url);
+    // Perform child safety analysis
+    const result = await analyzeUrlForChildSafety(url);
 
     return NextResponse.json(result);
   } catch (error) {
