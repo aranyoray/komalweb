@@ -67,13 +67,16 @@ interface ScanResult {
 // Colors - Using purple theme (no black colors)
 const COLORS = {
   primary: [107, 78, 113] as [number, number, number],
+  primaryLight: [235, 230, 237] as [number, number, number], // Light purple for backgrounds
   green: [34, 197, 94] as [number, number, number],
+  greenLight: [220, 252, 231] as [number, number, number], // Light green for backgrounds
   amber: [245, 158, 11] as [number, number, number],
+  amberLight: [254, 243, 199] as [number, number, number], // Light amber for backgrounds
   red: [239, 68, 68] as [number, number, number],
   gray: [107, 114, 128] as [number, number, number],
   lightGray: [243, 244, 246] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
-  text: [107, 78, 113] as [number, number, number], // Changed from black to purple
+  text: [107, 78, 113] as [number, number, number], // Purple for main text
   textDim: [139, 115, 145] as [number, number, number], // Lighter purple for dim text
 };
 
@@ -99,39 +102,35 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
 
   // Helper function to add header with logo
   const addHeader = () => {
-    // White background for logo area
-    doc.setFillColor(...COLORS.white);
-    doc.rect(MARGIN, MARGIN, 60, 10, 'F');
+    // Add komalkids.com URL at top-left in 36px (prominent branding)
+    doc.setFontSize(36 * 0.352778); // Convert 36px to points (~12.7pt)
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.primary);
+    doc.text('komalkids.com', MARGIN, MARGIN + 5);
 
-    // Add logo
+    // Add logo below the URL
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', MARGIN + 2, MARGIN + 1, 8, 8);
+      doc.addImage(logoBase64, 'PNG', MARGIN, MARGIN + 8, 8, 8);
     }
 
     // Add KOMAL text next to logo
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.primary);
-    doc.text('KOMAL', MARGIN + 12, MARGIN + 6);
-
-    // Add komalkids.com URL next to KOMAL text (16px = ~5.6mm in PDF)
-    doc.setFontSize(16 * 0.352778); // Convert 16px to mm (approximately 5.6pt)
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLORS.primary);
-    doc.text('komalkids.com', MARGIN + 30, MARGIN + 6);
+    doc.text('KOMAL', MARGIN + 10, MARGIN + 13);
 
     // Add report title
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.textDim);
-    doc.text('URL Safety Analysis Report', MARGIN + 12, MARGIN + 10);
+    doc.text('URL Safety Analysis Report', MARGIN + 10, MARGIN + 18);
 
     // Header line
     doc.setDrawColor(...COLORS.primary);
     doc.setLineWidth(0.5);
-    doc.line(MARGIN, MARGIN + 13, PAGE_WIDTH - MARGIN, MARGIN + 13);
+    doc.line(MARGIN, MARGIN + 21, PAGE_WIDTH - MARGIN, MARGIN + 21);
 
-    return MARGIN + HEADER_HEIGHT;
+    return MARGIN + HEADER_HEIGHT + 5;
   };
 
   // Helper function to add footer
@@ -233,11 +232,15 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
   doc.setTextColor(...COLORS.primary);
   doc.text('Overall Safety Score', MARGIN + 5, currentY + 5);
 
-  // Score circle
+  // Score circle - using proper light background color (no transparency)
   const scoreX = PAGE_WIDTH - MARGIN - 25;
   const scoreY = currentY + 15;
   const scoreColor = getScoreColor(displayOverallScore);
-  doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2], 0.2);
+  // Get light version of score color
+  const scoreBgColor = displayOverallScore >= 75 ? COLORS.greenLight
+    : displayOverallScore >= 50 ? COLORS.amberLight
+    : [254, 226, 226] as [number, number, number]; // Light red
+  doc.setFillColor(...scoreBgColor);
   doc.circle(scoreX, scoreY, 12, 'F');
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
@@ -260,18 +263,19 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
   doc.setTextColor(...COLORS.textDim);
   doc.text(`Scanned URL: ${result.url}`, MARGIN + 5, currentY + 30);
 
-  // Analysis method badge
+  // Analysis method badge - using proper light background colors (no transparency)
   const methodText = result.analysisMethod === 'live' ? 'Live Analysis' : 'Demo Mode';
   const methodColor = result.analysisMethod === 'live' ? COLORS.green : COLORS.amber;
-  doc.setFillColor(methodColor[0], methodColor[1], methodColor[2], 0.2);
+  const methodBgColor = result.analysisMethod === 'live' ? COLORS.greenLight : COLORS.amberLight;
+  doc.setFillColor(...methodBgColor);
   doc.roundedRect(MARGIN + 5, currentY + 33, 25, 5, 2, 2, 'F');
   doc.setFontSize(6);
   doc.setTextColor(...methodColor);
   doc.text(methodText, MARGIN + 7, currentY + 36.5);
 
-  // Blocked badge if applicable
+  // Blocked badge if applicable - using light red background
   if (isUnder16Blocked) {
-    doc.setFillColor(COLORS.red[0], COLORS.red[1], COLORS.red[2], 0.2);
+    doc.setFillColor(254, 226, 226); // Light red background
     doc.roundedRect(MARGIN + 35, currentY + 33, 35, 5, 2, 2, 'F');
     doc.setTextColor(...COLORS.red);
     doc.text('Blocked for under 16', MARGIN + 37, currentY + 36.5);
@@ -354,17 +358,53 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
   // ===== SAFE KEYWORDS SECTION =====
   const safeKeywords = result.contentAnalysis.textAnalysis.safeKeywordsFound;
   if (safeKeywords && safeKeywords.length > 0) {
-    if (checkNewPage(30)) addNewPage();
+    // Calculate required height based on number of pills
+    const pillHeight = 6;
+    const pillSpacing = 2;
+    const maxPillsPerRow = 5;
+    const displayKeywords = safeKeywords.slice(0, 15);
+    const numRows = Math.ceil(displayKeywords.length / maxPillsPerRow);
+    const sectionHeight = 10 + (numRows * (pillHeight + pillSpacing));
+
+    if (checkNewPage(sectionHeight + 15)) addNewPage();
 
     currentY = drawSectionTitle('Safe Content Indicators', currentY);
 
-    drawRoundedRect(MARGIN, currentY, CONTENT_WIDTH, 15, 2, [220, 252, 231] as [number, number, number]);
-    doc.setFontSize(8);
-    doc.setTextColor(...COLORS.green);
-    const safeText = safeKeywords.slice(0, 10).join(', ');
-    doc.text(safeText, MARGIN + 5, currentY + 9);
+    // Background for the section
+    drawRoundedRect(MARGIN, currentY, CONTENT_WIDTH, sectionHeight, 3, COLORS.greenLight);
 
-    currentY += 22;
+    // Draw each keyword as a curved pill/tablet shape
+    let pillX = MARGIN + 5;
+    let pillY = currentY + 5;
+    const pillPadding = 3;
+
+    doc.setFontSize(7);
+
+    for (let i = 0; i < displayKeywords.length; i++) {
+      const keyword = displayKeywords[i];
+      const textWidth = doc.getTextWidth(keyword);
+      const pillWidth = textWidth + (pillPadding * 2);
+
+      // Check if we need to wrap to next row
+      if (pillX + pillWidth > PAGE_WIDTH - MARGIN - 5) {
+        pillX = MARGIN + 5;
+        pillY += pillHeight + pillSpacing;
+      }
+
+      // Draw pill background (curved tablet shape)
+      doc.setFillColor(...COLORS.white);
+      doc.setDrawColor(...COLORS.green);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(pillX, pillY, pillWidth, pillHeight, 3, 3, 'FD');
+
+      // Draw text inside pill
+      doc.setTextColor(...COLORS.green);
+      doc.text(keyword, pillX + pillPadding, pillY + 4.2);
+
+      pillX += pillWidth + 3;
+    }
+
+    currentY += sectionHeight + 5;
   }
 
   // ===== NLP TEXT ANALYSIS SECTION =====
