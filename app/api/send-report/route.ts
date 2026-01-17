@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+
+const loadNodemailer = () => {
+  try {
+    const requireFn = eval('require') as NodeRequire;
+    return requireFn('nodemailer') as {
+      createTransport: (options: Record<string, unknown>) => {
+        sendMail: (mailOptions: Record<string, unknown>) => Promise<unknown>;
+      };
+    };
+  } catch (error) {
+    console.error('Nodemailer dependency is missing:', error);
+    throw new Error('Email service is unavailable. Please install nodemailer.');
+  }
+};
 
 interface ReportData {
   url: string;
@@ -28,19 +41,6 @@ interface ReportData {
   };
   timestamp: string;
 }
-
-// Create nodemailer transporter
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-};
 
 // Generate HTML email template for the report
 const generateReportHTML = (report: ReportData): string => {
@@ -191,6 +191,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create transporter with dynamic SMTP_USER
+    const nodemailer = loadNodemailer();
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
