@@ -87,7 +87,7 @@ export default function Navbar() {
     <>
       <nav
         className={`fixed z-[100] h-[64px] flex items-center ${isScrolled
-          ? "left-1/2 top-4 rounded-full border border-white/10 backdrop-blur-xl bg-primary/80 shadow-[0_8px_32px_rgba(39,2,99,0.3)] px-3 md:px-6"
+          ? "left-1/2 top-4 rounded-full border border-white/10 backdrop-blur-xl bg-black/60 shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-3 md:px-6"
           : "left-0 right-0 top-0 bg-white border-b border-gray-100 px-3 md:px-10"
           }`}
         style={{
@@ -102,44 +102,28 @@ export default function Navbar() {
         } as React.CSSProperties}
       >
         {/* Logo Section - Left */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Link
-            href="/"
-            className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
-              }`}
-            style={{
-              transitionProperty: "color",
-              transitionDuration: "400ms",
-              transitionTimingFunction: smoothEase,
-            }}
-          >
-            <div className="w-12 h-12 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
-              <Image
-                src="/komaliconnobg.png"
-                alt="KOMAL Logo"
-                width={48}
-                height={48}
-                className="object-contain"
-                priority
-              />
-            </div>
-            <span className="hidden md:inline text-2xl font-semibold">KOMAL</span>
-          </Link>
-          <a
-            href="https://komalkids.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`hidden md:inline text-[16px] font-medium hover:opacity-80 ${isScrolled ? "text-white/90" : "text-primary/80"
-              }`}
-            style={{
-              transitionProperty: "color, opacity",
-              transitionDuration: "400ms",
-              transitionTimingFunction: smoothEase,
-            }}
-          >
-            komalkids.com
-          </a>
-        </div>
+        <Link
+          href="/"
+          className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
+            }`}
+          style={{ 
+            transitionProperty: "color",
+            transitionDuration: "400ms",
+            transitionTimingFunction: smoothEase,
+          }}
+        >
+          <div className="w-12 h-12 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
+            <Image
+              src="/komaliconnobg.png"
+              alt="KOMAL Logo"
+              width={48}
+              height={48}
+              className="object-contain"
+              priority
+            />
+          </div>
+          <span className="hidden md:inline text-2xl font-semibold">KOMAL</span>
+        </Link>
 
         {/* Desktop Navigation - Centered with flex-1 */}
         <div className="hidden md:flex items-center justify-center gap-6 flex-1">
@@ -165,7 +149,7 @@ export default function Navbar() {
           <Button
             onClick={() => setIsWaitlistOpen(true)}
             className={`h-9 px-4 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
-              ? "bg-white text-primary hover:bg-white/90"
+              ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
             style={{ 
@@ -205,7 +189,7 @@ export default function Navbar() {
           <Button
             onClick={() => setIsWaitlistOpen(true)}
             className={`h-9 px-5 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
-              ? "bg-white text-primary hover:bg-white/90"
+              ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
             style={{ 
@@ -261,7 +245,7 @@ export default function Navbar() {
       {/* Backdrop overlay when menu is open */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[98] bg-primary/20 md:hidden"
+          className="fixed inset-0 z-[98] bg-black/20 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
