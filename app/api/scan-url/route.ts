@@ -7,7 +7,6 @@ import {
   loadAndVectorizeKeywords,
   extractWordFrequencies,
   findSimilarKeywords,
-  deepContextSearch,
   generateSimilarityReport,
   SimilarityMatch,
   CategoryKeywords,
@@ -566,7 +565,7 @@ async function fetchWebpageContent(url: string): Promise<string> {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; KomalSafetyBot/1.0; +https://komalkids.com)',
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(7000),
     });
 
     if (!response.ok) {
@@ -651,7 +650,7 @@ async function captureScreenshot(url: string): Promise<Buffer | null> {
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 720 });
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 8000 });
 
     const screenshot = await page.screenshot({ type: 'png' });
     return screenshot as Buffer;
@@ -829,19 +828,20 @@ function getLikelihoodScore(likelihood: string | number | null | undefined): num
 async function analyzeUrlForChildSafety(url: string): Promise<ScanResult> {
   try {
     console.log('Fetching webpage content...');
-    const html = await fetchWebpageContent(url);
+    const htmlPromise = fetchWebpageContent(url);
+    const screenshotPromise = visionClient ? captureScreenshot(url) : Promise.resolve(null);
+    const html = await htmlPromise;
 
     console.log('Parsing HTML and extracting content...');
     const parsedContent = parseHTMLContent(html, url);
 
-    console.log('Capturing screenshot...');
-    const screenshot = await captureScreenshot(url);
-
     console.log('Analyzing text with NLP...');
-    const nlpResults = await analyzeTextWithNLP(parsedContent.textContent);
+    const nlpPromise = analyzeTextWithNLP(parsedContent.textContent);
 
     console.log('Analyzing images with Vision API...');
-    const visionResults = await analyzeImagesWithVision(parsedContent.imageUrls, screenshot);
+    const visionPromise = screenshotPromise.then((screenshot) =>
+      analyzeImagesWithVision(parsedContent.imageUrls, screenshot)
+    );
 
     console.log('Performing child safety analysis...');
     const childSafetyAnalysis = analyzeChildSafety(
@@ -856,8 +856,9 @@ async function analyzeUrlForChildSafety(url: string): Promise<ScanResult> {
     const categoryKeywords = loadAndVectorizeKeywords();
     const wordFrequencies = extractWordFrequencies(parsedContent.textContent);
     const similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, parsedContent.textContent);
-    const depthSearch = deepContextSearch(parsedContent.textContent, categoryKeywords, 50);
     const similarityReport = generateSimilarityReport(similarityMatches, wordFrequencies);
+
+    const [nlpResults, visionResults] = await Promise.all([nlpPromise, visionPromise]);
 
     // Calculate multimedia risk
     const multimediaRisk = 100 - parsedContent.multimedia.mediaSafetyScore;
