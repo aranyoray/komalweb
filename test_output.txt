@@ -1,0 +1,44 @@
+[HybridMod] Loading CSV data from Models_Masterdoc_Test.csv...
+[HybridMod] \u2705 Successfully loaded 36 categories.
+
+[HybridMod] \U0001f680 Starting analysis for Content ID: test-med-1 | Age Group: 13-16
+[HybridMod] Step 1: Running CSV Keyword Matching...
+[HybridMod] \u2139\ufe0f CSV Analysis: No significant keyword matches found.
+[HybridMod] Step 2: Running Vector Semantic Analysis...
+[HybridMod]    Vector Semantic Category: General
+[HybridMod]    Vector Confidence: 0.20
+[HybridMod] Step 3: Calculating Weighted Hybrid Score...
+[HybridMod]    Calculation: (0.00 * 0.3) + (0.20 * 0.7) = 0.1400
+[HybridMod] Step 4: Decision Engine & Age Rules...
+[HybridMod]    Checking Age Rule for group '13-16': None
+[HybridMod] \U0001f3c1 FINAL DECISION: PASS | Action: Allow with monitoring
+
+[HybridMod] \U0001f680 Starting analysis for Content ID: test-unsafe-1 | Age Group: 13-16
+[HybridMod] Step 1: Running CSV Keyword Matching...
+[HybridMod] \u2139\ufe0f CSV Analysis: No significant keyword matches found.
+[HybridMod] Step 2: Running Vector Semantic Analysis...
+[HybridMod]    Vector Semantic Category: General
+[HybridMod]    Vector Confidence: 0.20
+[HybridMod] Step 3: Calculating Weighted Hybrid Score...
+[HybridMod]    Calculation: (0.00 * 0.3) + (0.20 * 0.7) = 0.1400
+[HybridMod] Step 4: Decision Engine & Age Rules...
+[HybridMod]    Checking Age Rule for group '13-16': None
+[HybridMod] \U0001f3c1 FINAL DECISION: PASS | Action: Allow with monitoring
+--- Test 1: Educational Context (Should likely be safe or low score) ---
+Medical Result Decision: PASS
+Medical Result Score: 0.14
+
+--- Test 2: Unsafe Context ---
+Unsafe Result Decision: PASS
+Unsafe Result Score: 0.14
+Traceback (most recent call last):
+  File "C:\Users\ravir\komalweb\test_context_detection.py", line 37, in <module>
+    test_context()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\ravir\komalweb\test_context_detection.py", line 34, in test_context
+    print("\n\u274c FAIL: Medical context did not reduce score adequately.")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ravir\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in position 2: character maps to <undefined>
