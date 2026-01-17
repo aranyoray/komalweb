@@ -269,10 +269,11 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
       }
     });
 
-    const [screenshotResult, imageResults] = await Promise.all([
+    const [screenshotResults, imageResults] = await Promise.all([
       screenshotPromise,
       Promise.all(imagePromises),
     ]);
+    const screenshotResult = screenshotResults?.[0];
 
     if (screenshotResult) {
       results.labels = screenshotResult.labelAnnotations?.map((l) => l.description || '') || [];
