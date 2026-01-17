@@ -74,8 +74,9 @@ interface ScanResult {
     summary: string;
     totalMatches: number;
   };
+  searchSources?: Array<{ url: string; title: string; snippet: string }>;
   timestamp: string;
-  analysisMethod?: 'live' | 'demo';
+  analysisMethod?: 'live' | 'demo' | 'search-fallback';
 }
 
 export default function DemoPage() {
@@ -244,21 +245,11 @@ export default function DemoPage() {
                   <p style="margin: 0 0 4px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Language Score</p>
                   <p style="margin: 0; font-size: 13px; font-weight: 600; color: ${getScoreColor(result.contentAnalysis.textAnalysis.languageScore)};">${result.contentAnalysis.textAnalysis.languageScore}/100</p>
                 </div>
-                ${result.contentAnalysis.textAnalysis.keyTopics.length > 0 ? `
-                <div style="margin-bottom: 10px;">
-                  <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Key Topics</p>
-                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    ${result.contentAnalysis.textAnalysis.keyTopics.map((topic: string) => `
-                      <span style="background: ${primaryLight}; color: ${primaryColor}; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${topic}</span>
-                    `).join('')}
-                  </div>
-                </div>
-                ` : ''}
                 ${result.contentAnalysis.textAnalysis.entities && result.contentAnalysis.textAnalysis.entities.length > 0 ? `
                 <div>
                   <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Entities</p>
                   <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    ${result.contentAnalysis.textAnalysis.entities.slice(0, 5).map((entity: string) => `
+                    ${result.contentAnalysis.textAnalysis.entities.slice(0, 3).map((entity: string) => `
                       <span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${entity}</span>
                     `).join('')}
                   </div>
@@ -860,30 +851,11 @@ export default function DemoPage() {
                           {result.contentAnalysis.textAnalysis.languageScore}/100
                         </p>
                       </div>
-                      <div>
-                        <p className="text-sm text-text-dim mb-2">Key Topics Detected</p>
-                        <div className="flex flex-wrap gap-2">
-                          {result.contentAnalysis.textAnalysis.keyTopics.length > 0 ? (
-                            result.contentAnalysis.textAnalysis.keyTopics.map((topic, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                              >
-                                {topic}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded-full text-sm">
-                              No specific topics detected
-                            </span>
-                          )}
-                        </div>
-                      </div>
                       {result.contentAnalysis.textAnalysis.entities && result.contentAnalysis.textAnalysis.entities.length > 0 && (
                         <div>
                           <p className="text-sm text-text-dim mb-2">Entities Detected</p>
                           <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.textAnalysis.entities.slice(0, 5).map((entity, idx) => (
+                            {result.contentAnalysis.textAnalysis.entities.slice(0, 3).map((entity, idx) => (
                               <span
                                 key={idx}
                                 className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"

@@ -157,8 +157,9 @@ interface ScanResult {
     summary: string;
     totalMatches: number;
   };
+  searchSources?: Array<{ url: string; title: string; snippet: string }>;
   timestamp: string;
-  analysisMethod: 'live' | 'demo';
+  analysisMethod: 'live' | 'demo' | 'search-fallback';
 }
 
 // Initialize Google Cloud clients (only if credentials are available)
@@ -242,6 +243,203 @@ async function fetchWebpageContent(url: string, retries: number = 2): Promise<st
   }
 
   throw lastError || new Error('Failed to fetch webpage after retries');
+}
+
+/**
+ * Search Google for information about a URL/domain and get top results
+ */
+async function searchGoogleForUrl(url: string): Promise<string[]> {
+  try {
+    // Extract domain name for search
+    const urlObj = new URL(url);
+    const domain = urlObj.hostname.replace('www.', '');
+    const searchQuery = encodeURIComponent(`${domain} site information reviews`);
+
+    // Try Google Custom Search API if available
+    if (process.env.GOOGLE_SEARCH_API_KEY && process.env.GOOGLE_SEARCH_ENGINE_ID) {
+      const apiUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${searchQuery}&num=10`;
+
+      const response = await fetch(apiUrl, {
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.items && data.items.length > 0) {
+          return data.items.map((item: any) => item.link).slice(0, 10);
+        }
+      }
+    }
+
+    // Fallback: Use DuckDuckGo HTML search (no API key needed)
+    const ddgUrl = `https://html.duckduckgo.com/html/?q=${searchQuery}`;
+    const response = await fetch(ddgUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (response.ok) {
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      const links: string[] = [];
+
+      // Extract result links from DuckDuckGo
+      $('a.result__a').each((_, el) => {
+        const href = $(el).attr('href');
+        if (href && href.startsWith('http') && !href.includes('duckduckgo.com')) {
+          links.push(href);
+        }
+      });
+
+      // Also try extracting from result snippets
+      $('a.result__url').each((_, el) => {
+        const href = $(el).attr('href');
+        if (href && href.startsWith('http')) {
+          links.push(href);
+        }
+      });
+
+      return [...new Set(links)].slice(0, 10); // Unique links, max 10
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error searching for URL:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch content from multiple URLs and combine them
+ */
+async function fetchMultiplePages(urls: string[], maxPages: number = 5): Promise<{
+  combinedContent: string;
+  sources: Array<{ url: string; title: string; snippet: string }>;
+  successCount: number;
+}> {
+  const sources: Array<{ url: string; title: string; snippet: string }> = [];
+  const contentParts: string[] = [];
+  let successCount = 0;
+
+  // Fetch pages in parallel with a limit
+  const fetchPromises = urls.slice(0, maxPages).map(async (pageUrl) => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s per page
+
+      const response = await fetch(pageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) return null;
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+
+      // Extract title
+      const title = $('title').text().trim() || $('h1').first().text().trim() || 'Untitled';
+
+      // Remove unwanted elements
+      $('script, style, nav, footer, header, aside, iframe, noscript').remove();
+
+      // Extract main content
+      const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
+      const snippet = bodyText.substring(0, 500);
+      const content = bodyText.substring(0, 2000); // Limit per page
+
+      return { url: pageUrl, title, snippet, content };
+    } catch (error) {
+      console.error(`Failed to fetch ${pageUrl}:`, error);
+      return null;
+    }
+  });
+
+  const results = await Promise.all(fetchPromises);
+
+  for (const result of results) {
+    if (result) {
+      sources.push({ url: result.url, title: result.title, snippet: result.snippet });
+      contentParts.push(`[Source: ${result.title}]\n${result.content}`);
+      successCount++;
+    }
+  }
+
+  return {
+    combinedContent: contentParts.join('\n\n---\n\n'),
+    sources,
+    successCount,
+  };
+}
+
+/**
+ * Fallback analysis using Google search results
+ */
+async function analyzeViaSearchFallback(url: string): Promise<{
+  success: boolean;
+  metadata: {
+    title: string;
+    description: string;
+    keywords: string[];
+    textContent: string;
+    imageUrls: string[];
+    imageCount: number;
+    linkCount: number;
+  };
+  sources: Array<{ url: string; title: string; snippet: string }>;
+} | null> {
+  console.log('Attempting search-based fallback analysis...');
+
+  try {
+    // Search for information about the URL
+    const searchResults = await searchGoogleForUrl(url);
+
+    if (searchResults.length === 0) {
+      console.log('No search results found');
+      return null;
+    }
+
+    console.log(`Found ${searchResults.length} search results, fetching top pages...`);
+
+    // Fetch content from top search results
+    const { combinedContent, sources, successCount } = await fetchMultiplePages(searchResults, 5);
+
+    if (successCount === 0 || combinedContent.length < 100) {
+      console.log('Insufficient content from search results');
+      return null;
+    }
+
+    console.log(`Successfully fetched ${successCount} pages with ${combinedContent.length} chars of content`);
+
+    // Extract domain for title
+    const urlObj = new URL(url);
+    const domain = urlObj.hostname.replace('www.', '');
+
+    // Create metadata from combined content
+    return {
+      success: true,
+      metadata: {
+        title: `Analysis of ${domain} (via search)`,
+        description: `Content aggregated from ${successCount} sources about ${domain}`,
+        keywords: sources.map(s => s.title.split(' ').slice(0, 3).join(' ')),
+        textContent: combinedContent,
+        imageUrls: [],
+        imageCount: 0,
+        linkCount: sources.length,
+      },
+      sources,
+    };
+  } catch (error) {
+    console.error('Search fallback failed:', error);
+    return null;
+  }
 }
 
 /**
@@ -330,50 +528,76 @@ async function analyzeTextWithNLP(text: string) {
   }
 
   try {
-    // Analyze sentiment
-    const [sentimentResult] = await languageClient.analyzeSentiment({
-      document: {
-        content: text,
-        type: 'PLAIN_TEXT',
-      },
-    });
+    // Limit text length for faster processing (API has limits anyway)
+    const truncatedText = text.substring(0, 5000);
 
-    // Analyze entities
-    const [entityResult] = await languageClient.analyzeEntities({
-      document: {
-        content: text,
-        type: 'PLAIN_TEXT',
-      },
-    });
+    // Run all NLP analyses in PARALLEL for speed
+    const [sentimentResult, entityResult, classificationResult] = await Promise.all([
+      // Sentiment analysis with encoding type for better accuracy
+      languageClient.analyzeSentiment({
+        document: {
+          content: truncatedText,
+          type: 'PLAIN_TEXT',
+          language: 'en', // Optimize by specifying language
+        },
+        encodingType: 'UTF8',
+      }).catch(() => [null]),
 
-    // Classify content
-    const [classificationResult] = await languageClient.classifyText({
-      document: {
-        content: text,
-        type: 'PLAIN_TEXT',
-      },
-    });
+      // Entity analysis with salience filtering
+      languageClient.analyzeEntities({
+        document: {
+          content: truncatedText,
+          type: 'PLAIN_TEXT',
+          language: 'en',
+        },
+        encodingType: 'UTF8',
+      }).catch(() => [null]),
 
-    const sentiment = sentimentResult.documentSentiment;
+      // Content classification (requires at least 20 words)
+      truncatedText.split(/\s+/).length >= 20
+        ? languageClient.classifyText({
+            document: {
+              content: truncatedText,
+              type: 'PLAIN_TEXT',
+              language: 'en',
+            },
+            classificationModelOptions: {
+              v2Model: {
+                contentCategoriesVersion: 'V2', // Use latest classification model
+              },
+            },
+          }).catch(() => [null])
+        : Promise.resolve([null]),
+    ]);
+
+    const sentiment = sentimentResult?.[0]?.documentSentiment;
     const sentimentScore = sentiment?.score || 0;
     const sentimentMagnitude = sentiment?.magnitude || 0;
 
-    // Determine sentiment label
+    // Determine sentiment label with finer granularity
     let sentimentLabel = 'Neutral';
-    if (sentimentScore > 0.25) sentimentLabel = 'Positive';
+    if (sentimentScore > 0.5) sentimentLabel = 'Very Positive';
+    else if (sentimentScore > 0.25) sentimentLabel = 'Positive';
+    else if (sentimentScore < -0.5) sentimentLabel = 'Very Concerning';
     else if (sentimentScore < -0.25) sentimentLabel = 'Concerning';
 
-    // Extract entities
-    const entities = entityResult.entities?.map((e) => e.name || '').filter(Boolean) || [];
+    // Extract entities sorted by salience (importance)
+    const entities = entityResult?.[0]?.entities
+      ?.sort((a: any, b: any) => (b.salience || 0) - (a.salience || 0))
+      ?.map((e: any) => e.name || '')
+      ?.filter(Boolean) || [];
 
-    // Extract categories/topics
-    const categories = classificationResult.categories?.map((c) => c.name || '').filter(Boolean) || [];
+    // Extract categories/topics with confidence threshold
+    const categories = classificationResult?.[0]?.categories
+      ?.filter((c: any) => (c.confidence || 0) > 0.5) // Only high-confidence categories
+      ?.map((c: any) => c.name || '')
+      ?.filter(Boolean) || [];
 
     return {
       sentiment: sentimentLabel,
       sentimentScore,
       sentimentMagnitude,
-      entities: entities.slice(0, 10),
+      entities: entities.slice(0, 15), // Top 15 entities by salience
       categories,
     };
   } catch (error) {
@@ -383,7 +607,7 @@ async function analyzeTextWithNLP(text: string) {
 }
 
 /**
- * Analyze images using Google Cloud Vision API
+ * Analyze images using Google Cloud Vision API (optimized with parallel processing)
  */
 async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer | null) {
   if (!visionClient) {
@@ -397,55 +621,78 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
       detectedObjects: [] as string[],
     };
 
-    // Analyze screenshot if available
-    if (screenshot) {
-      const [screenshotResult] = await visionClient.annotateImage({
-        image: { content: screenshot },
-        features: [
-          { type: 'LABEL_DETECTION', maxResults: 10 },
-          { type: 'SAFE_SEARCH_DETECTION' },
-          { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
-        ],
-      });
+    // Prepare all image analysis requests
+    const imageRequests: Promise<any>[] = [];
 
-      results.labels = screenshotResult.labelAnnotations?.map((l) => l.description || '') || [];
-      results.safeSearchAnnotation = screenshotResult.safeSearchAnnotation;
-      results.detectedObjects = screenshotResult.localizedObjectAnnotations?.map((o) => o.name || '') || [];
+    // Screenshot analysis
+    if (screenshot) {
+      imageRequests.push(
+        visionClient.annotateImage({
+          image: { content: screenshot },
+          features: [
+            { type: 'LABEL_DETECTION', maxResults: 6 }, // Limit to 6 labels
+            { type: 'SAFE_SEARCH_DETECTION' },
+            { type: 'OBJECT_LOCALIZATION', maxResults: 5 },
+          ],
+        }).catch(() => [null])
+      );
     }
 
-    // Analyze first few images from the page
-    for (const imageUrl of imageUrls.slice(0, 3)) {
-      try {
-        const [imageResult] = await visionClient.annotateImage({
+    // Page image analysis (limit to 2 for speed)
+    for (const imageUrl of imageUrls.slice(0, 2)) {
+      imageRequests.push(
+        visionClient.annotateImage({
           image: { source: { imageUri: imageUrl } },
           features: [
-            { type: 'LABEL_DETECTION', maxResults: 5 },
+            { type: 'LABEL_DETECTION', maxResults: 3 },
             { type: 'SAFE_SEARCH_DETECTION' },
           ],
-        });
+        }).catch(() => [null])
+      );
+    }
 
-        const imageLabels = imageResult.labelAnnotations?.map((l) => l.description || '') || [];
-        results.labels.push(...imageLabels);
+    // Run all image analysis in PARALLEL
+    const imageResults = await Promise.all(imageRequests);
 
-        // Use the most restrictive safe search annotation
-        if (imageResult.safeSearchAnnotation) {
-          if (!results.safeSearchAnnotation) {
-            results.safeSearchAnnotation = imageResult.safeSearchAnnotation;
-          } else {
-            // Merge annotations (take worst case)
-            const current = results.safeSearchAnnotation;
-            const newAnnotation = imageResult.safeSearchAnnotation;
-            results.safeSearchAnnotation = {
-              adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
-              violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
-              racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
-            };
-          }
+    // Process results
+    for (const [result] of imageResults) {
+      if (!result) continue;
+
+      // Extract labels with confidence threshold > 0.7
+      const highConfLabels = result.labelAnnotations
+        ?.filter((l: any) => (l.score || 0) > 0.7)
+        ?.map((l: any) => l.description || '') || [];
+      results.labels.push(...highConfLabels);
+
+      // Extract detected objects
+      if (result.localizedObjectAnnotations) {
+        const objects = result.localizedObjectAnnotations
+          ?.filter((o: any) => (o.score || 0) > 0.6)
+          ?.map((o: any) => o.name || '') || [];
+        results.detectedObjects.push(...objects);
+      }
+
+      // Merge safe search annotations (take worst case)
+      if (result.safeSearchAnnotation) {
+        if (!results.safeSearchAnnotation) {
+          results.safeSearchAnnotation = result.safeSearchAnnotation;
+        } else {
+          const current = results.safeSearchAnnotation;
+          const newAnnotation = result.safeSearchAnnotation;
+          results.safeSearchAnnotation = {
+            adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
+            violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
+            racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
+            medical: Math.max(getLikelihoodScore(current.medical), getLikelihoodScore(newAnnotation.medical)),
+            spoof: Math.max(getLikelihoodScore(current.spoof), getLikelihoodScore(newAnnotation.spoof)),
+          };
         }
-      } catch (error) {
-        console.error(`Error analyzing image ${imageUrl}:`, error);
       }
     }
+
+    // Deduplicate and limit results
+    results.labels = [...new Set(results.labels)].slice(0, 6);
+    results.detectedObjects = [...new Set(results.detectedObjects)].slice(0, 5);
 
     return results;
   } catch (error) {
@@ -929,7 +1176,7 @@ function generateAdultDomainBlockedResult(url: string, matchedKeyword: string): 
 }
 
 /**
- * Main analysis function - uses live data when possible
+ * Main analysis function - uses live data when possible with optimized parallel processing
  */
 async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
   // Check for adult keywords in domain FIRST - immediate block
@@ -939,38 +1186,78 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
     return generateAdultDomainBlockedResult(url, adultCheck.matchedKeyword || 'unknown');
   }
 
+  let metadata: ReturnType<typeof parseHTMLMetadata> | null = null;
+  let searchSources: Array<{ url: string; title: string; snippet: string }> | undefined;
+  let usedSearchFallback = false;
+
   try {
     // Fetch webpage content
     console.log('Fetching webpage content...');
     const html = await fetchWebpageContent(url);
 
     // Check if we got any content
-    if (!html || html.trim().length === 0) {
-      console.log('No HTML content received');
-      return generateNoContentResult(url, 'No content could be fetched from this URL');
+    if (html && html.trim().length > 0) {
+      // Parse HTML and extract metadata
+      console.log('Parsing HTML and extracting metadata...');
+      metadata = parseHTMLMetadata(html, url);
     }
 
-    // Parse HTML and extract metadata
-    console.log('Parsing HTML and extracting metadata...');
-    const metadata = parseHTMLMetadata(html, url);
+    // If no content or insufficient text, try search fallback
+    if (!metadata || !metadata.textContent || metadata.textContent.trim().length < 50) {
+      console.log('Insufficient direct content, trying search fallback...');
+      const searchResult = await analyzeViaSearchFallback(url);
 
-    // Check if we got any meaningful content
-    if (!metadata.textContent || metadata.textContent.trim().length < 50) {
-      console.log('Insufficient text content for analysis');
-      return generateNoContentResult(url, 'Insufficient content for safety analysis');
+      if (searchResult && searchResult.success) {
+        metadata = searchResult.metadata;
+        searchSources = searchResult.sources;
+        usedSearchFallback = true;
+        console.log(`Search fallback successful: ${searchResult.sources.length} sources`);
+      }
     }
+  } catch (fetchError) {
+    console.error('Direct fetch failed, trying search fallback:', fetchError);
 
-    // Capture screenshot
-    console.log('Capturing screenshot...');
-    const screenshot = await captureScreenshot(url);
+    // Try search fallback when direct fetch fails
+    const searchResult = await analyzeViaSearchFallback(url);
 
-    // Analyze text with NLP
-    console.log('Analyzing text with NLP...');
-    const nlpResults = await analyzeTextWithNLP(metadata.textContent);
+    if (searchResult && searchResult.success) {
+      metadata = searchResult.metadata;
+      searchSources = searchResult.sources;
+      usedSearchFallback = true;
+      console.log(`Search fallback successful: ${searchResult.sources.length} sources`);
+    }
+  }
 
-    // Analyze images with Vision API
-    console.log('Analyzing images with Vision API...');
-    const visionResults = await analyzeImagesWithVision(metadata.imageUrls, screenshot);
+  // If still no content, fall back to demo mode
+  if (!metadata || !metadata.textContent || metadata.textContent.trim().length < 50) {
+    console.log('All fetch methods failed, falling back to demo mode...');
+    return generateDemoAnalysis(url);
+  }
+
+  try {
+    // Run screenshot, NLP, and Vision API in PARALLEL for speed optimization
+    console.log('Running parallel analysis (screenshot, NLP, Vision)...');
+    const startTime = Date.now();
+
+    const [screenshot, nlpResults, visionResults] = await Promise.all([
+      // Screenshot capture (skip if using search fallback)
+      usedSearchFallback ? Promise.resolve(null) : captureScreenshot(url).catch(err => {
+        console.error('Screenshot failed:', err);
+        return null;
+      }),
+      // NLP analysis
+      analyzeTextWithNLP(metadata.textContent).catch(err => {
+        console.error('NLP analysis failed:', err);
+        return null;
+      }),
+      // Vision analysis (skip if using search fallback)
+      usedSearchFallback ? Promise.resolve(null) : analyzeImagesWithVision(metadata.imageUrls, null).catch(err => {
+        console.error('Vision analysis failed:', err);
+        return null;
+      }),
+    ]);
+
+    console.log(`Parallel analysis completed in ${Date.now() - startTime}ms`);
 
     // Perform keyword vectorization and similarity search FIRST
     let similarityMatches: SimilarityMatch[] = [];
@@ -1064,8 +1351,9 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
       categoryScores,
       ageGroupActions,
       keywordSimilarityReport,
+      searchSources,
       timestamp: new Date().toISOString(),
-      analysisMethod: visionClient && languageClient ? 'live' : 'demo',
+      analysisMethod: usedSearchFallback ? 'search-fallback' : (visionClient && languageClient ? 'live' : 'demo'),
     };
 
     return result;
