@@ -56,14 +56,20 @@ const generateReportHTML = (report: ReportData): string => {
     return '#22c55e';
   };
 
-  const ageGroupsHTML = Object.entries(report.ageGroupActions)
+  // Safely handle ageGroupActions - might be undefined
+  const ageGroupActions = report.ageGroupActions || {};
+  const ageGroupsHTML = Object.entries(ageGroupActions)
     .map(([age, data]) => `
-      <div style="background: ${getActionColor(data.action)}15; border: 2px solid ${getActionColor(data.action)}40; border-radius: 12px; padding: 16px; text-align: center;">
+      <div style="background: ${getActionColor(data?.action || 'ALLOW')}15; border: 2px solid ${getActionColor(data?.action || 'ALLOW')}40; border-radius: 12px; padding: 16px; text-align: center;">
         <div style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">${age}</div>
-        <div style="font-size: 24px; font-weight: 700; color: ${getActionColor(data.action)}; margin-bottom: 4px;">${data.action}</div>
-        <div style="font-size: 12px; color: #666;">Score: ${data.score}/100</div>
+        <div style="font-size: 24px; font-weight: 700; color: ${getActionColor(data?.action || 'ALLOW')}; margin-bottom: 4px;">${data?.action || 'N/A'}</div>
+        <div style="font-size: 12px; color: #666;">Score: ${data?.score ?? 'N/A'}/100</div>
       </div>
     `).join('');
+
+  // Safely handle contentAnalysis - might be undefined or incomplete
+  const textAnalysis = report.contentAnalysis?.textAnalysis || { sentiment: 'N/A', keyTopics: [], languageScore: 0 };
+  const visualAnalysis = report.contentAnalysis?.visualAnalysis || { safetyScore: 0, concerns: [] };
 
   return `
 <!DOCTYPE html>
@@ -112,26 +118,26 @@ const generateReportHTML = (report: ReportData): string => {
         <div style="display: grid; gap: 12px;">
           <div>
             <span style="font-size: 12px; color: #666;">Sentiment:</span>
-            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${report.contentAnalysis.textAnalysis.sentiment}</span>
+            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${textAnalysis.sentiment}</span>
           </div>
           <div>
             <span style="font-size: 12px; color: #666;">Language Score:</span>
-            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${report.contentAnalysis.textAnalysis.languageScore}/100</span>
+            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${textAnalysis.languageScore}/100</span>
           </div>
           <div>
             <span style="font-size: 12px; color: #666;">Visual Safety:</span>
-            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${report.contentAnalysis.visualAnalysis.safetyScore}/100</span>
+            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${visualAnalysis.safetyScore}/100</span>
           </div>
-          ${report.contentAnalysis.textAnalysis.keyTopics.length > 0 ? `
+          ${textAnalysis.keyTopics && textAnalysis.keyTopics.length > 0 ? `
           <div>
             <span style="font-size: 12px; color: #666;">Key Topics:</span>
-            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${report.contentAnalysis.textAnalysis.keyTopics.join(', ')}</span>
+            <span style="font-size: 14px; color: #1e3a5f; font-weight: 500; margin-left: 8px;">${textAnalysis.keyTopics.join(', ')}</span>
           </div>
           ` : ''}
-          ${report.contentAnalysis.visualAnalysis.concerns.length > 0 ? `
+          ${visualAnalysis.concerns && visualAnalysis.concerns.length > 0 ? `
           <div>
             <span style="font-size: 12px; color: #666;">Concerns:</span>
-            <span style="font-size: 14px; color: #ef4444; font-weight: 500; margin-left: 8px;">${report.contentAnalysis.visualAnalysis.concerns.join(', ')}</span>
+            <span style="font-size: 14px; color: #ef4444; font-weight: 500; margin-left: 8px;">${visualAnalysis.concerns.join(', ')}</span>
           </div>
           ` : ''}
         </div>
@@ -169,6 +175,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate report has minimum required fields
+    if (!report.url) {
+      return NextResponse.json(
+        { error: 'Report must include URL' },
+        { status: 400 }
+      );
+    }
+
+    // Ensure report has defaults for optional fields
+    const sanitizedReport: ReportData = {
+      url: report.url,
+      overallScore: report.overallScore ?? 0,
+      ageGroupActions: report.ageGroupActions || {},
+      contentAnalysis: {
+        textAnalysis: {
+          sentiment: report.contentAnalysis?.textAnalysis?.sentiment || 'N/A',
+          keyTopics: report.contentAnalysis?.textAnalysis?.keyTopics || [],
+          languageScore: report.contentAnalysis?.textAnalysis?.languageScore ?? 0,
+        },
+        visualAnalysis: {
+          safetyScore: report.contentAnalysis?.visualAnalysis?.safetyScore ?? 0,
+          concerns: report.contentAnalysis?.visualAnalysis?.concerns || [],
+        },
+        metadata: report.contentAnalysis?.metadata,
+      },
+      timestamp: report.timestamp || new Date().toISOString(),
+    };
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -202,12 +236,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const htmlContent = generateReportHTML(report);
+    const htmlContent = generateReportHTML(sanitizedReport);
 
     await transporter.sendMail({
       from: process.env.SMTP_FROM || `"KOMAL Safety" <${smtpUser}>`,
       to: email,
-      subject: `URL Safety Report: ${report.url}`,
+      subject: `URL Safety Report: ${sanitizedReport.url}`,
       html: htmlContent,
     });
 
