@@ -36,13 +36,13 @@ const generateDemoRequestHTML = (name: string, email: string, organization?: str
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Demo Request - KOMAL</title>
+  <title>New Demo Request - KomalAI Digital Guardian</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f7;">
   <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #1e3a5f 0%, #6b4e71 100%); border-radius: 16px 16px 0 0; padding: 32px; text-align: center;">
-      <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 700;">KOMAL</h1>
+      <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 700;">KomalAI</h1>
       <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">New Demo Request</p>
     </div>
 
@@ -99,7 +99,7 @@ const generateDemoRequestHTML = (name: string, email: string, organization?: str
     <!-- Footer -->
     <div style="text-align: center; padding: 24px;">
       <p style="margin: 0; font-size: 12px; color: #999;">
-        This is an automated notification from the KOMAL URL Safety Demo
+        This is an automated notification from the Komal URL / keyword Safety Demo
       </p>
     </div>
   </div>
@@ -116,7 +116,7 @@ const generateConfirmationHTML = (name: string): string => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Demo Request Confirmed - KOMAL</title>
+  <title>Demo Request Confirmed - KomalAI Digital Guardian</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f7;">
   <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
 
     // Send notification to sales team
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"KOMAL Demo" <noreply@komalkids.com>',
+      from: process.env.SMTP_FROM || '"KomalAI Demo" <noreply@komalkids.com>',
       to: 'play@komalkids.com',
       subject: `New Demo Request from ${name}${organization ? ` (${organization})` : ''}`,
       html: generateDemoRequestHTML(name, email, organization),

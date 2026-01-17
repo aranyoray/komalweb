@@ -198,7 +198,7 @@ const generateReportHTML = (report: ReportData): string => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>KOMAL URL / Keyword Safety Report</title>
+  <title>Komal URL / Keyword Safety Report</title>
   <style>
     @media screen and (max-width: 600px) {
       .mobile-stack { display: block !important; width: 100% !important; }
@@ -535,7 +535,7 @@ export async function POST(request: NextRequest) {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || `"KOMAL Safety" <${smtpUser}>`,
       to: email,
-      subject: `KOMAL URL Safety Report: ${sanitizedReport.url}`,
+      subject: `Komal URL Safety Report: ${sanitizedReport.url}`,
       html: htmlContent,
     });
 

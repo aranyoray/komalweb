@@ -1264,56 +1264,181 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
   let siteName = '';
   let siteDescription = '';
   
-  try {
-    // For keyword search, use the keyword directly; for URLs, extract domain
-    let searchTerm: string;
-    if (isKeywordSearch) {
-      searchTerm = targetUrl; // targetUrl is actually a keyword in this case
-    } else {
+  // For keyword search, use the keyword directly; for URLs, extract domain
+  let searchTerm: string;
+  if (isKeywordSearch) {
+    searchTerm = targetUrl; // targetUrl is actually a keyword in this case
+  } else {
+    try {
       const urlObj = new URL(targetUrl);
       searchTerm = urlObj.hostname.replace('www.', '');
+    } catch {
+      searchTerm = targetUrl;
     }
-    const searchQuery = encodeURIComponent(`${searchTerm} ${isKeywordSearch ? 'content safety for kids' : 'site review safety'}`);
+  }
+  
+  // ========== KEYWORD-BASED ANALYSIS (No External Search Required) ==========
+  // For keyword searches, analyze the keyword itself against our safety database
+  // This works reliably in both localhost and production without external API calls
+  
+  if (isKeywordSearch) {
+    console.log(`📝 [KEYWORD ANALYSIS] Analyzing keyword directly: "${searchTerm}"`);
+    
+    // Generate analysis based on keyword content itself
+    const keywordLower = searchTerm.toLowerCase();
+    
+    // Check against dangerous patterns directly
+    const dangerousPatterns = [
+      { pattern: /porn|xxx|nsfw|adult\s*content|explicit/i, category: 'explicit', severity: 'critical' },
+      { pattern: /nude|naked|sex|erotic|fetish/i, category: 'explicit', severity: 'high' },
+      { pattern: /gore|blood|violent|murder|kill|torture|brutal/i, category: 'violence', severity: 'high' },
+      { pattern: /drug|cocaine|heroin|meth|weed|marijuana|cannabis|opioid/i, category: 'substances', severity: 'high' },
+      { pattern: /gambling|casino|betting|poker|slots/i, category: 'gambling', severity: 'high' },
+      { pattern: /suicide|self.?harm|cutting|overdose/i, category: 'self-harm', severity: 'critical' },
+      { pattern: /hate|racist|nazi|supremacist|extremist/i, category: 'hate', severity: 'high' },
+      { pattern: /predator|grooming|pedophil|trafficking/i, category: 'predatory', severity: 'critical' },
+      { pattern: /weapon|gun|bomb|explosive|firearm/i, category: 'weapons', severity: 'medium' },
+      { pattern: /alcohol|beer|wine|vodka|whiskey|drunk/i, category: 'alcohol', severity: 'medium' },
+    ];
+    
+    const safePatterns = [
+      { pattern: /education|learn|school|study|tutorial|lesson/i, category: 'educational' },
+      { pattern: /kids|children|family|parents|child.?friendly/i, category: 'family-friendly' },
+      { pattern: /science|math|history|geography|reading/i, category: 'educational' },
+      { pattern: /cartoon|animation|disney|pixar|nickelodeon/i, category: 'entertainment' },
+      { pattern: /nature|animals|wildlife|environment/i, category: 'nature' },
+      { pattern: /safe|appropriate|wholesome|pbs|sesame/i, category: 'safe-content' },
+      { pattern: /news|article|blog|review|guide/i, category: 'informational' },
+      { pattern: /game|play|fun|entertainment|hobby/i, category: 'entertainment' },
+    ];
+    
+    // Check for dangerous content
+    const foundDangerous: string[] = [];
+    for (const { pattern, category } of dangerousPatterns) {
+      if (pattern.test(keywordLower)) {
+        foundDangerous.push(category);
+        combinedText += ` ${category} content detected`;
+      }
+    }
+    
+    // Check for safe content
+    const foundSafe: string[] = [];
+    for (const { pattern, category } of safePatterns) {
+      if (pattern.test(keywordLower)) {
+        foundSafe.push(category);
+        combinedText += ` ${category} content`;
+      }
+    }
+    
+    // Generate description based on analysis
+    if (foundDangerous.length > 0) {
+      siteDescription = `Keyword "${searchTerm}" may relate to ${foundDangerous.join(', ')} content. Parental review recommended.`;
+    } else if (foundSafe.length > 0) {
+      siteDescription = `Keyword "${searchTerm}" appears to relate to ${foundSafe.join(', ')} content.`;
+    } else {
+      siteDescription = `Keyword "${searchTerm}" requires content analysis. No immediate safety concerns detected from keyword alone.`;
+    }
+    
+    siteName = `Keyword Analysis: ${searchTerm}`;
+    combinedText = `${searchTerm} ${siteDescription} ${combinedText}`;
+    
+    console.log(`✅ [KEYWORD ANALYSIS] Direct analysis complete. Dangerous: ${foundDangerous.length}, Safe: ${foundSafe.length}`);
+    
+    // Return early for keyword-based analysis - no external search needed
+    return {
+      searchResults: [],
+      imageUrls: [],
+      combinedText: combinedText.slice(0, 10000),
+      siteName,
+      siteDescription,
+    };
+  }
+  
+  // ========== URL-BASED SEARCH (External APIs) ==========
+  // Only used for URL analysis fallback when direct fetch fails
+  
+  try {
+    const searchQuery = encodeURIComponent(`${searchTerm} site review safety`);
     
     // Method 1: Try DuckDuckGo HTML (no API key needed)
+    // Note: This may fail in production due to rate limiting from cloud IPs
     const ddgUrl = `https://html.duckduckgo.com/html/?q=${searchQuery}`;
+    
+    console.log(`🔍 [SEARCH] Trying DuckDuckGo: ${ddgUrl}`);
     
     const response = await fetch(ddgUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(8000), // Increased timeout
     });
+    
+    console.log(`🔍 [SEARCH] DuckDuckGo response status: ${response.status}`);
     
     if (response.ok) {
       const html = await response.text();
       const $ = cheerio.load(html);
       
-      // Extract search results
-      $('.result, .web-result').slice(0, 10).each((_, el) => {
-        const title = $(el).find('.result__title, .result__a, a.result__url').first().text().trim();
-        const snippet = $(el).find('.result__snippet, .result__body').first().text().trim();
-        const link = $(el).find('a').first().attr('href') || '';
+      // Check if we got a CAPTCHA or block page
+      const pageText = $('body').text().toLowerCase();
+      if (pageText.includes('captcha') || pageText.includes('blocked') || pageText.includes('unusual traffic')) {
+        console.log(`⚠️ [SEARCH] DuckDuckGo returned CAPTCHA/block page`);
+      } else {
+        // Extract search results - try multiple selector patterns
+        const selectors = [
+          '.result',
+          '.web-result', 
+          '.results_links',
+          '[data-testid="result"]',
+          '.result__body',
+        ];
         
-        if (title && snippet) {
-          searchResults.push({ title, snippet, link });
-          combinedText += ` ${title} ${snippet}`;
+        for (const selector of selectors) {
+          $(selector).slice(0, 10).each((_, el) => {
+            const title = $(el).find('.result__title, .result__a, a, h2, h3').first().text().trim();
+            const snippet = $(el).find('.result__snippet, .result__body, p, .snippet').first().text().trim();
+            const link = $(el).find('a').first().attr('href') || '';
+            
+            if (title && snippet && title.length > 3) {
+              searchResults.push({ title, snippet, link });
+              combinedText += ` ${title} ${snippet}`;
+            }
+          });
+          
+          if (searchResults.length > 0) break;
         }
-      });
-      
-      console.log(`✅ [SEARCH] Found ${searchResults.length} results from DuckDuckGo`);
+        
+        console.log(`✅ [SEARCH] Found ${searchResults.length} results from DuckDuckGo`);
+      }
+    } else {
+      console.log(`⚠️ [SEARCH] DuckDuckGo returned non-OK status: ${response.status}`);
     }
+  } catch (error) {
+    console.error(`❌ [SEARCH] DuckDuckGo error:`, error instanceof Error ? error.message : error);
+  }
     
-    // Method 2: Also search for images using Bing Image search
+  // Method 2: Try Bing Image search (only if we need images)
+  try {
+    const searchQuery = encodeURIComponent(`${searchTerm}`);
     const bingImageUrl = `https://www.bing.com/images/search?q=${searchQuery}&first=1`;
+    
+    console.log(`🔍 [SEARCH] Trying Bing Images`);
+    
     const imgResponse = await fetch(bingImageUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
       },
-      signal: AbortSignal.timeout(3000),
-    }).catch(() => null);
+      signal: AbortSignal.timeout(5000),
+    }).catch((err) => {
+      console.log(`⚠️ [SEARCH] Bing Images error: ${err instanceof Error ? err.message : err}`);
+      return null;
+    });
     
     if (imgResponse?.ok) {
       const imgHtml = await imgResponse.text();
@@ -1338,47 +1463,47 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
         } catch { /* ignore */ }
       });
       
-      console.log(`✅ [SEARCH] Found ${imageUrls.length} images from search`);
+      console.log(`✅ [SEARCH] Found ${imageUrls.length} images from Bing`);
     }
-    
-    // Method 3: Try to get site info from common review sites (only for URL searches)
-    if (!isKeywordSearch) {
-      const reviewSites = [
-        `https://www.trustpilot.com/review/${searchTerm}`,
-        `https://www.sitejabber.com/reviews/${searchTerm}`,
-      ];
-      
-      for (const reviewUrl of reviewSites) {
-        try {
-          const reviewResp = await fetch(reviewUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' },
-            signal: AbortSignal.timeout(2000),
-          });
-          
-          if (reviewResp.ok) {
-            const reviewHtml = await reviewResp.text();
-            const $review = cheerio.load(reviewHtml);
-            
-            const reviewText = $review('meta[name="description"]').attr('content') || '';
-            if (reviewText) {
-              combinedText += ` ${reviewText}`;
-              siteDescription = reviewText.slice(0, 500);
-            }
-            
-            siteName = $review('title').text() || searchTerm;
-            break;
-          }
-        } catch { /* continue */ }
-      }
-    }
-    
-    // Fallback site name
-    if (!siteName) siteName = isKeywordSearch ? `Keyword: ${searchTerm}` : searchTerm;
-    if (!siteDescription) siteDescription = combinedText.slice(0, 500) || `Analysis based on search results for ${searchTerm}`;
-    
   } catch (error) {
-    console.error('Search fallback error:', error);
+    console.error(`❌ [SEARCH] Bing Images error:`, error instanceof Error ? error.message : error);
   }
+  
+  // Method 3: Try to get site info from common review sites (only for URL searches)
+  const reviewSites = [
+    `https://www.trustpilot.com/review/${searchTerm}`,
+    `https://www.sitejabber.com/reviews/${searchTerm}`,
+  ];
+  
+  for (const reviewUrl of reviewSites) {
+    try {
+      const reviewResp = await fetch(reviewUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' },
+        signal: AbortSignal.timeout(3000),
+      });
+      
+      if (reviewResp.ok) {
+        const reviewHtml = await reviewResp.text();
+        const $review = cheerio.load(reviewHtml);
+        
+        const reviewText = $review('meta[name="description"]').attr('content') || '';
+        if (reviewText) {
+          combinedText += ` ${reviewText}`;
+          siteDescription = reviewText.slice(0, 500);
+        }
+        
+        siteName = $review('title').text() || searchTerm;
+        console.log(`✅ [SEARCH] Got info from review site`);
+        break;
+      }
+    } catch { /* continue */ }
+  }
+  
+  // Fallback site name
+  if (!siteName) siteName = searchTerm;
+  if (!siteDescription) siteDescription = combinedText.slice(0, 500) || `Analysis based on available data for ${searchTerm}`;
+  
+  console.log(`📊 [SEARCH] Final results: ${searchResults.length} search results, ${imageUrls.length} images, ${combinedText.length} chars text`);
   
   return {
     searchResults,
@@ -2062,7 +2187,7 @@ function isValidUrl(input: string): boolean {
 }
 
 // ============================================================================
-// KEYWORD ANALYSIS (Similar to URL analysis but uses search only)
+// KEYWORD ANALYSIS (Direct pattern matching - works in localhost AND production)
 // ============================================================================
 async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
   const startTime = Date.now();
@@ -2079,16 +2204,13 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
   trackStep('Initialize', 'Setting up clients');
   initializeClients();
 
-  // Use search fallback for keyword analysis
-  console.log(`🔎 [KOMAL] Performing keyword search analysis`);
+  // Perform keyword analysis (direct pattern matching - no external API needed)
+  console.log(`🔎 [KOMAL] Performing direct keyword analysis`);
   const searchData = await searchForUrlInfo(keyword, true);
-  trackStep('Keyword Search', `${searchData.searchResults.length} results, ${searchData.imageUrls.length} images`);
+  trackStep('Keyword Analysis', `Direct pattern matching complete`);
   
-  // Check if we got any useful data
-  if (searchData.searchResults.length === 0 && searchData.combinedText.length < 50) {
-    throw new Error('ANALYSIS_FAILED');
-  }
-  
+  // For keyword search, we always have valid data from pattern matching
+  // No need to check for external search results
   const searchAnalysis = await analyzeFromSearchResults(keyword, searchData, trackStep);
   const childSafetyAnalysisRaw = searchAnalysis.childSafetyAnalysis;
   const visionResults = searchAnalysis.visionResults;
@@ -2140,7 +2262,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
     console.log(`   ${step.name}: ${step.durationMs}ms ${step.details ? `(${step.details})` : ''}`);
   });
 
-  // Calculate visual safety score
+  // Calculate visual safety score (default for keyword analysis)
   let visualSafetyScore = 85;
   const visualConcerns: string[] = [];
   if (visionResults?.safeSearchAnnotation) {
@@ -2183,11 +2305,11 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
         mediaConcerns: allAgesBlocked ? ['Content blocked'] : [],
       },
       metadata: {
-        title: searchData.siteName || `Search results for: ${keyword}`,
-        description: '', // No description for keyword analysis
+        title: searchData.siteName || `Keyword Analysis: ${keyword}`,
+        description: searchData.siteDescription || '',
         keywords: parsed.keywords || [],
-        imageCount: searchData.imageUrls.length,
-        linkCount: searchData.searchResults.length,
+        imageCount: 0,
+        linkCount: 0,
         videoCount: 0,
         audioCount: 0,
       },
@@ -2204,7 +2326,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
     },
     timestamp: new Date().toISOString(),
     analysisMethod: 'live',
-    usedSearchFallback: true,
+    usedSearchFallback: false, // Now using direct pattern matching
     performanceMetrics: {
       totalTimeMs: totalTime,
       steps: performanceSteps,
@@ -2250,13 +2372,11 @@ export async function POST(request: NextRequest) {
         const result = await analyzeKeywordOptimized(input);
         return NextResponse.json(result);
       } catch (error) {
+        // Keyword analysis should rarely fail since it uses direct pattern matching
         console.error('Keyword analysis failed:', error);
-        if (error instanceof Error && error.message === 'ANALYSIS_FAILED') {
-          return NextResponse.json({ 
-            error: 'The entered link/keyword could not be analyzed. Please re-check and try again.' 
-          }, { status: 400 });
-        }
-        return NextResponse.json({ error: 'Failed to analyze keyword' }, { status: 500 });
+        return NextResponse.json({ 
+          error: 'Failed to analyze the keyword. Please try again.' 
+        }, { status: 500 });
       }
     }
   } catch (error) {
