@@ -3,163 +3,8 @@ import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
 import puppeteer from 'puppeteer';
-import {
-  loadAndVectorizeKeywords,
-  extractWordFrequencies,
-  findSimilarKeywords,
-  generateSimilarityReport,
-  SimilarityMatch,
-  CategoryKeywords,
-} from '@/lib/keyword-vectorization';
-
-// ============================================================================
-// CHILD SAFETY FOCUSED SCORING SYSTEM
-// ============================================================================
-
-// Age groups for content safety analysis
-const AGE_GROUPS = ['<10', '10-13', '13-16', '16+'] as const;
-type AgeGroup = typeof AGE_GROUPS[number];
-
-// Comprehensive list of adult/unsafe keywords for child safety
-const CHILD_UNSAFE_KEYWORDS = {
-  // Explicit adult content
-  explicit: [
-    'porn', 'xxx', 'sex', 'nsfw', 'nude', 'naked', 'erotic', 'fetish',
-    'cam', 'webcam', 'livecam', 'chaturbate', 'onlyfans', 'fansly', 'manyvids',
-    'xvideos', 'xnxx', 'pornhub', 'redtube', 'youporn', 'xhamster', 'brazzers',
-    'hentai', 'rule34', 'e621', 'gelbooru', 'danbooru', 'nhentai',
-    'escort', 'hooker', 'prostitut', 'brothel', 'stripper',
-    'milf', 'anal', 'blowjob', 'cumshot', 'orgasm', 'masturbat',
-    'stripchat', 'bongacams', 'livejasmin', 'camsoda',
-    'slutty', 'horny', 'kinky', 'bdsm', 'bondage', 'dominat', 'submissive',
-    'threesome', 'gangbang', 'orgy', 'incest', 'rape', 'molest',
-    'penis', 'vagina', 'cock', 'dick', 'pussy', 'tits', 'boobs', 'breasts',
-    'f*ck', 'fuk', 'fuq', 'phuck', 'fck',
-  ],
-  // Violence and gore
-  violence: [
-    'gore', 'gory', 'mutilat', 'dismember', 'decapitat', 'behead',
-    'torture', 'tortur', 'brutal', 'savage', 'slaughter', 'massacre',
-    'murder', 'kill', 'killing', 'death', 'dead', 'corpse', 'cadaver',
-    'blood', 'bloody', 'bleeding', 'wound', 'injury', 'trauma',
-    'weapon', 'gun', 'firearm', 'knife', 'sword', 'bomb', 'explosive',
-    'shoot', 'shooting', 'shot', 'stab', 'stabbing', 'attack',
-    'suicide', 'suicidal', 'self-harm', 'selfharm', 'cutting',
-    'terrorist', 'terrorism', 'extremist', 'radical',
-  ],
-  // Drugs and substances
-  substances: [
-    'drug', 'drugs', 'cocaine', 'heroin', 'meth', 'methamphetamine',
-    'marijuana', 'cannabis', 'weed', 'pot', 'hash', 'hashish',
-    'lsd', 'acid', 'ecstasy', 'mdma', 'ketamine', 'pcp',
-    'opioid', 'opiate', 'fentanyl', 'morphine', 'overdose',
-    'alcohol', 'drunk', 'intoxicat', 'beer', 'wine', 'liquor', 'vodka', 'whiskey',
-    'smoking', 'cigarette', 'tobacco', 'vape', 'vaping', 'juul',
-    'addiction', 'addict', 'rehab', 'withdrawal',
-  ],
-  // Gambling
-  gambling: [
-    'gambling', 'gamble', 'casino', 'bet', 'betting', 'poker',
-    'slot', 'slots', 'roulette', 'blackjack', 'lottery',
-    'sportsbook', 'bookmaker', 'wager', 'odds',
-  ],
-  // Hate and discrimination
-  hate: [
-    'racist', 'racism', 'nazi', 'fascist', 'supremacist',
-    'hate', 'hatred', 'bigot', 'discriminat', 'prejudice',
-    'slur', 'derogatory', 'offensive',
-    'antisemit', 'islamophob', 'homophob', 'transphob',
-  ],
-  // Profanity (strong)
-  profanity: [
-    'fuck', 'shit', 'ass', 'asshole', 'bitch', 'bastard',
-    'damn', 'crap', 'piss', 'cunt', 'whore', 'slut',
-    'nigger', 'nigga', 'faggot', 'retard',
-  ],
-  // Dangerous activities
-  dangerous: [
-    'challenge', 'dare', 'stunt', 'prank', 'dangerous',
-    'blackout', 'choking', 'tide pod', 'cinnamon challenge',
-    'fire challenge', 'skull breaker',
-  ],
-  // Predatory behavior indicators
-  predatory: [
-    'grooming', 'predator', 'pedophil', 'minor', 'underage',
-    'child abuse', 'trafficking', 'exploit',
-  ],
-};
-
-// Safe/educational content indicators
-const CHILD_SAFE_KEYWORDS = [
-  'educational', 'education', 'learn', 'learning', 'teach', 'teaching',
-  'school', 'homework', 'study', 'student', 'classroom',
-  'kids', 'children', 'family', 'parents', 'child-friendly',
-  'cartoon', 'animation', 'animated', 'disney', 'pixar', 'nickelodeon',
-  'science', 'math', 'history', 'geography', 'reading', 'writing',
-  'arts', 'crafts', 'music', 'dance', 'sports', 'games',
-  'nature', 'animals', 'wildlife', 'environment',
-  'safe', 'appropriate', 'suitable', 'wholesome',
-  'pbs', 'sesame', 'national geographic kids', 'discovery kids',
-];
-
-// Child safety risk levels
-interface ChildSafetyRisk {
-  category: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  deduction: {
-    '<10': number;
-    '10-13': number;
-    '13-16': number;
-    '16+': number;
-  };
-}
-
-const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
-  {
-    category: 'explicit',
-    severity: 'critical',
-    deduction: { '<10': 100, '10-13': 100, '13-16': 100, '16+': 80 },
-  },
-  {
-    category: 'predatory',
-    severity: 'critical',
-    deduction: { '<10': 100, '10-13': 100, '13-16': 100, '16+': 100 },
-  },
-  {
-    category: 'violence',
-    severity: 'high',
-    deduction: { '<10': 80, '10-13': 70, '13-16': 50, '16+': 30 },
-  },
-  {
-    category: 'substances',
-    severity: 'high',
-    deduction: { '<10': 90, '10-13': 80, '13-16': 60, '16+': 40 },
-  },
-  {
-    category: 'gambling',
-    severity: 'high',
-    deduction: { '<10': 90, '10-13': 85, '13-16': 70, '16+': 50 },
-  },
-  {
-    category: 'hate',
-    severity: 'high',
-    deduction: { '<10': 90, '10-13': 85, '13-16': 75, '16+': 60 },
-  },
-  {
-    category: 'profanity',
-    severity: 'medium',
-    deduction: { '<10': 60, '10-13': 50, '13-16': 30, '16+': 15 },
-  },
-  {
-    category: 'dangerous',
-    severity: 'high',
-    deduction: { '<10': 85, '10-13': 75, '13-16': 55, '16+': 35 },
-  },
-];
-
-// ============================================================================
-// INTERFACES
-// ============================================================================
+import { CONTENT_RULES } from '@/lib/content-rules';
+import type { protos } from '@google-cloud/vision';
 
 interface ScanResult {
   url: string;
@@ -797,10 +642,27 @@ async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer |
 /**
  * Convert Google Cloud Vision likelihood to numeric score
  */
-function getLikelihoodScore(likelihood: string | number | null | undefined): number {
-  const likelihoodStr = String(likelihood || 'VERY_UNLIKELY');
+function getLikelihoodScore(
+  likelihood: protos.google.cloud.vision.v1.Likelihood | string | null | undefined
+): number {
+  if (typeof likelihood === 'number') {
+    switch (likelihood) {
+      case 5:
+        return 4;
+      case 4:
+        return 3;
+      case 3:
+        return 2;
+      case 2:
+        return 1;
+      case 1:
+        return 0;
+      default:
+        return 0;
+    }
+  }
 
-  switch (likelihoodStr) {
+  switch (likelihood) {
     case 'VERY_UNLIKELY':
     case '0':
       return 0;
