@@ -2291,9 +2291,19 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
   const searchData = await searchForUrlInfo(keyword, true);
   trackStep('Keyword Analysis', `Direct pattern matching complete`);
   
-  // For keyword search, we always have valid data from pattern matching
-  // No need to check for external search results
-  const searchAnalysis = await analyzeFromSearchResults(keyword, searchData, trackStep);
+  const shouldFallbackToKeywordOnly = searchData.searchResults.length === 0 &&
+    searchData.imageUrls.length === 0 &&
+    searchData.combinedText.trim().length < 50;
+  const keywordOnlyText = `${keyword} ${searchData.siteName} ${searchData.siteDescription}`.trim();
+  const fallbackSearchData = shouldFallbackToKeywordOnly
+    ? { 
+        ...searchData, 
+        combinedText: keywordOnlyText || keyword,
+      }
+    : searchData;
+
+  // For keyword search, proceed with search-enriched analysis, or fall back to keyword-only analysis.
+  const searchAnalysis = await analyzeFromSearchResults(keyword, fallbackSearchData, trackStep);
   const childSafetyAnalysisRaw = searchAnalysis.childSafetyAnalysis;
   const visionResults = searchAnalysis.visionResults;
   const nlpResults = searchAnalysis.nlpResults;
