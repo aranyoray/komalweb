@@ -88,6 +88,29 @@ export default function DemoPage() {
 
   const reportRef = useRef<HTMLDivElement>(null);
   const safeKeywords = result?.contentAnalysis.textAnalysis.safeKeywordsFound ?? [];
+  const renderSafeKeywords = () => {
+    if (safeKeywords.length === 0) {
+      return null;
+    }
+
+    return (
+      <ScrollReveal delay={0.28}>
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-bold text-primary mb-3 flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+            Safe Content Indicators
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {safeKeywords.map((kw, idx) => (
+              <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-sm">
+                {kw}
+              </span>
+            ))}
+          </div>
+        </div>
+      </ScrollReveal>
+    );
+  };
 
   const handleScan = async () => {
     if (!url.trim()) {
@@ -630,23 +653,7 @@ export default function DemoPage() {
               )}
 
               {/* Safe Keywords Found */}
-              {safeKeywords.length > 0 && (
-                <ScrollReveal delay={0.28}>
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
-                    <h3 className="text-base sm:text-lg font-bold text-primary mb-3 flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                      Safe Content Indicators
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {safeKeywords.map((kw, idx) => (
-                        <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-sm">
-                          {kw}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </ScrollReveal>
-              )}
+              {renderSafeKeywords()}
 
               {/* AI Analysis */}
               <ScrollReveal delay={0.3}>
