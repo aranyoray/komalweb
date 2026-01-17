@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
+import puppeteer from 'puppeteer';
+import {
+  loadAndVectorizeKeywords,
+  extractWordFrequencies,
+  findSimilarKeywords,
+  generateSimilarityReport,
+  SimilarityMatch,
+  CategoryKeywords,
+} from '@/lib/keyword-vectorization';
 
 // ============================================================================
 // OPTIMIZED CHILD SAFETY SCORING SYSTEM
@@ -101,6 +110,8 @@ const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
 // ============================================================================
 // INTERFACES
 // ============================================================================
+import { CONTENT_RULES } from '@/lib/content-rules';
+import type { protos } from '@google-cloud/vision';
 
 interface ScanResult {
   url: string;
@@ -410,7 +421,7 @@ async function fetchWebpageContentFast(url: string): Promise<string> {
         'User-Agent': 'Mozilla/5.0 (compatible; KomalSafetyBot/1.0)',
         'Accept': 'text/html',
       },
-      signal: controller.signal,
+      signal: AbortSignal.timeout(7000),
     });
     clearTimeout(timeoutId);
 
@@ -468,15 +479,19 @@ async function analyzeImageFast(imageUrl: string): Promise<any> {
   if (!visionClient) return null;
 
   try {
-    const [result] = await Promise.race([
-      visionClient.annotateImage({
-        image: { source: { imageUri: imageUrl } },
-        features: [{ type: 'SAFE_SEARCH_DETECTION' }],
-      }),
-      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('Vision timeout')), 2000)),
-    ]);
-    return result?.safeSearchAnnotation || null;
-  } catch {
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 720 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 8000 });
+
+    const screenshot = await page.screenshot({ type: 'png' });
+    return screenshot as Buffer;
+  } catch (error) {
+    console.error('Error capturing screenshot:', error);
     return null;
   }
 }
@@ -505,13 +520,134 @@ async function analyzeTextFast(text: string): Promise<{ sentiment: string; entit
   }
 }
 
-function getLikelihoodScore(likelihood: string | number | null | undefined): number {
-  const str = String(likelihood || '');
-  if (str === 'VERY_LIKELY' || str === '4') return 4;
-  if (str === 'LIKELY' || str === '3') return 3;
-  if (str === 'POSSIBLE' || str === '2') return 2;
-  if (str === 'UNLIKELY' || str === '1') return 1;
-  return 0;
+/**
+ * Analyze images using Google Cloud Vision API
+ */
+async function analyzeImagesWithVision(imageUrls: string[], screenshot: Buffer | null) {
+  if (!visionClient) {
+    return null;
+  }
+
+  try {
+    const results = {
+      labels: [] as string[],
+      safeSearchAnnotation: null as any,
+      detectedObjects: [] as string[],
+    };
+
+    const requests: Promise<any>[] = [];
+
+    // Analyze screenshot
+    if (screenshot) {
+      requests.push(
+        visionClient.annotateImage({
+          image: { content: screenshot },
+          features: [
+            { type: 'LABEL_DETECTION', maxResults: 10 },
+            { type: 'SAFE_SEARCH_DETECTION' },
+            { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
+          ],
+        }).catch(() => [null])
+      );
+    }
+
+    // Analyze page images
+    for (const imageUrl of imageUrls.slice(0, 3)) {
+      requests.push(
+        visionClient.annotateImage({
+          image: { source: { imageUri: imageUrl } },
+          features: [
+            { type: 'LABEL_DETECTION', maxResults: 5 },
+            { type: 'SAFE_SEARCH_DETECTION' },
+          ],
+        }).catch(() => [null])
+      );
+    }
+
+    const allResults = await Promise.all(requests);
+
+    for (const [result] of allResults) {
+      if (!result) continue;
+
+      const highConfLabels = result.labelAnnotations
+        ?.filter((l: any) => (l.score || 0) > 0.7)
+        ?.map((l: any) => l.description || '') || [];
+      results.labels.push(...highConfLabels);
+
+      if (result.localizedObjectAnnotations) {
+        const objects = result.localizedObjectAnnotations
+          ?.filter((o: any) => (o.score || 0) > 0.6)
+          ?.map((o: any) => o.name || '') || [];
+        results.detectedObjects.push(...objects);
+      }
+
+      if (result.safeSearchAnnotation) {
+        if (!results.safeSearchAnnotation) {
+          results.safeSearchAnnotation = result.safeSearchAnnotation;
+        } else {
+          const current = results.safeSearchAnnotation;
+          const newAnnotation = result.safeSearchAnnotation;
+          results.safeSearchAnnotation = {
+            adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
+            violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
+            racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
+          };
+        }
+      }
+    }
+
+    results.labels = [...new Set(results.labels)].slice(0, 10);
+    results.detectedObjects = [...new Set(results.detectedObjects)].slice(0, 8);
+
+    return results;
+  } catch (error) {
+    console.error('Error analyzing images with Vision API:', error);
+    return null;
+  }
+}
+
+/**
+ * Convert Google Cloud Vision likelihood to numeric score
+ */
+function getLikelihoodScore(
+  likelihood: protos.google.cloud.vision.v1.Likelihood | string | null | undefined
+): number {
+  if (typeof likelihood === 'number') {
+    switch (likelihood) {
+      case 5:
+        return 4;
+      case 4:
+        return 3;
+      case 3:
+        return 2;
+      case 2:
+        return 1;
+      case 1:
+        return 0;
+      default:
+        return 0;
+    }
+  }
+
+  switch (likelihood) {
+    case 'VERY_UNLIKELY':
+    case '0':
+      return 0;
+    case 'UNLIKELY':
+    case '1':
+      return 1;
+    case 'POSSIBLE':
+    case '2':
+      return 2;
+    case 'LIKELY':
+    case '3':
+      return 3;
+    case 'VERY_LIKELY':
+    case '4':
+      return 4;
+    default:
+      return 0;
+  }
 }
 
 // ============================================================================
@@ -523,33 +659,52 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   initializeClients();
 
   try {
-    // Step 1: Fetch webpage (fast, 3s timeout)
-    const html = await fetchWebpageContentFast(url);
-    console.log(`Fetch: ${Date.now() - startTime}ms`);
+    console.log('Fetching webpage content...');
+    const htmlPromise = fetchWebpageContent(url);
+    const screenshotPromise = visionClient ? captureScreenshot(url) : Promise.resolve(null);
+    const html = await htmlPromise;
 
     // Step 2: Parse HTML (synchronous, fast)
     const parsed = parseHTMLContentFast(html, url);
     console.log(`Parse: ${Date.now() - startTime}ms`);
 
-    // Step 3: Child safety analysis (synchronous, fast with pre-compiled regex)
-    const childSafetyAnalysis = analyzeChildSafetyFast(
-      parsed.textContent,
-      parsed.title,
-      parsed.description,
-      parsed.keywords
+    console.log('Analyzing text with NLP...');
+    const nlpPromise = analyzeTextWithNLP(parsedContent.textContent);
+
+    console.log('Analyzing images with Vision API...');
+    const visionPromise = screenshotPromise.then((screenshot) =>
+      analyzeImagesWithVision(parsedContent.imageUrls, screenshot)
+    );
+
+    console.log('Performing child safety analysis...');
+    const childSafetyAnalysis = analyzeChildSafety(
+      parsedContent.textContent,
+      parsedContent.title,
+      parsedContent.description,
+      parsedContent.keywords
     );
     console.log(`Safety analysis: ${Date.now() - startTime}ms`);
 
-    // Step 4: Run optional API calls in parallel (with timeouts)
-    const [visionResult, nlpResult] = await Promise.all([
-      parsed.imageUrls[0] ? analyzeImageFast(parsed.imageUrls[0]) : Promise.resolve(null),
-      analyzeTextFast(parsed.textContent.slice(0, 2000)),
-    ]);
-    console.log(`API calls: ${Date.now() - startTime}ms`);
+    // Perform deep keyword vectorization analysis
+    console.log('Performing deep keyword analysis...');
+    const categoryKeywords = loadAndVectorizeKeywords();
+    const wordFrequencies = extractWordFrequencies(parsedContent.textContent);
+    const similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, parsedContent.textContent);
+    const similarityReport = generateSimilarityReport(similarityMatches, wordFrequencies);
 
-    // Step 5: Calculate scores
-    const multimediaRisk = 100 - parsed.multimedia.mediaSafetyScore;
-    const ageGroupScores = calculateAgeGroupScores(childSafetyAnalysis, visionResult, multimediaRisk);
+    const [nlpResults, visionResults] = await Promise.all([nlpPromise, visionPromise]);
+
+    // Calculate multimedia risk
+    const multimediaRisk = 100 - parsedContent.multimedia.mediaSafetyScore;
+
+    // Calculate age group scores
+    const ageGroupScores = calculateAgeGroupScores(
+      childSafetyAnalysis,
+      visionResults?.safeSearchAnnotation,
+      multimediaRisk
+    );
+
+    // Calculate overall score (average of all age groups)
     const overallScore = Math.round(
       Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
     );
