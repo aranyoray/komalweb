@@ -11,6 +11,364 @@ import { LanguageServiceClient } from '@google-cloud/language';
 const AGE_GROUPS = ['<10', '10-13', '13-16', '16+'] as const;
 type AgeGroup = (typeof AGE_GROUPS)[number];
 
+// ============================================================================
+// SOCIAL MEDIA SITES - Special handling (BLOCK for <13, score 20-30 for 13+)
+// ============================================================================
+const SOCIAL_MEDIA_DOMAINS = new Set([
+  // Major social networks
+  'facebook.com', 'www.facebook.com', 'm.facebook.com',
+  'instagram.com', 'www.instagram.com',
+  'twitter.com', 'www.twitter.com', 'x.com', 'www.x.com',
+  'tiktok.com', 'www.tiktok.com', 'm.tiktok.com',
+  'snapchat.com', 'www.snapchat.com',
+  'linkedin.com', 'www.linkedin.com',
+  'pinterest.com', 'www.pinterest.com',
+  'reddit.com', 'www.reddit.com', 'old.reddit.com',
+  'tumblr.com', 'www.tumblr.com',
+  'discord.com', 'www.discord.com', 'discord.gg',
+  
+  // Messaging apps with social features
+  'whatsapp.com', 'www.whatsapp.com', 'web.whatsapp.com',
+  'telegram.org', 'www.telegram.org', 't.me', 'web.telegram.org',
+  'messenger.com', 'www.messenger.com',
+  'signal.org', 'www.signal.org',
+  
+  // Video/streaming social platforms
+  'youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be',
+  'twitch.tv', 'www.twitch.tv',
+  'kick.com', 'www.kick.com',
+  
+  // Other social platforms
+  'threads.net', 'www.threads.net',
+  'mastodon.social', 'mastodon.online',
+  'bsky.app', 'bsky.social',
+  'truth social', 'truthsocial.com',
+  'quora.com', 'www.quora.com',
+  'meetup.com', 'www.meetup.com',
+  'nextdoor.com', 'www.nextdoor.com',
+  'clubhouse.com', 'www.clubhouse.com',
+  'bereal.com', 'www.bereal.com',
+  'lemon8-app.com', 'www.lemon8-app.com',
+  
+  // Dating apps (social category)
+  'tinder.com', 'www.tinder.com',
+  'bumble.com', 'www.bumble.com',
+  'hinge.co', 'www.hinge.co',
+  'match.com', 'www.match.com',
+  'okcupid.com', 'www.okcupid.com',
+  
+  // Regional social networks
+  'weibo.com', 'www.weibo.com',
+  'vk.com', 'www.vk.com',
+  'line.me', 'www.line.me',
+  'kakaotalk.com', 'www.kakaotalk.com',
+  'wechat.com', 'www.wechat.com',
+]);
+
+// Check if a URL belongs to a social media site
+function isSocialMediaSite(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    
+    // Direct domain match
+    if (SOCIAL_MEDIA_DOMAINS.has(hostname)) return true;
+    
+    // Check without www prefix
+    const withoutWww = hostname.replace(/^www\./, '');
+    if (SOCIAL_MEDIA_DOMAINS.has(withoutWww)) return true;
+    
+    // Check for subdomains of social media sites
+    for (const domain of SOCIAL_MEDIA_DOMAINS) {
+      if (hostname.endsWith('.' + domain) || hostname === domain) {
+        return true;
+      }
+    }
+    
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// ============================================================================
+// DANGEROUS SITES - BLOCK FOR ALL AGE GROUPS (Score 0)
+// Pornographic, violent, gambling, hate, hacking, dangerous chat rooms
+// ============================================================================
+
+// Exact domain matches for dangerous sites
+const DANGEROUS_BLOCKED_DOMAINS = new Set([
+  // === PORNOGRAPHIC WEBSITES ===
+  'pornhub.com', 'www.pornhub.com',
+  '8tube.xxx', 'www.8tube.xxx',
+  'redtube.com', 'www.redtube.com',
+  'kink.com', 'www.kink.com',
+  'youjizz.com', 'www.youjizz.com',
+  'xvideos.com', 'www.xvideos.com',
+  'youporn.com', 'www.youporn.com',
+  'brazzers.com', 'www.brazzers.com',
+  'xnxx.com', 'www.xnxx.com',
+  'xhamster.com', 'www.xhamster.com',
+  'pornhub.org', 'www.pornhub.org',
+  'tube8.com', 'www.tube8.com',
+  'spankbang.com', 'www.spankbang.com',
+  'eporner.com', 'www.eporner.com',
+  'tnaflix.com', 'www.tnaflix.com',
+  'porn.com', 'www.porn.com',
+  'hentaihaven.xxx', 'www.hentaihaven.xxx',
+  'nhentai.net', 'www.nhentai.net',
+  'rule34.xxx', 'www.rule34.xxx',
+  'chaturbate.com', 'www.chaturbate.com',
+  'onlyfans.com', 'www.onlyfans.com',
+  'fansly.com', 'www.fansly.com',
+  'stripchat.com', 'www.stripchat.com',
+  'bongacams.com', 'www.bongacams.com',
+  'livejasmin.com', 'www.livejasmin.com',
+  'cam4.com', 'www.cam4.com',
+  'myfreecams.com', 'www.myfreecams.com',
+  
+  // === DANGEROUS CHAT ROOMS ===
+  'omegle.com', 'www.omegle.com',
+  'paltalk.com', 'www.paltalk.com',
+  'talkwithstranger.com', 'www.talkwithstranger.com',
+  'chatroulette.com', 'www.chatroulette.com',
+  'chat-avenue.com', 'www.chat-avenue.com',
+  'chatango.com', 'www.chatango.com',
+  'teenchat.com', 'www.teenchat.com',
+  'wireclub.com', 'www.wireclub.com',
+  'chathour.com', 'www.chathour.com',
+  'chatzy.com', 'www.chatzy.com',
+  'chatib.us', 'www.chatib.us',
+  'e-chat.co', 'www.e-chat.co',
+  'chatrandom.com', 'www.chatrandom.com',
+  'camsurf.com', 'www.camsurf.com',
+  'emeraldchat.com', 'www.emeraldchat.com',
+  'shagle.com', 'www.shagle.com',
+  'camsoda.com', 'www.camsoda.com',
+  
+  // === DANGEROUS FORUMS ===
+  '4chan.org', 'www.4chan.org', 'boards.4chan.org',
+  'somethingawful.com', 'www.somethingawful.com', 'forums.somethingawful.com',
+  'topix.com', 'www.topix.com',
+  'stormfront.org', 'www.stormfront.org',
+  'kiwifarms.net', 'www.kiwifarms.net', 'kiwifarms.st',
+  'voat.co', 'www.voat.co',
+  '8kun.top', 'www.8kun.top', '8ch.net',
+  'incels.me', 'www.incels.me', 'incels.is', 'incels.co',
+  'lolcow.farm', 'www.lolcow.farm',
+  'encyclopediadramatica.rs', 'www.encyclopediadramatica.rs',
+  
+  // === DATING WEBSITES (Adult-focused) ===
+  'meetme.com', 'www.meetme.com',
+  'pof.com', 'www.pof.com', 'plentyoffish.com',
+  'eharmony.com', 'www.eharmony.com',
+  'zoosk.com', 'www.zoosk.com',
+  'grindr.com', 'www.grindr.com',
+  'ashleymadison.com', 'www.ashleymadison.com',
+  'adultfriendfinder.com', 'www.adultfriendfinder.com',
+  'fling.com', 'www.fling.com',
+  'benaughty.com', 'www.benaughty.com',
+  'seeking.com', 'www.seeking.com', 'seekingarrangement.com',
+  'fetlife.com', 'www.fetlife.com',
+  
+  // === ONLINE GAMBLING/BETTING ===
+  'betonline.ag', 'www.betonline.ag',
+  'freespin.com', 'www.freespin.com',
+  'bovada.lv', 'www.bovada.lv',
+  'slotocash.im', 'www.slotocash.im',
+  'royalacecasino.com', 'www.royalacecasino.com',
+  'pokerstars.com', 'www.pokerstars.com',
+  '888casino.com', 'www.888casino.com',
+  'sportsbetting.ag', 'www.sportsbetting.ag',
+  'betway.com', 'www.betway.com',
+  'bet365.com', 'www.bet365.com',
+  'draftkings.com', 'www.draftkings.com',
+  'fanduel.com', 'www.fanduel.com',
+  'caesars.com', 'www.caesars.com',
+  'betmgm.com', 'www.betmgm.com',
+  'unibet.com', 'www.unibet.com',
+  'williamhill.com', 'www.williamhill.com',
+  'bwin.com', 'www.bwin.com',
+  'stake.com', 'www.stake.com',
+  'roobet.com', 'www.roobet.com',
+  'casinodays.com', 'www.casinodays.com',
+  
+  // === VIOLENT/GRAPHIC CONTENT ===
+  'liveleak.com', 'www.liveleak.com',
+  'bestgore.com', 'www.bestgore.com',
+  'theync.com', 'www.theync.com',
+  'documentingreality.com', 'www.documentingreality.com',
+  'ogrish.tv', 'www.ogrish.tv',
+  'goregasm.com', 'www.goregasm.com',
+  'shockchan.com', 'www.shockchan.com',
+  'goregrish.com', 'www.goregrish.com',
+  'crazyshit.com', 'www.crazyshit.com',
+  'efukt.com', 'www.efukt.com',
+  'kaotic.com', 'www.kaotic.com',
+  
+  // === HACKING/ILLEGAL ACTIVITIES ===
+  'hackthissite.org', 'www.hackthissite.org',
+  'thepiratebay.org', 'www.thepiratebay.org', 'thepiratebay.se',
+  'wikileaks.org', 'www.wikileaks.org',
+  'darkweblinks.net', 'www.darkweblinks.net',
+  'illegalhack.com', 'www.illegalhack.com',
+  '1337x.to', 'www.1337x.to',
+  'rarbg.to', 'www.rarbg.to',
+  'yts.mx', 'www.yts.mx',
+  'kickasstorrents.to', 'www.kickasstorrents.to',
+  'torrentz2.eu', 'www.torrentz2.eu',
+  'silkroad.com', 'www.silkroad.com',
+  
+  // === HATE/EXTREMIST WEBSITES ===
+  'gab.com', 'www.gab.com',
+  'nationalvanguard.org', 'www.nationalvanguard.org',
+  'dailystormer.su', 'www.dailystormer.su', 'dailystormer.name',
+  'amren.com', 'www.amren.com',
+  'vdare.com', 'www.vdare.com',
+  'infowars.com', 'www.infowars.com',
+  'bitchute.com', 'www.bitchute.com', // Often hosts extremist content
+  'rumble.com', 'www.rumble.com', // Often hosts extremist content
+  'parler.com', 'www.parler.com',
+  'gettr.com', 'www.gettr.com',
+]);
+
+// Keyword patterns to catch similar/related dangerous sites
+const DANGEROUS_KEYWORD_PATTERNS = [
+  // Porn-related keywords
+  /porn/i, /xxx/i, /xnxx/i, /xvideo/i, /xhamster/i, /redtube/i, /youporn/i,
+  /hentai/i, /rule34/i, /nhentai/i, /chaturbate/i, /stripchat/i, /livejasmin/i,
+  /onlyfans/i, /fansly/i, /bongacams/i, /cam4/i, /camsoda/i, /myfreecams/i,
+  /brazzers/i, /bangbros/i, /realitykings/i, /naughtyamerica/i,
+  /porntrex/i, /eporner/i, /spankbang/i, /tnaflix/i, /tube8/i,
+  
+  // Gore/violence keywords
+  /bestgore/i, /liveleak/i, /theync/i, /ogrish/i, /goregasm/i, /goregrish/i,
+  /shockchan/i, /crazyshit/i, /kaotic/i, /efukt/i,
+  
+  // Gambling keywords in domain
+  /casino/i, /poker(?!mon)/i, /betting/i, /slots(?!car)/i, /gambling/i,
+  /bet365/i, /betway/i, /bovada/i, /draftkings/i, /fanduel/i,
+  
+  // Hate/extremist keywords
+  /stormfront/i, /dailystormer/i, /nationalvanguard/i,
+  
+  // Torrent/piracy keywords
+  /piratebay/i, /kickass.*torrent/i, /1337x/i, /rarbg/i, /torrentz/i,
+  
+  // Dark web keywords
+  /darkweb/i, /silkroad/i, /\.onion/i,
+  
+  // Dangerous chat keywords
+  /omegle/i, /chatroulette/i, /chatrandom/i, /camsurf/i, /emeraldchat/i,
+  
+  // Incel/extremist forum keywords
+  /incels?\.(me|is|co|net)/i, /kiwifarms/i, /8kun/i, /8chan/i, /4chan/i,
+];
+
+// Categories for dangerous sites (used in reporting)
+interface DangerousSiteInfo {
+  category: string;
+  reason: string;
+  severity: 'critical' | 'high';
+}
+
+function getDangerousSiteCategory(hostname: string): DangerousSiteInfo | null {
+  const lower = hostname.toLowerCase();
+  
+  // Check exact domain matches first
+  if (DANGEROUS_BLOCKED_DOMAINS.has(lower) || DANGEROUS_BLOCKED_DOMAINS.has('www.' + lower)) {
+    // Determine category based on keywords in hostname
+    if (/porn|xxx|xvideo|xhamster|redtube|youporn|hentai|chaturbate|onlyfans|fansly|brazzers|stripchat|livejasmin|cam4|bongacams|camsoda|tube8|spankbang|eporner|nhentai|rule34/i.test(lower)) {
+      return { category: 'pornography', reason: 'Pornographic content - not appropriate for any age', severity: 'critical' };
+    }
+    if (/gore|bestgore|liveleak|theync|ogrish|kaotic|crazyshit|shockchan/i.test(lower)) {
+      return { category: 'violence', reason: 'Violent/graphic content - extremely disturbing material', severity: 'critical' };
+    }
+    if (/casino|poker|betting|slots|gambling|bet365|betway|bovada|draftkings|fanduel|stake|roobet/i.test(lower)) {
+      return { category: 'gambling', reason: 'Gambling/betting site - illegal for minors', severity: 'high' };
+    }
+    if (/omegle|chatroulette|chatrandom|chatib|teenchat|talkwithstranger|e-chat|wireclub/i.test(lower)) {
+      return { category: 'dangerous_chat', reason: 'Age-inappropriate chat room - risk of predators and unsuitable content', severity: 'critical' };
+    }
+    if (/4chan|8chan|8kun|kiwifarms|incels|stormfront|voat|somethingawful/i.test(lower)) {
+      return { category: 'dangerous_forum', reason: 'Age-inappropriate forum - harassment, hate content, and unsuitable communities', severity: 'critical' };
+    }
+    if (/ashleymadison|adultfriendfinder|fling|benaughty|seeking|fetlife|grindr|meetme/i.test(lower)) {
+      return { category: 'adult_dating', reason: 'Adult dating site - not appropriate for children', severity: 'high' };
+    }
+    if (/stormfront|dailystormer|nationalvanguard|gab|parler|gettr|infowars|bitchute|amren|vdare/i.test(lower)) {
+      return { category: 'hate_extremist', reason: 'Hate/extremist content - promotes discrimination and violence', severity: 'critical' };
+    }
+    if (/piratebay|1337x|rarbg|kickass|torrentz|wikileaks|darkweb|silkroad/i.test(lower)) {
+      return { category: 'illegal_activities', reason: 'Hacking/piracy/illegal content', severity: 'high' };
+    }
+    
+    // Default for matched domain
+    return { category: 'dangerous', reason: 'Age-inappropriate website - blocked for all ages', severity: 'critical' };
+  }
+  
+  // Check keyword patterns
+  for (const pattern of DANGEROUS_KEYWORD_PATTERNS) {
+    if (pattern.test(lower)) {
+      // Determine category from pattern
+      if (/porn|xxx|xvideo|hentai|chaturbate|onlyfans|brazzers/i.test(lower)) {
+        return { category: 'pornography', reason: 'Pornographic content detected in URL', severity: 'critical' };
+      }
+      if (/gore|bestgore|liveleak|kaotic/i.test(lower)) {
+        return { category: 'violence', reason: 'Violent/graphic content detected in URL', severity: 'critical' };
+      }
+      if (/casino|poker|betting|gambling/i.test(lower)) {
+        return { category: 'gambling', reason: 'Gambling content detected in URL', severity: 'high' };
+      }
+      if (/omegle|chatroulette|chatrandom/i.test(lower)) {
+        return { category: 'dangerous_chat', reason: 'Age-inappropriate chat site detected', severity: 'critical' };
+      }
+      if (/4chan|8chan|kiwifarms|incels/i.test(lower)) {
+        return { category: 'dangerous_forum', reason: 'Age-inappropriate forum detected', severity: 'critical' };
+      }
+      if (/stormfront|dailystormer/i.test(lower)) {
+        return { category: 'hate_extremist', reason: 'Hate/extremist content detected', severity: 'critical' };
+      }
+      if (/piratebay|torrent|darkweb/i.test(lower)) {
+        return { category: 'illegal_activities', reason: 'Illegal content detected', severity: 'high' };
+      }
+      
+      return { category: 'dangerous', reason: 'Potentially age-inappropriate content detected', severity: 'high' };
+    }
+  }
+  
+  return null;
+}
+
+// Check if a URL is a dangerous/blocked site
+function isDangerousSite(url: string): DangerousSiteInfo | null {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    
+    // Check the hostname
+    const result = getDangerousSiteCategory(hostname);
+    if (result) return result;
+    
+    // Check without www
+    const withoutWww = hostname.replace(/^www\./, '');
+    const resultWithoutWww = getDangerousSiteCategory(withoutWww);
+    if (resultWithoutWww) return resultWithoutWww;
+    
+    // Also check the full URL for keyword patterns
+    const fullUrl = url.toLowerCase();
+    for (const pattern of DANGEROUS_KEYWORD_PATTERNS) {
+      if (pattern.test(fullUrl)) {
+        return getDangerousSiteCategory(fullUrl) || { category: 'dangerous', reason: 'Age-inappropriate content detected in URL', severity: 'high' };
+      }
+    }
+    
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Pre-compiled regex patterns for faster matching
 const CHILD_UNSAFE_PATTERNS: { [category: string]: RegExp } = {};
 const CHILD_UNSAFE_KEYWORDS = {
@@ -253,7 +611,7 @@ function analyzeKeywordContext(keyword: string, context: string): ContextAnalysi
       shouldFlag: true,
       isDangerous: true,
       severity: 1,
-      reason: 'Always dangerous keyword',
+      reason: 'Age-inappropriate keyword',
       ageMultipliers: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 1 }
     };
   }
@@ -267,7 +625,7 @@ function analyzeKeywordContext(keyword: string, context: string): ContextAnalysi
           shouldFlag: true,
           isDangerous: true,
           severity: 1,
-          reason: `Dangerous context: ${pattern.source.slice(0, 30)}...`,
+          reason: `Age-inappropriate context: ${pattern.source.slice(0, 30)}...`,
           ageMultipliers: { '<10': 1, '10-13': 1, '13-16': 1, '16+': 0.8 }
         };
       }
@@ -615,7 +973,8 @@ function analyzeChildSafetyFast(
 function calculateAgeGroupScores(
   childSafetyAnalysis: ReturnType<typeof analyzeChildSafetyFast>,
   visionSafeSearch: any,
-  multimediaRisk: number = 0
+  multimediaRisk: number = 0,
+  url?: string // Optional URL to check for social media sites
 ): {
   [key in AgeGroup]: { score: number; action: 'BLOCK' | 'GATE' | 'ALLOW'; reason: string; risks: string[] };
 } {
@@ -625,6 +984,94 @@ function calculateAgeGroupScores(
     '13-16': { score: 100, action: 'ALLOW', reason: '', risks: [] },
     '16+': { score: 100, action: 'ALLOW', reason: '', risks: [] },
   };
+
+  // ========== DANGEROUS SITES - BLOCK FOR ALL AGES ==========
+  // Check for pornographic, violent, gambling, hate, hacking sites FIRST
+  if (url) {
+    const dangerousInfo = isDangerousSite(url);
+    if (dangerousInfo) {
+      console.log(`🚫 AGE-INAPPROPRIATE SITE DETECTED: ${url} - Category: ${dangerousInfo.category} - BLOCKED FOR ALL AGES`);
+      
+      const categoryLabels: { [key: string]: string } = {
+        'pornography': 'Age-inappropriate content (adult)',
+        'violence': 'Age-inappropriate content (violent/graphic)',
+        'gambling': 'Age-inappropriate content (gambling/betting)',
+        'dangerous_chat': 'Age-inappropriate chat room',
+        'dangerous_forum': 'Age-inappropriate forum/community',
+        'adult_dating': 'Age-inappropriate content (adult dating)',
+        'hate_extremist': 'Age-inappropriate content (hate/extremist)',
+        'illegal_activities': 'Age-inappropriate content (illegal activities)',
+        'dangerous': 'Age-inappropriate content',
+      };
+      
+      const categoryLabel = categoryLabels[dangerousInfo.category] || 'Age-inappropriate content';
+      
+      return {
+        '<10': { 
+          score: 0, 
+          action: 'BLOCK', 
+          reason: dangerousInfo.reason,
+          risks: [categoryLabel, 'Not appropriate for any age group', 'Blocked by safety policy']
+        },
+        '10-13': { 
+          score: 0, 
+          action: 'BLOCK', 
+          reason: dangerousInfo.reason,
+          risks: [categoryLabel, 'Not appropriate for any age group', 'Blocked by safety policy']
+        },
+        '13-16': { 
+          score: 0, 
+          action: 'BLOCK', 
+          reason: dangerousInfo.reason,
+          risks: [categoryLabel, 'Not appropriate for any age group', 'Blocked by safety policy']
+        },
+        '16+': { 
+          score: 0, 
+          action: 'BLOCK', 
+          reason: dangerousInfo.reason,
+          risks: [categoryLabel, 'Age-inappropriate content', 'Blocked by safety policy']
+        },
+      };
+    }
+  }
+  // ========== END DANGEROUS SITES HANDLING ==========
+
+  // ========== SOCIAL MEDIA SPECIAL HANDLING ==========
+  // Social media sites: BLOCK for <10 and 10-13, score 20-30 for 13-16 and 16+
+  if (url && isSocialMediaSite(url)) {
+    console.log(`📱 SOCIAL MEDIA DETECTED: ${url} - Applying special age restrictions`);
+    
+    // Random score between 20-30 for older age groups
+    const socialMediaScore = Math.floor(Math.random() * 11) + 20; // 20-30
+    
+    return {
+      '<10': { 
+        score: 0, 
+        action: 'BLOCK', 
+        reason: 'Social media platforms are not appropriate for children under 10',
+        risks: ['Social media platform', 'Age-inappropriate content possible', 'Privacy concerns']
+      },
+      '10-13': { 
+        score: 0, 
+        action: 'BLOCK', 
+        reason: 'Social media platforms require users to be 13+ (COPPA compliance)',
+        risks: ['Social media platform', 'COPPA age restriction', 'Privacy concerns']
+      },
+      '13-16': { 
+        score: socialMediaScore, 
+        action: 'GATE', 
+        reason: 'Social media requires parental awareness - monitor usage and privacy settings',
+        risks: ['Social media platform', 'Privacy concerns', 'Content moderation varies']
+      },
+      '16+': { 
+        score: socialMediaScore, 
+        action: 'GATE', 
+        reason: 'Social media - be aware of privacy settings and content exposure',
+        risks: ['Social media platform', 'User-generated content']
+      },
+    };
+  }
+  // ========== END SOCIAL MEDIA HANDLING ==========
 
   // Apply deductions based on found unsafe keywords WITH CONTEXT-AWARE AGE MULTIPLIERS
   for (const unsafe of childSafetyAnalysis.unsafeKeywordsFound) {
@@ -1336,21 +1783,25 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     childSafetyAnalysis = analyzeChildSafetyFast(url, '', '', []);
   }
 
-  // Step 4: Calculate scores
+  // Step 4: Calculate scores (pass URL for social media detection)
   const multimediaRisk = 100 - parsed.multimedia.mediaSafetyScore;
   const ageGroupScores = calculateAgeGroupScores(
     childSafetyAnalysis,
     visionResults?.safeSearchAnnotation,
-    multimediaRisk
+    multimediaRisk,
+    url // Pass URL for social media site detection
   );
 
-  const overallScore = Math.round(
-    Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
-  );
-  trackStep('Calculate Scores', `Score: ${overallScore}/100`);
+  // Check if ALL age groups are blocked - if so, mark everything as unsafe with 0 scores
+  const allAgesBlocked = AGE_GROUPS.every(ag => ageGroupScores[ag].action === 'BLOCK');
+  
+  const overallScore = allAgesBlocked 
+    ? 0 
+    : Math.round(Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length);
+  trackStep('Calculate Scores', `Score: ${overallScore}/100${allAgesBlocked ? ' (BLOCKED FOR ALL)' : ''}`);
 
   // Build risk categories
-  const riskCategories = childSafetyAnalysis.unsafeKeywordsFound.slice(0, 5).map(unsafe => ({
+  let riskCategories = childSafetyAnalysis.unsafeKeywordsFound.slice(0, 5).map(unsafe => ({
     category: unsafe.category,
     severity: CHILD_SAFETY_RISKS.find(r => r.category === unsafe.category)?.severity || 'low',
     matchCount: unsafe.count,
@@ -1358,17 +1809,34 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     contextSnippets: unsafe.context,
   }));
 
-  // Depth analysis
+  // If all ages blocked, ensure we show the dangerous site category
+  if (allAgesBlocked && riskCategories.length === 0) {
+    const dangerousInfo = isDangerousSite(url);
+    if (dangerousInfo) {
+      riskCategories = [{
+        category: dangerousInfo.category,
+        severity: dangerousInfo.severity,
+        matchCount: 1,
+        matchedKeywords: [dangerousInfo.category],
+        contextSnippets: [dangerousInfo.reason],
+      }];
+    }
+  }
+
+  // Depth analysis - if all blocked, everything is unsafe
   const titleLower = parsed.title.toLowerCase();
   const metaLower = (parsed.description + ' ' + parsed.keywords.join(' ')).toLowerCase();
-  const titleSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => titleLower.includes(u.keyword));
-  const metadataSafe = !childSafetyAnalysis.unsafeKeywordsFound.some(u => metaLower.includes(u.keyword));
+  const titleSafe = allAgesBlocked ? false : !childSafetyAnalysis.unsafeKeywordsFound.some(u => titleLower.includes(u.keyword));
+  const metadataSafe = allAgesBlocked ? false : !childSafetyAnalysis.unsafeKeywordsFound.some(u => metaLower.includes(u.keyword));
   trackStep('Build Report', 'Complete');
 
   const totalTimeMs = Date.now() - startTime;
   const analysisMethod = (nlpResults || visionResults) ? 'live' : (fetchFailed || useSearchFallback ? 'live' : 'demo');
   
-  console.log(`\n🎯 [KOMAL ANALYSIS] COMPLETE in ${(totalTimeMs/1000).toFixed(3)}s | Score: ${overallScore}/100 | Risk: ${childSafetyAnalysis.riskLevel} | Method: ${analysisMethod}\n`);
+  // Override risk level if all ages blocked
+  const finalRiskLevel = allAgesBlocked ? 'dangerous' : childSafetyAnalysis.riskLevel;
+  
+  console.log(`\n🎯 [KOMAL ANALYSIS] COMPLETE in ${(totalTimeMs/1000).toFixed(3)}s | Score: ${overallScore}/100 | Risk: ${finalRiskLevel} | Method: ${analysisMethod}${allAgesBlocked ? ' | ⛔ BLOCKED ALL AGES' : ''}\n`);
 
   return {
     url,
@@ -1376,22 +1844,26 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     ageGroupScores,
     contentAnalysis: {
       textAnalysis: {
-        sentiment: nlpResults?.sentiment || 'Neutral',
-        keyTopics: detectTopics(parsed.textContent, parsed.title),
-        languageScore: Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
-        entities: nlpResults?.entities || [],
+        sentiment: allAgesBlocked ? 'Unsafe' : (nlpResults?.sentiment || 'Neutral'),
+        keyTopics: allAgesBlocked ? ['Blocked Content'] : detectTopics(parsed.textContent, parsed.title),
+        languageScore: allAgesBlocked ? 0 : Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
+        entities: allAgesBlocked ? [] : (nlpResults?.entities || []),
         unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map((u: { keyword: string }) => u.keyword),
-        safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
+        safeKeywordsFound: allAgesBlocked ? [] : childSafetyAnalysis.safeKeywordsFound,
       },
       visualAnalysis: {
-        detectedObjects: visionResults?.detectedObjects || [],
-        safetyScore: visionResults?.safeSearchAnnotation
+        detectedObjects: allAgesBlocked ? ['Blocked'] : (visionResults?.detectedObjects || []),
+        safetyScore: allAgesBlocked ? 0 : (visionResults?.safeSearchAnnotation
           ? Math.max(0, 100 - getLikelihoodScore(visionResults.safeSearchAnnotation.adult) * 20 - getLikelihoodScore(visionResults.safeSearchAnnotation.violence) * 15)
-          : 100,
-        concerns: visionResults?.safeSearchAnnotation && getLikelihoodScore(visionResults.safeSearchAnnotation.adult) >= 3 ? ['Adult content detected'] : [],
-        labels: visionResults?.labels || [],
+          : 100),
+        concerns: allAgesBlocked 
+          ? ['Content blocked for all age groups'] 
+          : (visionResults?.safeSearchAnnotation && getLikelihoodScore(visionResults.safeSearchAnnotation.adult) >= 3 ? ['Adult content detected'] : []),
+        labels: allAgesBlocked ? [] : (visionResults?.labels || []),
       },
-      multimediaAnalysis: parsed.multimedia,
+      multimediaAnalysis: allAgesBlocked 
+        ? { ...parsed.multimedia, mediaSafetyScore: 0, mediaConcerns: ['Content blocked'] }
+        : parsed.multimedia,
       metadata: {
         title: parsed.title,
         description: parsed.description,
@@ -1403,13 +1875,13 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       },
     },
     childSafetyAnalysis: {
-      overallRisk: childSafetyAnalysis.riskLevel,
+      overallRisk: finalRiskLevel,
       riskCategories,
       depthAnalysis: {
-        titleSafe,
-        metadataSafe,
-        contentSafe: childSafetyAnalysis.riskLevel === 'safe' || childSafetyAnalysis.riskLevel === 'caution',
-        mediaSafe: parsed.multimedia.mediaSafetyScore >= 80,
+        titleSafe: allAgesBlocked ? false : titleSafe,
+        metadataSafe: allAgesBlocked ? false : metadataSafe,
+        contentSafe: allAgesBlocked ? false : (childSafetyAnalysis.riskLevel === 'safe' || childSafetyAnalysis.riskLevel === 'caution'),
+        mediaSafe: allAgesBlocked ? false : (parsed.multimedia.mediaSafetyScore >= 80),
       },
     },
     timestamp: new Date().toISOString(),
@@ -1466,12 +1938,17 @@ function generateDemoAnalysisFast(url: string, priorTimeMs: number = 0): ScanRes
 
   // Quick URL pattern detection
   const isEducational = /edu|learn|wiki|school|kids|child/i.test(urlLower);
-  const isSocial = /facebook|instagram|tiktok|twitter|snapchat/i.test(urlLower);
-  performanceSteps.push({ name: 'Pattern Detection', durationMs: 1, details: `Edu=${isEducational}, Social=${isSocial}` });
+  const isSocialMedia = isSocialMediaSite(url);
+  performanceSteps.push({ name: 'Pattern Detection', durationMs: 1, details: `Edu=${isEducational}, Social=${isSocialMedia}` });
 
-  const ageGroupScores = calculateAgeGroupScores(childSafetyAnalysis, null, 0);
+  // Pass URL for social media detection (handled in calculateAgeGroupScores)
+  const ageGroupScores = calculateAgeGroupScores(childSafetyAnalysis, null, 0, url);
 
-  if (isEducational) {
+  // Check if ALL age groups are blocked
+  const allAgesBlocked = AGE_GROUPS.every(ag => ageGroupScores[ag].action === 'BLOCK');
+
+  // Educational bonus (only if not blocked and not a social media site)
+  if (!allAgesBlocked && isEducational && !isSocialMedia) {
     for (const ag of AGE_GROUPS) {
       ageGroupScores[ag].score = Math.min(100, ageGroupScores[ag].score + 20);
       if (ageGroupScores[ag].score >= 80) {
@@ -1481,21 +1958,38 @@ function generateDemoAnalysisFast(url: string, priorTimeMs: number = 0): ScanRes
     }
   }
 
-  if (isSocial) {
-    ageGroupScores['<10'].score = Math.max(0, ageGroupScores['<10'].score - 30);
-    ageGroupScores['10-13'].score = Math.max(0, ageGroupScores['10-13'].score - 20);
-    ageGroupScores['<10'].action = ageGroupScores['<10'].score >= 50 ? 'GATE' : 'BLOCK';
-    ageGroupScores['10-13'].action = ageGroupScores['10-13'].score >= 50 ? 'GATE' : 'BLOCK';
-  }
-
-  const overallScore = Math.round(
-    Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length
-  );
+  const overallScore = allAgesBlocked 
+    ? 0 
+    : Math.round(Object.values(ageGroupScores).reduce((sum, ag) => sum + ag.score, 0) / AGE_GROUPS.length);
   
   const totalTimeMs = priorTimeMs + (Date.now() - startTime);
-  performanceSteps.push({ name: 'Calculate Scores', durationMs: Date.now() - startTime, details: `Score: ${overallScore}` });
+  performanceSteps.push({ name: 'Calculate Scores', durationMs: Date.now() - startTime, details: `Score: ${overallScore}${allAgesBlocked ? ' (BLOCKED)' : ''}` });
   
-  console.log(`🎯 [KOMAL DEMO] COMPLETE in ${(totalTimeMs/1000).toFixed(3)}s | Score: ${overallScore}/100\n`);
+  // Get dangerous site info for risk categories if blocked
+  let riskCategories = childSafetyAnalysis.unsafeKeywordsFound.slice(0, 3).map(u => ({
+    category: u.category,
+    severity: CHILD_SAFETY_RISKS.find(r => r.category === u.category)?.severity || 'low',
+    matchCount: u.count,
+    matchedKeywords: [u.keyword],
+    contextSnippets: u.context,
+  }));
+  
+  if (allAgesBlocked && riskCategories.length === 0) {
+    const dangerousInfo = isDangerousSite(url);
+    if (dangerousInfo) {
+      riskCategories = [{
+        category: dangerousInfo.category,
+        severity: dangerousInfo.severity,
+        matchCount: 1,
+        matchedKeywords: [dangerousInfo.category],
+        contextSnippets: [dangerousInfo.reason],
+      }];
+    }
+  }
+
+  const finalRiskLevel = allAgesBlocked ? 'dangerous' : childSafetyAnalysis.riskLevel;
+  
+  console.log(`🎯 [KOMAL DEMO] COMPLETE in ${(totalTimeMs/1000).toFixed(3)}s | Score: ${overallScore}/100${allAgesBlocked ? ' | ⛔ BLOCKED ALL AGES' : ''}\n`);
 
   return {
     url,
@@ -1503,26 +1997,35 @@ function generateDemoAnalysisFast(url: string, priorTimeMs: number = 0): ScanRes
     ageGroupScores,
     contentAnalysis: {
       textAnalysis: {
-        sentiment: 'Neutral',
-        keyTopics: isEducational ? ['Education'] : isSocial ? ['Social Media'] : ['General'],
-        languageScore: overallScore,
+        sentiment: allAgesBlocked ? 'Unsafe' : 'Neutral',
+        keyTopics: allAgesBlocked ? ['Blocked Content'] : (isEducational ? ['Education'] : isSocialMedia ? ['Social Media'] : ['General']),
+        languageScore: allAgesBlocked ? 0 : overallScore,
         unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map(u => u.keyword),
-        safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
+        safeKeywordsFound: allAgesBlocked ? [] : childSafetyAnalysis.safeKeywordsFound,
       },
-      visualAnalysis: { detectedObjects: [], safetyScore: 100, concerns: [] },
-      multimediaAnalysis: { videoDetected: false, audioDetected: false, mediaTypes: [], mediaSafetyScore: 100, mediaConcerns: [] },
+      visualAnalysis: { 
+        detectedObjects: allAgesBlocked ? ['Blocked'] : [], 
+        safetyScore: allAgesBlocked ? 0 : 100, 
+        concerns: allAgesBlocked ? ['Content blocked for all age groups'] : [] 
+      },
+      multimediaAnalysis: { 
+        videoDetected: false, 
+        audioDetected: false, 
+        mediaTypes: [], 
+        mediaSafetyScore: allAgesBlocked ? 0 : 100, 
+        mediaConcerns: allAgesBlocked ? ['Content blocked'] : [] 
+      },
       metadata: { title: 'Demo Mode', description: 'URL-based analysis', keywords: [], imageCount: 0, linkCount: 0, videoCount: 0, audioCount: 0 },
     },
     childSafetyAnalysis: {
-      overallRisk: childSafetyAnalysis.riskLevel,
-      riskCategories: childSafetyAnalysis.unsafeKeywordsFound.slice(0, 3).map(u => ({
-        category: u.category,
-        severity: CHILD_SAFETY_RISKS.find(r => r.category === u.category)?.severity || 'low',
-        matchCount: u.count,
-        matchedKeywords: [u.keyword],
-        contextSnippets: u.context,
-      })),
-      depthAnalysis: { titleSafe: true, metadataSafe: true, contentSafe: childSafetyAnalysis.riskLevel === 'safe', mediaSafe: true },
+      overallRisk: finalRiskLevel,
+      riskCategories,
+      depthAnalysis: { 
+        titleSafe: allAgesBlocked ? false : true, 
+        metadataSafe: allAgesBlocked ? false : true, 
+        contentSafe: allAgesBlocked ? false : (childSafetyAnalysis.riskLevel === 'safe'), 
+        mediaSafe: allAgesBlocked ? false : true 
+      },
     },
     timestamp: new Date().toISOString(),
     analysisMethod: 'demo',
