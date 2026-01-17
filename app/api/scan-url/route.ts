@@ -1255,6 +1255,24 @@ interface SearchAnalysisData {
   siteDescription: string;
 }
 
+interface SerpApiOrganicResult {
+  title?: string;
+  link?: string;
+  snippet?: string;
+}
+
+interface SerpApiImageResult {
+  original?: string;
+  link?: string;
+}
+
+interface SerpApiResponse {
+  organic_results?: SerpApiOrganicResult[];
+  images_results?: SerpApiImageResult[];
+  knowledge_graph?: { title?: string; description?: string };
+  search_information?: { total_results?: number };
+}
+
 async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = false): Promise<SearchAnalysisData> {
   console.log(`🔎 [SEARCH FALLBACK] Searching for info about: ${targetUrl}`);
   
@@ -1263,6 +1281,8 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
   let combinedText = '';
   let siteName = '';
   let siteDescription = '';
+  let keywordFallbackName = '';
+  let keywordFallbackDescription = '';
   
   // For keyword search, use the keyword directly; for URLs, extract domain
   let searchTerm: string;
@@ -1277,9 +1297,9 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
     }
   }
   
-  // ========== KEYWORD-BASED ANALYSIS (No External Search Required) ==========
+  // ========== KEYWORD-BASED ANALYSIS (Seed content before external search) ==========
   // For keyword searches, analyze the keyword itself against our safety database
-  // This works reliably in both localhost and production without external API calls
+  // Then enrich with external search so the workflow matches URL analysis.
   
   if (isKeywordSearch) {
     console.log(`📝 [KEYWORD ANALYSIS] Analyzing keyword directly: "${searchTerm}"`);
@@ -1332,32 +1352,89 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
     
     // Generate description based on analysis
     if (foundDangerous.length > 0) {
-      siteDescription = `Keyword "${searchTerm}" may relate to ${foundDangerous.join(', ')} content. Parental review recommended.`;
+      keywordFallbackDescription = `Keyword "${searchTerm}" may relate to ${foundDangerous.join(', ')} content. Parental review recommended.`;
     } else if (foundSafe.length > 0) {
-      siteDescription = `Keyword "${searchTerm}" appears to relate to ${foundSafe.join(', ')} content.`;
+      keywordFallbackDescription = `Keyword "${searchTerm}" appears to relate to ${foundSafe.join(', ')} content.`;
     } else {
-      siteDescription = `Keyword "${searchTerm}" requires content analysis. No immediate safety concerns detected from keyword alone.`;
+      keywordFallbackDescription = `Keyword "${searchTerm}" requires content analysis. No immediate safety concerns detected from keyword alone.`;
     }
     
-    siteName = `Keyword Analysis: ${searchTerm}`;
-    combinedText = `${searchTerm} ${siteDescription} ${combinedText}`;
+    keywordFallbackName = `Keyword Analysis: ${searchTerm}`;
+    combinedText = `${searchTerm} ${keywordFallbackDescription} ${combinedText}`;
     
     console.log(`✅ [KEYWORD ANALYSIS] Direct analysis complete. Dangerous: ${foundDangerous.length}, Safe: ${foundSafe.length}`);
-    
-    // Return early for keyword-based analysis - no external search needed
-    return {
-      searchResults: [],
-      imageUrls: [],
-      combinedText: combinedText.slice(0, 10000),
-      siteName,
-      siteDescription,
-    };
   }
   
-  // ========== URL-BASED SEARCH (External APIs) ==========
-  // Only used for URL analysis fallback when direct fetch fails
+  // ========== EXTERNAL SEARCH (External APIs) ==========
+  // Used for URL analysis fallback or keyword enrichment
+
+  const serpApiKey = process.env.SERPAPI_API_KEY;
+  const serpApiEngines = isKeywordSearch ? ['google', 'bing'] : ['google'];
+  const serpImageEngine = 'google_images';
+  const seenResultLinks = new Set<string>();
+
+  if (serpApiKey) {
+    for (const engine of serpApiEngines) {
+      try {
+        const serpQuery = encodeURIComponent(searchTerm);
+        const serpUrl = `https://serpapi.com/search.json?engine=${engine}&q=${serpQuery}&api_key=${serpApiKey}`;
+        console.log(`🔍 [SEARCH] Trying SerpAPI (${engine})`);
+        const serpResponse = await fetch(serpUrl, { signal: AbortSignal.timeout(8000) });
+        if (!serpResponse.ok) {
+          console.log(`⚠️ [SEARCH] SerpAPI (${engine}) returned status: ${serpResponse.status}`);
+          continue;
+        }
+        const serpJson = (await serpResponse.json()) as SerpApiResponse;
+        serpJson.organic_results?.slice(0, 10).forEach(result => {
+          const link = result.link || '';
+          const dedupeKey = link || result.title || '';
+          if (result.title && result.snippet && !seenResultLinks.has(dedupeKey)) {
+            searchResults.push({
+              title: result.title,
+              snippet: result.snippet,
+              link,
+            });
+            seenResultLinks.add(dedupeKey);
+            combinedText += ` ${result.title} ${result.snippet}`;
+          }
+        });
+        if (!siteName && serpJson.knowledge_graph?.title) {
+          siteName = serpJson.knowledge_graph.title;
+        }
+        if (!siteDescription && serpJson.knowledge_graph?.description) {
+          siteDescription = serpJson.knowledge_graph.description;
+        }
+        console.log(`✅ [SEARCH] SerpAPI (${engine}) returned ${serpJson.search_information?.total_results ?? 0} results`);
+      } catch (error) {
+        console.error(`❌ [SEARCH] SerpAPI (${engine}) error:`, error instanceof Error ? error.message : error);
+      }
+    }
+
+    try {
+      const serpQuery = encodeURIComponent(searchTerm);
+      const serpImageUrl = `https://serpapi.com/search.json?engine=${serpImageEngine}&q=${serpQuery}&api_key=${serpApiKey}`;
+      console.log(`🔍 [SEARCH] Trying SerpAPI (${serpImageEngine})`);
+      const serpImageResponse = await fetch(serpImageUrl, { signal: AbortSignal.timeout(8000) });
+      if (serpImageResponse.ok) {
+        const serpImageJson = (await serpImageResponse.json()) as SerpApiResponse;
+        serpImageJson.images_results?.slice(0, 5).forEach(result => {
+          const src = result.original || result.link;
+          if (src && src.startsWith('http')) {
+            imageUrls.push(src);
+          }
+        });
+        console.log(`✅ [SEARCH] SerpAPI (${serpImageEngine}) returned ${serpImageJson.images_results?.length ?? 0} images`);
+      } else {
+        console.log(`⚠️ [SEARCH] SerpAPI (${serpImageEngine}) returned status: ${serpImageResponse.status}`);
+      }
+    } catch (error) {
+      console.error(`❌ [SEARCH] SerpAPI (${serpImageEngine}) error:`, error instanceof Error ? error.message : error);
+    }
+  }
   
-  try {
+  const hasSerpData = searchResults.length > 0 || imageUrls.length > 0 || Boolean(siteName || siteDescription);
+  if (!hasSerpData) {
+    try {
     const searchQuery = encodeURIComponent(`${searchTerm} site review safety`);
     
     // Method 1: Try DuckDuckGo HTML (no API key needed)
@@ -1418,90 +1495,95 @@ async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boolean = fa
     } else {
       console.log(`⚠️ [SEARCH] DuckDuckGo returned non-OK status: ${response.status}`);
     }
-  } catch (error) {
-    console.error(`❌ [SEARCH] DuckDuckGo error:`, error instanceof Error ? error.message : error);
-  }
+    } catch (error) {
+      console.error(`❌ [SEARCH] DuckDuckGo error:`, error instanceof Error ? error.message : error);
+    }
     
   // Method 2: Try Bing Image search (only if we need images)
-  try {
-    const searchQuery = encodeURIComponent(`${searchTerm}`);
-    const bingImageUrl = `https://www.bing.com/images/search?q=${searchQuery}&first=1`;
-    
-    console.log(`🔍 [SEARCH] Trying Bing Images`);
-    
-    const imgResponse = await fetch(bingImageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-      signal: AbortSignal.timeout(5000),
-    }).catch((err) => {
-      console.log(`⚠️ [SEARCH] Bing Images error: ${err instanceof Error ? err.message : err}`);
-      return null;
-    });
-    
-    if (imgResponse?.ok) {
-      const imgHtml = await imgResponse.text();
-      const $img = cheerio.load(imgHtml);
+    try {
+      const searchQuery = encodeURIComponent(`${searchTerm}`);
+      const bingImageUrl = `https://www.bing.com/images/search?q=${searchQuery}&first=1`;
       
-      // Extract image URLs from Bing results
-      $img('img.mimg, .imgpt img, a.iusc').slice(0, 5).each((_, el) => {
-        const src = $img(el).attr('src') || $img(el).attr('data-src') || '';
-        if (src && src.startsWith('http') && !src.includes('bing.com/th')) {
-          imageUrls.push(src);
-        }
+      console.log(`🔍 [SEARCH] Trying Bing Images`);
+      
+      const imgResponse = await fetch(bingImageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml',
+        },
+        signal: AbortSignal.timeout(5000),
+      }).catch((err) => {
+        console.log(`⚠️ [SEARCH] Bing Images error: ${err instanceof Error ? err.message : err}`);
+        return null;
       });
       
-      // Also try to extract from metadata
-      $img('a.iusc').slice(0, 5).each((_, el) => {
-        try {
-          const m = $img(el).attr('m');
-          if (m) {
-            const data = JSON.parse(m);
-            if (data.murl) imageUrls.push(data.murl);
+      if (imgResponse?.ok) {
+        const imgHtml = await imgResponse.text();
+        const $img = cheerio.load(imgHtml);
+        
+        // Extract image URLs from Bing results
+        $img('img.mimg, .imgpt img, a.iusc').slice(0, 5).each((_, el) => {
+          const src = $img(el).attr('src') || $img(el).attr('data-src') || '';
+          if (src && src.startsWith('http') && !src.includes('bing.com/th')) {
+            imageUrls.push(src);
           }
-        } catch { /* ignore */ }
-      });
-      
-      console.log(`✅ [SEARCH] Found ${imageUrls.length} images from Bing`);
+        });
+        
+        // Also try to extract from metadata
+        $img('a.iusc').slice(0, 5).each((_, el) => {
+          try {
+            const m = $img(el).attr('m');
+            if (m) {
+              const data = JSON.parse(m);
+              if (data.murl) imageUrls.push(data.murl);
+            }
+          } catch { /* ignore */ }
+        });
+        
+        console.log(`✅ [SEARCH] Found ${imageUrls.length} images from Bing`);
+      }
+    } catch (error) {
+      console.error(`❌ [SEARCH] Bing Images error:`, error instanceof Error ? error.message : error);
     }
-  } catch (error) {
-    console.error(`❌ [SEARCH] Bing Images error:`, error instanceof Error ? error.message : error);
   }
   
   // Method 3: Try to get site info from common review sites (only for URL searches)
-  const reviewSites = [
-    `https://www.trustpilot.com/review/${searchTerm}`,
-    `https://www.sitejabber.com/reviews/${searchTerm}`,
-  ];
-  
-  for (const reviewUrl of reviewSites) {
-    try {
-      const reviewResp = await fetch(reviewUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' },
-        signal: AbortSignal.timeout(3000),
-      });
-      
-      if (reviewResp.ok) {
-        const reviewHtml = await reviewResp.text();
-        const $review = cheerio.load(reviewHtml);
+  if (!isKeywordSearch) {
+    const reviewSites = [
+      `https://www.trustpilot.com/review/${searchTerm}`,
+      `https://www.sitejabber.com/reviews/${searchTerm}`,
+    ];
+    
+    for (const reviewUrl of reviewSites) {
+      try {
+        const reviewResp = await fetch(reviewUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' },
+          signal: AbortSignal.timeout(3000),
+        });
         
-        const reviewText = $review('meta[name="description"]').attr('content') || '';
-        if (reviewText) {
-          combinedText += ` ${reviewText}`;
-          siteDescription = reviewText.slice(0, 500);
+        if (reviewResp.ok) {
+          const reviewHtml = await reviewResp.text();
+          const $review = cheerio.load(reviewHtml);
+          
+          const reviewText = $review('meta[name="description"]').attr('content') || '';
+          if (reviewText) {
+            combinedText += ` ${reviewText}`;
+            siteDescription = reviewText.slice(0, 500);
+          }
+          
+          siteName = $review('title').text() || searchTerm;
+          console.log(`✅ [SEARCH] Got info from review site`);
+          break;
         }
-        
-        siteName = $review('title').text() || searchTerm;
-        console.log(`✅ [SEARCH] Got info from review site`);
-        break;
-      }
-    } catch { /* continue */ }
+      } catch { /* continue */ }
+    }
   }
   
   // Fallback site name
-  if (!siteName) siteName = searchTerm;
-  if (!siteDescription) siteDescription = combinedText.slice(0, 500) || `Analysis based on available data for ${searchTerm}`;
+  if (!siteName) siteName = keywordFallbackName || searchTerm;
+  if (!siteDescription) {
+    siteDescription = keywordFallbackDescription || combinedText.slice(0, 500) || `Analysis based on available data for ${searchTerm}`;
+  }
   
   console.log(`📊 [SEARCH] Final results: ${searchResults.length} search results, ${imageUrls.length} images, ${combinedText.length} chars text`);
   
