@@ -292,7 +292,7 @@ export default function DemoPage() {
                 <div>
                   <p style="margin: 0 0 6px 0; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Image Labels</p>
                   <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    ${result.contentAnalysis.visualAnalysis.labels.slice(0, 8).map((label: string) => `
+                    ${result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label: string) => `
                       <span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 12px; font-size: 9px; font-weight: 500;">${label}</span>
                     `).join('')}
                   </div>
@@ -933,7 +933,7 @@ export default function DemoPage() {
                         <div>
                           <p className="text-sm text-text-dim mb-2">Image Labels</p>
                           <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.visualAnalysis.labels.map((label, idx) => (
+                            {result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label, idx) => (
                               <span
                                 key={idx}
                                 className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
