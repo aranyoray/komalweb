@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck, FileDown } from "lucide-react";
+import { generateSafetyReportPDF } from "@/lib/generatePDF";
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
@@ -92,6 +93,7 @@ export default function DemoPage() {
   const [demoForm, setDemoForm] = useState({ name: '', email: '', organization: '' });
   const [sendingEmail, setSendingEmail] = useState(false);
   const [submittingDemo, setSubmittingDemo] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   const [modalMessage, setModalMessage] = useState({ type: '', text: '' });
 
   const reportRef = useRef<HTMLDivElement>(null);
@@ -251,6 +253,20 @@ export default function DemoPage() {
       setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to submit' });
     } finally {
       setSubmittingDemo(false);
+    }
+  };
+
+  // Generate PDF functionality
+  const handleGeneratePDF = async () => {
+    if (!result) return;
+
+    setGeneratingPDF(true);
+    try {
+      await generateSafetyReportPDF(result);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+    } finally {
+      setGeneratingPDF(false);
     }
   };
 
@@ -561,6 +577,24 @@ export default function DemoPage() {
               {/* Action Buttons */}
               <ScrollReveal delay={0.15}>
                 <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-2 sm:gap-3">
+                  <Button
+                    onClick={handleGeneratePDF}
+                    disabled={generatingPDF}
+                    variant="outline"
+                    className="border-2 border-green-500/30 text-green-700 hover:bg-green-50 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
+                  >
+                    {generatingPDF ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="w-4 h-4 mr-2" />
+                        Generate PDF
+                      </>
+                    )}
+                  </Button>
                   <Button
                     onClick={() => setShowEmailModal(true)}
                     variant="outline"
