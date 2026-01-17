@@ -9,6 +9,7 @@ import {
   extractWordFrequencies,
   findSimilarKeywords,
   generateSimilarityReport,
+  deepContextSearch,
   SimilarityMatch,
 } from '@/lib/keyword-vectorization';
 
@@ -960,10 +961,10 @@ async function analyzeUrlWithAI(url: string): Promise<ScanResult> {
 
         // Extract word frequencies from URL content
         const wordFrequencies = extractWordFrequencies(combinedText);
-        
+
         if (wordFrequencies.length > 0) {
-          // Find similar keywords
-          similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50);
+          // Find similar keywords with full text for context/depth scoring
+          similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, combinedText);
           
           if (similarityMatches.length > 0) {
             // Generate similarity report
@@ -1066,9 +1067,10 @@ function generateDemoAnalysis(url: string): ScanResult {
     if (categoryKeywords && categoryKeywords.length > 0) {
       // Use URL for analysis in demo mode
       const wordFrequencies = extractWordFrequencies(url);
-      
+
       if (wordFrequencies.length > 0) {
-        similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50);
+        // Pass URL as context for demo mode
+        similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, url);
         
         if (similarityMatches.length > 0) {
           const report = generateSimilarityReport(similarityMatches, wordFrequencies);
