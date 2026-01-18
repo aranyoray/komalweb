@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 // import { Inter } from "next/font/google"; // Removed as per user request
 import "./globals.css";
+//import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Link from "next/link";
 import ClientScripts from "@/components/ClientScripts";
 import IntroLoader from "@/components/IntroLoader";
 
@@ -49,11 +49,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
+        {/* <ClerkProvider> */}
         <IntroLoader />
         <Navbar />
         {children}
         <Footer />
         <ClientScripts />
+        {/* </ClerkProvider> */}
       </body>
     </html>
   );

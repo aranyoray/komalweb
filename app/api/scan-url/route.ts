@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { spawn } from 'child_process';
+// import { spawn } from 'child_process';
 import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
@@ -55,56 +55,48 @@ interface GoogleImageSearchResponse {
 
 
 // Helper to run Python moderation script
-async function runPythonAnalysis(text: string, ageGroup: string = '13-16'): Promise<any> {
-  return new Promise((resolve, reject) => {
-    // Use full path to python if needed, or assume it's in PATH
-    const pythonProcess = spawn('python', ['analyze_content.py', '--age', ageGroup]);
+// Helper to call external moderation service
+async function runPythonAnalysis(text: string, ageGroup: string = '13-16', contentId: string = 'api-request'): Promise<any> {
+  const serviceUrl = process.env.MODERATION_SERVICE_URL;
 
-    let outputData = '';
-    let errorData = '';
+  if (!serviceUrl) {
+    console.warn('⚠️ MODERATION_SERVICE_URL not configured. Skipping Python hybrid analysis.');
+    return { _debug: { status: 'skipped', reason: 'URL_NOT_SET' } };
+  }
 
-    pythonProcess.stdout.on('data', (data) => {
-      outputData += data.toString();
+  console.log(`[KOMAL] 📡 Calling External Moderation Service at: ${serviceUrl}`);
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+    const response = await fetch(`${serviceUrl}/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: text || '',
+        age_group: ageGroup,
+        content_id: contentId
+      }),
+      signal: controller.signal
     });
 
-    pythonProcess.stderr.on('data', (data) => {
-      errorData += data.toString();
-      // Optional: Pipe stderr to console so we see Python logs
-      process.stderr.write(data);
-    });
+    clearTimeout(timeoutId);
 
-    pythonProcess.on('close', (code) => {
-      if (code !== 0) {
-        console.error(`Python script exited with code ${code}`);
-        resolve(null);
-        return;
-      }
-      try {
-        // Find JSON in output
-        const jsonStart = outputData.indexOf('{');
-        const jsonEnd = outputData.lastIndexOf('}');
-        if (jsonStart !== -1 && jsonEnd !== -1) {
-          const jsonStr = outputData.substring(jsonStart, jsonEnd + 1);
-          resolve(JSON.parse(jsonStr));
-        } else {
-          console.error('No JSON found in Python output');
-          resolve(null);
-        }
-      } catch (e) {
-        console.error('Failed to parse Python output:', e);
-        resolve(null);
-      }
-    });
+    if (!response.ok) {
+      console.error(`❌ Moderation service error: ${response.status} ${response.statusText}`);
+      return { _debug: { status: 'error', code: response.status, url: serviceUrl } };
+    }
 
-    pythonProcess.on('error', (err) => {
-      console.error('Failed to start Python process:', err);
-      resolve(null);
-    });
-
-    // Write text to stdin and close
-    pythonProcess.stdin.write(text || '');
-    pythonProcess.stdin.end();
-  });
+    const data = await response.json();
+    console.log(`[KOMAL] ✅ Python service response: ${data.final_decision?.decision}`);
+    return { ...data, _debug: { status: 'success', url: serviceUrl } };
+  } catch (error) {
+    console.error('❌ Failed to call moderation service:', error);
+    return { _debug: { status: 'failed', error: String(error), url: serviceUrl } };
+  }
 }
 
 /**
@@ -1145,6 +1137,7 @@ interface ScanResult {
       details?: string;
     }[];
   };
+  pythonDebug?: any;
 }
 
 // ============================================================================
@@ -2348,11 +2341,13 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
 
   // Step 4: Calculate scores (pass URL for social media detection)
 
+  let pythonDebug = null;
   // Hybrid Python Analysis Integration
   try {
     console.log('[KOMAL] 🐍 Running Python Hybrid Analysis...');
     // Extract text from parsed data (up to 20k chars to match python limit if needed, though stdin handles more)
     const pythonResult = await runPythonAnalysis(parsed.textContent || '');
+    pythonDebug = pythonResult?._debug || null;
 
     if (pythonResult && pythonResult.final_decision) {
       const decision = pythonResult.final_decision.decision;
@@ -2498,6 +2493,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       totalTimeMs,
       steps: performanceSteps,
     },
+    pythonDebug,
   };
 }
 
@@ -2698,12 +2694,14 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
 
   // Calculate scores - pass 0 for multimedia risk since we don't have multimedia for keywords
 
+  let pythonDebug = null;
   // Hybrid Python Analysis Integration
   try {
     console.log('[KOMAL] 🐍 Running Python Hybrid Analysis...');
     // Use parsed keywords or fallback text
     const textForPython = fallbackSearchData.combinedText || keyword;
     const pythonResult = await runPythonAnalysis(textForPython);
+    pythonDebug = pythonResult?._debug || null;
 
     if (pythonResult && pythonResult.final_decision) {
       const decision = pythonResult.final_decision.decision;
@@ -2855,6 +2853,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
       totalTimeMs: totalTime,
       steps: performanceSteps,
     },
+    pythonDebug,
   };
 }
 

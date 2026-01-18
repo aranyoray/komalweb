@@ -78,6 +78,7 @@ interface ScanResult {
       details?: string;
     }[];
   };
+  pythonDebug?: any;
 }
 
 export default function DemoPage() {
@@ -135,20 +136,20 @@ export default function DemoPage() {
 
     try {
       let input = url.trim();
-      
+
       // Check if input looks like a URL (has domain-like pattern with dots or protocol)
-      const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(input) || 
-                          input.includes('.com') || 
-                          input.includes('.org') || 
-                          input.includes('.net') ||
-                          input.includes('.edu') ||
-                          input.includes('.gov') ||
-                          input.includes('.io') ||
-                          input.includes('.co') ||
-                          input.includes('.in') ||
-                          input.startsWith('http://') || 
-                          input.startsWith('https://');
-      
+      const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(input) ||
+        input.includes('.com') ||
+        input.includes('.org') ||
+        input.includes('.net') ||
+        input.includes('.edu') ||
+        input.includes('.gov') ||
+        input.includes('.io') ||
+        input.includes('.co') ||
+        input.includes('.in') ||
+        input.startsWith('http://') ||
+        input.startsWith('https://');
+
       // Only normalize as URL if it looks like a URL
       if (looksLikeUrl && !input.startsWith('http://') && !input.startsWith('https://')) {
         input = 'https://' + input;
@@ -169,12 +170,12 @@ export default function DemoPage() {
       }
 
       setResult(data);
-      
+
       // Scroll to results section after a brief delay for rendering
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
-      
+
       // Log performance metrics to browser console
       if (data.performanceMetrics) {
         const { totalTimeMs, steps } = data.performanceMetrics;
@@ -189,10 +190,15 @@ export default function DemoPage() {
           Details: step.details || '-'
         })));
         console.log(`%c\n✅ Analysis Method: ${data.analysisMethod?.toUpperCase() || 'UNKNOWN'}`, 'color: #4CAF50; font-weight: bold;');
-        console.log(`%c🎯 Safety Score: ${data.overallScore}/100 | Risk Level: ${data.childSafetyAnalysis?.overallRisk?.toUpperCase() || 'N/A'}`, 
-          data.overallScore >= 75 ? 'color: #4CAF50; font-weight: bold;' : 
-          data.overallScore >= 50 ? 'color: #FF9800; font-weight: bold;' : 
-          'color: #F44336; font-weight: bold;');
+        console.log(`%c🎯 Safety Score: ${data.overallScore}/100 | Risk Level: ${data.childSafetyAnalysis?.overallRisk?.toUpperCase() || 'N/A'}`,
+          data.overallScore >= 75 ? 'color: #4CAF50; font-weight: bold;' :
+            data.overallScore >= 50 ? 'color: #FF9800; font-weight: bold;' :
+              'color: #F44336; font-weight: bold;');
+
+        if (data.pythonDebug) {
+          console.log('%c\n🐍 Python Hybrid Debug Info:', 'color: #6B4E71; font-weight: bold;');
+          console.log(data.pythonDebug);
+        }
         console.log('\n');
       }
     } catch (err) {
@@ -344,7 +350,7 @@ export default function DemoPage() {
   };
 
   // Check if content should be blocked for under 16 based on child safety analysis
-  const isUnder16Blocked = result?.childSafetyAnalysis?.overallRisk === 'dangerous' || 
+  const isUnder16Blocked = result?.childSafetyAnalysis?.overallRisk === 'dangerous' ||
     result?.childSafetyAnalysis?.riskCategories?.some(r => r.severity === 'critical');
   const displayOverallScore = result ? (isUnder16Blocked ? 0 : result.overallScore) : 0;
 
@@ -384,11 +390,10 @@ export default function DemoPage() {
               </div>
 
               {modalMessage.text && (
-                <div className={`p-3 rounded-xl text-sm ${
-                  modalMessage.type === 'success'
+                <div className={`p-3 rounded-xl text-sm ${modalMessage.type === 'success'
                     ? 'bg-green-50 text-green-700 border border-green-200'
                     : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
+                  }`}>
                   {modalMessage.text}
                 </div>
               )}
@@ -475,11 +480,10 @@ export default function DemoPage() {
               </div>
 
               {modalMessage.text && (
-                <div className={`p-3 rounded-xl text-sm ${
-                  modalMessage.type === 'success'
+                <div className={`p-3 rounded-xl text-sm ${modalMessage.type === 'success'
                     ? 'bg-green-50 text-green-700 border border-green-200'
                     : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
+                  }`}>
                   {modalMessage.text}
                 </div>
               )}
@@ -647,13 +651,12 @@ export default function DemoPage() {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3 sm:h-4 overflow-hidden">
                     <div
-                      className={`h-full transition-all duration-1000 ease-out ${
-                        displayOverallScore >= 75
+                      className={`h-full transition-all duration-1000 ease-out ${displayOverallScore >= 75
                           ? 'bg-green-500'
                           : displayOverallScore >= 50
-                          ? 'bg-amber-500'
-                          : 'bg-red-500'
-                      }`}
+                            ? 'bg-amber-500'
+                            : 'bg-red-500'
+                        }`}
                       style={{ width: `${displayOverallScore}%` }}
                     />
                   </div>
@@ -663,11 +666,10 @@ export default function DemoPage() {
                     </p>
                     {result.analysisMethod && (
                       <span
-                        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium self-start sm:self-auto ${
-                          result.analysisMethod === 'live'
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium self-start sm:self-auto ${result.analysisMethod === 'live'
                             ? 'bg-green-100 text-green-700'
                             : 'bg-amber-100 text-amber-700'
-                        }`}
+                          }`}
                       >
                         {result.analysisMethod === 'live' ? 'Live Analysis' : 'Demo Mode'}
                       </span>
@@ -707,20 +709,20 @@ export default function DemoPage() {
                       {result.contentAnalysis.metadata.description && (
                         <p className="break-words"><span className="font-semibold">Description:</span> {result.contentAnalysis.metadata.description.substring(0, 100)}...</p>
                       )}
-                      {(result.contentAnalysis.metadata.imageCount >= 1 || 
-                        result.contentAnalysis.metadata.linkCount >= 1 || 
-                        result.contentAnalysis.metadata.videoCount >= 1 || 
+                      {(result.contentAnalysis.metadata.imageCount >= 1 ||
+                        result.contentAnalysis.metadata.linkCount >= 1 ||
+                        result.contentAnalysis.metadata.videoCount >= 1 ||
                         result.contentAnalysis.metadata.audioCount >= 1) && (
-                        <p>
-                          <span className="font-semibold">Stats:</span>{' '}
-                          {[
-                            result.contentAnalysis.metadata.imageCount >= 1 && `${result.contentAnalysis.metadata.imageCount} images`,
-                            result.contentAnalysis.metadata.linkCount >= 1 && `${result.contentAnalysis.metadata.linkCount} links`,
-                            result.contentAnalysis.metadata.videoCount >= 1 && `${result.contentAnalysis.metadata.videoCount} videos`,
-                            result.contentAnalysis.metadata.audioCount >= 1 && `${result.contentAnalysis.metadata.audioCount} audio`
-                          ].filter(Boolean).join(', ')}
-                        </p>
-                      )}
+                          <p>
+                            <span className="font-semibold">Stats:</span>{' '}
+                            {[
+                              result.contentAnalysis.metadata.imageCount >= 1 && `${result.contentAnalysis.metadata.imageCount} images`,
+                              result.contentAnalysis.metadata.linkCount >= 1 && `${result.contentAnalysis.metadata.linkCount} links`,
+                              result.contentAnalysis.metadata.videoCount >= 1 && `${result.contentAnalysis.metadata.videoCount} videos`,
+                              result.contentAnalysis.metadata.audioCount >= 1 && `${result.contentAnalysis.metadata.audioCount} audio`
+                            ].filter(Boolean).join(', ')}
+                          </p>
+                        )}
                     </div>
                   )}
                 </div>
@@ -933,30 +935,31 @@ export default function DemoPage() {
                         : data.reason;
 
                       return (
-                      <div
-                        key={ageGroup}
-                        className={`border-2 rounded-2xl p-5 transition-all hover:scale-105 hover:shadow-lg ${getActionColor(displayAction)}`}
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="text-lg font-bold">{ageGroup}</h3>
-                          {getActionIcon(displayAction)}
-                        </div>
-                        <div className="mb-3">
-                          <div className="text-2xl font-bold mb-1">{displayAction}</div>
-                          <div className="text-sm opacity-75">Score: {displayScore}/100</div>
-                        </div>
-                        <p className="text-xs leading-relaxed opacity-90">
-                          {displayReason}
-                        </p>
-                        {data.risks.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-current/20">
-                            <p className="text-[9px] sm:text-[10px] opacity-75">
-                              Risks: {data.risks.slice(0, 2).join(', ')}
-                            </p>
+                        <div
+                          key={ageGroup}
+                          className={`border-2 rounded-2xl p-5 transition-all hover:scale-105 hover:shadow-lg ${getActionColor(displayAction)}`}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-bold">{ageGroup}</h3>
+                            {getActionIcon(displayAction)}
                           </div>
-                        )}
-                      </div>
-                    )})}
+                          <div className="mb-3">
+                            <div className="text-2xl font-bold mb-1">{displayAction}</div>
+                            <div className="text-sm opacity-75">Score: {displayScore}/100</div>
+                          </div>
+                          <p className="text-xs leading-relaxed opacity-90">
+                            {displayReason}
+                          </p>
+                          {data.risks.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-current/20">
+                              <p className="text-[9px] sm:text-[10px] opacity-75">
+                                Risks: {data.risks.slice(0, 2).join(', ')}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               </ScrollReveal>

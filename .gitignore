@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 nul
+
+# User data (reports storage)
+/data/reports/

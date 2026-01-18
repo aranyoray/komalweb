@@ -28,8 +28,8 @@
     "nodemailer": "^6.9.16",
     "ogl": "^1.0.11",
     "puppeteer": "^22.0.0",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "xlsx": "^0.18.5"

@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X, LayoutDashboard, LogIn } from "lucide-react";
+/// import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import WaitlistModal from "@/components/WaitlistModal";
@@ -27,7 +28,7 @@ export default function Navbar() {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           const shouldScroll = currentScrollY > 50;
-          
+
           // Only update if state actually changed
           if (shouldScroll !== isScrolled) {
             setIsTransitioning(true);
@@ -35,7 +36,7 @@ export default function Navbar() {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => setIsTransitioning(false), 500);
           }
-          
+
           lastScrollY = currentScrollY;
           ticking = false;
         });
@@ -63,6 +64,7 @@ export default function Navbar() {
 
   const navItems = useMemo(
     () => [
+      { label: "Demo", href: { type: "route", value: "/demo" } as const },
       { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
       { label: "Safety", href: { type: "route", value: "/content-safety" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
@@ -106,7 +108,7 @@ export default function Navbar() {
           href="/"
           className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
             }`}
-          style={{ 
+          style={{
             transitionProperty: "color",
             transitionDuration: "400ms",
             transitionTimingFunction: smoothEase,
@@ -133,7 +135,7 @@ export default function Navbar() {
               href={resolveHref(item)}
               className={`font-medium text-[14px] hover:opacity-100 ${isScrolled ? "text-white/85 hover:text-white" : "text-primary/80 hover:text-primary"
                 }`}
-              style={{ 
+              style={{
                 transitionProperty: "color, opacity",
                 transitionDuration: "400ms",
                 transitionTimingFunction: smoothEase,
@@ -152,7 +154,7 @@ export default function Navbar() {
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
-            style={{ 
+            style={{
               transitionProperty: "background-color, color",
               transitionDuration: "400ms",
               transitionTimingFunction: smoothEase,
@@ -169,7 +171,7 @@ export default function Navbar() {
               ? "text-white hover:bg-white/10"
               : "text-primary hover:bg-primary/10"
               }`}
-            style={{ 
+            style={{
               transitionProperty: "color, background-color",
               transitionDuration: "400ms",
               transitionTimingFunction: smoothEase,
@@ -185,14 +187,28 @@ export default function Navbar() {
         </div>
 
         {/* Desktop CTA Button - Right */}
-        <div className="hidden md:block shrink-0">
+        <div className="hidden md:flex items-center gap-3 shrink-0">
+          {/* Signed Out - Show Sign In and Get Started */}
+          {/* <SignedOut> */}
+          {/* <Link
+            href="/sign-in"
+            className={`font-medium text-[14px] hover:opacity-100 ${isScrolled ? "text-white/85 hover:text-white" : "text-primary/80 hover:text-primary"
+              }`}
+            style={{
+              transitionProperty: "color, opacity",
+              transitionDuration: "400ms",
+              transitionTimingFunction: smoothEase,
+            }}
+          >
+            Sign In
+          </Link>
           <Button
             onClick={() => setIsWaitlistOpen(true)}
             className={`h-9 px-5 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
-            style={{ 
+            style={{
               transitionProperty: "background-color, color",
               transitionDuration: "400ms",
               transitionTimingFunction: smoothEase,
@@ -200,7 +216,35 @@ export default function Navbar() {
           >
             Get Started
             <ArrowUpRight className="w-4 h-4" />
-          </Button>
+          </Button> */}
+          {/* </SignedOut> */}
+
+          {/* Signed In - Show Dashboard and User Button */}
+          {/* <SignedIn> */}
+          {/* <Link
+            href="/dashboard"
+            className={`h-9 px-4 rounded-full font-medium text-sm flex items-center gap-1.5 ${isScrolled
+              ? "bg-white/10 text-white hover:bg-white/20"
+              : "bg-primary/10 text-primary hover:bg-primary/20"
+              }`}
+            style={{
+              transitionProperty: "background-color, color",
+              transitionDuration: "400ms",
+              transitionTimingFunction: smoothEase,
+            }}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            Dashboard
+          </Link> */}
+          {/* <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-9 h-9",
+                }
+              }}
+            /> */}
+          {/* </SignedIn> */}
         </div>
       </nav>
 
@@ -225,7 +269,7 @@ export default function Navbar() {
                 key={item.label}
                 href={resolveHref(item)}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100 last:border-0"
+                className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100"
                 style={{
                   transitionProperty: "background-color, opacity, transform",
                   transitionDuration: "400ms",
@@ -238,6 +282,61 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+
+            {/* Auth Links for Mobile */}
+            {/* <SignedOut> */}
+            {/* <Link
+              href="/sign-in"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100 flex items-center gap-2"
+              style={{
+                transitionProperty: "background-color, opacity, transform",
+                transitionDuration: "400ms",
+                transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
+                opacity: isMobileMenuOpen ? 1 : 0,
+                transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+              }}
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Link>
+            <Link
+              href="/sign-up"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="px-6 py-4 bg-primary text-white font-medium text-base hover:bg-primary/90 flex items-center gap-2"
+              style={{
+                transitionProperty: "background-color, opacity, transform",
+                transitionDuration: "400ms",
+                transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                transitionDelay: isMobileMenuOpen ? `${(navItems.length + 1) * 50}ms` : "0ms",
+                opacity: isMobileMenuOpen ? 1 : 0,
+                transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+              }}
+            >
+              <ArrowUpRight className="w-4 h-4" />
+              Get Started
+            </Link> */}
+            {/* </SignedOut> */}
+
+            {/* <SignedIn>
+              <Link
+                href="/dashboard"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-6 py-4 bg-primary text-white font-medium text-base hover:bg-primary/90 flex items-center gap-2"
+                style={{
+                  transitionProperty: "background-color, opacity, transform",
+                  transitionDuration: "400ms",
+                  transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
+                  opacity: isMobileMenuOpen ? 1 : 0,
+                  transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                }}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+            </SignedIn> */}
           </div>
         </div>
       </div>
