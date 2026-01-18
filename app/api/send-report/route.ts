@@ -531,6 +531,11 @@ export async function POST(request: NextRequest) {
         user: smtpUser,
         pass: process.env.SMTP_PASS,
       },
+      tls: {
+        rejectUnauthorized: true,
+        minVersion: 'TLSv1.2',
+      },
+      requireTLS: true,
     });
 
     const htmlContent = generateReportHTML(sanitizedReport);

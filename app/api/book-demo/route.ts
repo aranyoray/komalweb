@@ -28,6 +28,11 @@ const createTransporter = () => {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    tls: {
+      rejectUnauthorized: true,
+      minVersion: 'TLSv1.2',
+    },
+    requireTLS: true,
   });
 };
 
