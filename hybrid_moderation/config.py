@@ -1,0 +1,15 @@
+
+# Configuration for Hybrid Content Moderation System
+
+# Weights
+CSV_WEIGHT = 0.30
+VECTOR_WEIGHT = 0.70
+
+# Thresholds
+PRIMARY_CATEGORY_CONFIDENCE_THRESHOLD = 0.9
+SUBCATEGORY_CONFIDENCE_THRESHOLD = 0.9
+FINAL_SCORE_FLAG_THRESHOLD = 0.9
+FINAL_SCORE_REVIEW_THRESHOLD = 0.7
+
+# File Paths
+CSV_FILE_PATH = "Models_Masterdoc_Test.csv"

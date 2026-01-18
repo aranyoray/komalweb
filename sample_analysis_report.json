@@ -1,0 +1,81 @@
+{
+  "analysis_results": [
+    {
+      "content_id": "1",
+      "csv_analysis": {
+        "primary_category": null,
+        "subcategory": null,
+        "confidence": 0.0,
+        "matched_keywords": [],
+        "age_restriction": null
+      },
+      "vector_analysis": {
+        "semantic_category": "Violence & Disturbing Content",
+        "confidence": 0.95,
+        "embedding_similarity": 0.92
+      },
+      "final_decision": {
+        "weighted_score": 0.665,
+        "decision": "PASS",
+        "action_required": "Allow with monitoring",
+        "reasoning": "Content appears safe."
+      },
+      "metadata": {
+        "processing_time_ms": 12,
+        "timestamp": "2026-01-17T22:55:06.511590"
+      }
+    },
+    {
+      "content_id": "2",
+      "csv_analysis": {
+        "primary_category": null,
+        "subcategory": null,
+        "confidence": 0.0,
+        "matched_keywords": [],
+        "age_restriction": null
+      },
+      "vector_analysis": {
+        "semantic_category": "General",
+        "confidence": 0.2,
+        "embedding_similarity": 0.15
+      },
+      "final_decision": {
+        "weighted_score": 0.14,
+        "decision": "PASS",
+        "action_required": "Allow with monitoring",
+        "reasoning": "Content appears safe."
+      },
+      "metadata": {
+        "processing_time_ms": 9,
+        "timestamp": "2026-01-17T22:55:06.521334"
+      }
+    },
+    {
+      "content_id": "3",
+      "csv_analysis": {
+        "primary_category": "2. Explicit & Body-Related Content",
+        "subcategory": "Explicit sexual content",
+        "confidence": 1.0,
+        "matched_keywords": [
+          "poker"
+        ],
+        "age_restriction": "Block"
+      },
+      "vector_analysis": {
+        "semantic_category": "General",
+        "confidence": 0.2,
+        "embedding_similarity": 0.15
+      },
+      "final_decision": {
+        "weighted_score": 1.0,
+        "decision": "FLAG",
+        "action_required": "Blocked by Age Rule",
+        "reasoning": "Content blocked for age group <10."
+      },
+      "metadata": {
+        "processing_time_ms": 16,
+        "timestamp": "2026-01-17T22:55:06.538448"
+      }
+    }
+  ]
+}
