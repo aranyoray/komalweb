@@ -25,6 +25,7 @@ const createTransporter = () => {
     // Port 587 uses STARTTLS (secure: false), Port 465 uses direct TLS (secure: true)
     secure: port === 465,
     auth: {
+      type: 'login',
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },

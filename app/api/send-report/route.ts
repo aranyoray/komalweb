@@ -522,12 +522,20 @@ export async function POST(request: NextRequest) {
     const nodemailer = loadNodemailer();
     const port = parseInt(process.env.SMTP_PORT || '587');
 
+    // Debug - remove after fixing
+    console.log('SMTP Debug:', {
+      user: smtpUser,
+      passLength: process.env.SMTP_PASS?.length,
+      passPreview: process.env.SMTP_PASS?.substring(0, 3) + '***',
+    });
+
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.titan.email',
       port: port,
       // Port 587 uses STARTTLS (secure: false), Port 465 uses direct TLS (secure: true)
       secure: port === 465,
       auth: {
+        type: 'login',
         user: smtpUser,
         pass: process.env.SMTP_PASS,
       },
