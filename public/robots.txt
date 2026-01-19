@@ -1,0 +1,27 @@
+# robots.txt for KOMAL - Child Internet Safety App
+# https://komalkids.com
+
+User-agent: *
+Allow: /
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Disallow admin/private routes
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /sign-in/
+Disallow: /sign-up/
+
+# Sitemap location
+Sitemap: https://komalkids.com/sitemap.xml

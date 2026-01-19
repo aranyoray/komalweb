@@ -120,20 +120,183 @@ export default function Home() {
 
   return (
     <>
+      {/* Enhanced Schema.org Structured Data for SEO */}
       <Script
+        id="software-application-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            name: "KOMAL AI",
-            operatingSystem: "Web",
-            applicationCategory: "EducationApplication",
+            name: "KOMAL - Child Internet Safety App",
+            alternateName: ["KOMAL Kids", "KOMAL Parental Control", "KOMAL Safe Browser"],
+            operatingSystem: "Web, iOS, Android",
+            applicationCategory: "LifestyleApplication",
+            applicationSubCategory: "Parental Control",
             description:
-              "The world's first AI digital guardian that reads how a child feels, not just what they click. Hyper-personalised platform for children ages 3-12.",
-            screenshot: "https://komal.ai/screenshot.jpg",
-            featureList:
-              "Real-time behavioural AI, Personalised learning, Parent insights, Privacy-first design",
+              "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing. Protects children ages 3-12 online with real-time behavioral AI. COPPA, GDPR-K compliant.",
+            screenshot: "https://komalkids.com/heroimage.png",
+            featureList: [
+              "Child Internet Safety",
+              "Parental Control Dashboard",
+              "Age-Appropriate Content Filtering",
+              "Real-time Behavioral AI",
+              "Safe Browsing for Kids",
+              "Screen Time Management",
+              "COPPA Compliant",
+              "On-Device Privacy Processing",
+              "Parent Insights & Reports",
+              "Custom Content Rules"
+            ],
+            audience: {
+              "@type": "PeopleAudience",
+              suggestedMinAge: "3",
+              suggestedMaxAge: "12",
+              audienceType: "Children, Parents, Families"
+            },
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock"
+            },
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: "4.8",
+              ratingCount: "150",
+              bestRating: "5",
+              worstRating: "1"
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "ChildCog Private Limited",
+              url: "https://komalkids.com",
+              logo: "https://komalkids.com/komaliconnobg.png"
+            }
+          }),
+        }}
+      />
+
+      {/* Organization Schema for Brand Recognition */}
+      <Script
+        id="organization-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "KOMAL",
+            legalName: "ChildCog Private Limited",
+            url: "https://komalkids.com",
+            logo: "https://komalkids.com/komaliconnobg.png",
+            description: "KOMAL is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
+            foundingDate: "2024",
+            founders: [
+              {
+                "@type": "Person",
+                name: "Aranyo Ray",
+                jobTitle: "CEO"
+              }
+            ],
+            contactPoint: {
+              "@type": "ContactPoint",
+              email: "play@komalkids.com",
+              contactType: "customer service"
+            },
+            sameAs: [
+              "https://twitter.com/komalkids",
+              "https://linkedin.com/company/komalkids"
+            ],
+            areaServed: ["US", "IN", "CA", "GB", "AU"],
+            knowsAbout: [
+              "Child Internet Safety",
+              "Parental Control Software",
+              "Online Child Protection",
+              "Content Filtering for Kids",
+              "Digital Wellbeing for Children"
+            ]
+          }),
+        }}
+      />
+
+      {/* WebSite Schema for Sitelinks Search Box */}
+      <Script
+        id="website-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "KOMAL - Child Internet Safety",
+            url: "https://komalkids.com",
+            description: "Protect your children online with KOMAL - the AI-powered child internet safety app.",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://komalkids.com/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }),
+        }}
+      />
+
+      {/* FAQ Schema for Rich Results */}
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What is Komal?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Komal is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "How does Komal protect my child's privacy?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "All AI processing happens on-device—your child's data never leaves your device without explicit consent. Parents control what's shared, and we never sell data or use it for advertising. KOMAL is COPPA, GDPR-K, and DPDPA compliant."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "How does Komal filter age-inappropriate content?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Komal uses AI to analyze content across multiple signals—text, images, video, and audio—and matches it to age-appropriate rules. Instead of binary blocking, we use three actions: Block (not accessible), Gate (allowed with warning or approval), and Allow. This creates flexibility where educational content can be treated differently from harmful content."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Can I customize what content my child sees?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Parents can block specific interests, URLs, or keywords. You can also adjust the default rules per child profile and receive notifications when blocked content is attempted. Parent rules always override the default settings."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "What age is Komal designed for?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Komal is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Is Komal a parental control app?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes, Komal functions as an advanced parental control app with AI-powered content filtering, screen time management, and real-time child safety monitoring. It goes beyond traditional parental controls by understanding child behavior and adapting content in real-time."
+                }
+              }
+            ]
           }),
         }}
       />
