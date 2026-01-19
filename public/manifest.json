@@ -1,0 +1,51 @@
+{
+  "name": "KOMAL - Child Internet Safety & Parental Control App",
+  "short_name": "KOMAL",
+  "description": "AI-powered digital guardian for child internet safety. Protect your children online with smart content filtering, parental controls, and age-appropriate browsing. COPPA compliant.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a5f",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "kids",
+    "family",
+    "parental-control",
+    "safety",
+    "utilities"
+  ],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "icons": [
+    {
+      "src": "/komaliconnobg.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/komaliconnobg.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/komalicon.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/heroimage.png",
+      "sizes": "1200x1200",
+      "type": "image/png",
+      "label": "KOMAL Digital Guardian - Child Safety App"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
