@@ -198,7 +198,7 @@ const generateReportHTML = (report: ReportData): string => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Komal URL / Keyword Safety Report</title>
+  <title>AgileWeb URL / Keyword Safety Report</title>
   <style>
     @media screen and (max-width: 600px) {
       .mobile-stack { display: block !important; width: 100% !important; }
@@ -216,17 +216,17 @@ const generateReportHTML = (report: ReportData): string => {
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f7; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
   <div style="max-width: 650px; margin: 0 auto; padding: 12px;">
     
-    <!-- Header: KOMAL on left, komalkids.com on right -->
+    <!-- Header: AgileWeb on left, komalkids.com on right -->
     <table class="header-table" style="width: 100%; margin-bottom: 12px; border-collapse: collapse;">
       <tr>
         <td style="vertical-align: middle;">
           <table style="border-collapse: collapse; margin: 0 auto;">
             <tr>
               <td style="vertical-align: middle; padding-right: 6px;">
-                <img src="${baseUrl}/komaliconnobg.png" alt="KOMAL Logo" style="width: 28px; height: 28px; display: block;" />
+                <img src="${baseUrl}/komaliconnobg.png" alt="AgileWeb Logo" style="width: 28px; height: 28px; display: block;" />
               </td>
               <td style="vertical-align: middle;">
-                <span style="font-size: 16px; font-weight: 700; color: #6b4e71;">KOMAL</span>
+                <span style="font-size: 16px; font-weight: 700; color: #6b4e71;">AgileWeb</span>
                 <span style="font-size: 9px; color: #6b7280; margin-left: 6px;">URL / Keyword Safety Analysis Report</span>
               </td>
             </tr>
@@ -549,9 +549,9 @@ export async function POST(request: NextRequest) {
     const htmlContent = generateReportHTML(sanitizedReport);
 
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"KOMAL Safety" <${smtpUser}>`,
+      from: process.env.SMTP_FROM || `"AgileWeb Safety" <${smtpUser}>`,
       to: email,
-      subject: `Komal URL Safety Report: ${sanitizedReport.url}`,
+      subject: `AgileWeb URL Safety Report: ${sanitizedReport.url}`,
       html: htmlContent,
     });
 

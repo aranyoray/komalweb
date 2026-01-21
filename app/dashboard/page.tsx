@@ -335,7 +335,7 @@ export default function DashboardPage() {
       if (data.performanceMetrics) {
         const { totalTimeMs, steps } = data.performanceMetrics;
         console.log(
-          "\n%c🔍 KOMAL DASHBOARD ANALYSIS",
+          "\n%c🔍 AgileWeb DASHBOARD ANALYSIS",
           "color: #6B4E71; font-weight: bold; font-size: 14px;"
         );
         console.log(`%c📍 Input: ${input}`, "color: #666;");
@@ -654,7 +654,7 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-2xl font-bold text-primary">Book a Demo</h3>
               <p className="text-sm text-text-dim mt-2">
-                See how KOMAL can protect your children online
+                See how AgileWeb can protect your children online
               </p>
             </div>
 

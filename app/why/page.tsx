@@ -59,14 +59,14 @@ export default function WhyPage() {
                             Introducing
 
                             <span className="text-primary text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold  tracking-tight mb-10">
-                                {' '}Komal.
+                                {' '}AgileWeb.
                             </span>
                         </h1>
 
                         {/* Content */}
                         <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-7">
                             <p className="text-xl font-medium text-primary/80">
-                                Komal is the world&apos;s first AI digital guardian that reads how a child feels, not just what they click.
+                                AgileWeb is the world&apos;s first AI digital guardian that reads how a child feels, not just what they click.
                             </p>
 
                             <p>
@@ -74,7 +74,7 @@ export default function WhyPage() {
                             </p>
 
                             <p>
-                                That&apos;s why we built Komal. It uses real-time behavioral AI to understand your child&apos;s engagement—detecting frustration, hesitation, or delight—and adapts the digital experience instantly. We don&apos;t just filter content; we nurture curiosity while keeping them safe.
+                                That&apos;s why we built AgileWeb. It uses real-time behavioral AI to understand your child&apos;s engagement—detecting frustration, hesitation, or delight—and adapts the digital experience instantly. We don&apos;t just filter content; we nurture curiosity while keeping them safe.
                             </p>
 
                             <h2 className="text-2xl font-bold text-primary mt-12 mb-5 flex items-center gap-3">
@@ -88,7 +88,7 @@ export default function WhyPage() {
 
                             <div className="pt-8 mt-12 border-b pb-4 border-dashed border-primary/20">
                                 <p className="font-semibold text-primary  text-right italic">
-                                    — The Komal Team
+                                    — The AgileWeb Team
                                 </p>
                             </div>
                         </div>
@@ -173,7 +173,7 @@ export default function WhyPage() {
                             </svg>
                         </span>
                         <p className="text-gray-700 text-sm leading-relaxed">
-                            We want investor meetings to be as productive as possible. Below you'll find answers to the most common questions about Komal's technology, market approach, and traction. Reviewing these before our call lets us dive deeper into strategic fit and partnership opportunities.
+                            We want investor meetings to be as productive as possible. Below you'll find answers to the most common questions about AgileWeb's technology, market approach, and traction. Reviewing these before our call lets us dive deeper into strategic fit and partnership opportunities.
                         </p>
                     </div>
 
@@ -242,7 +242,7 @@ export default function WhyPage() {
                                 <Accordion type="single" collapsible className="w-full">
                                     <DetailItem
                                         title="Our Manifesto"
-                                        content="Komal is building the world's first non-addictive AI digital guardian for children ages 3-12. We read behavior—gaze patterns, touch interactions, emotional responses—not just clicks. Every child deserves technology that understands them, protects their curiosity, and grows with them."
+                                        content="AgileWeb is building the world's first non-addictive AI digital guardian for children ages 3-12. We read behavior—gaze patterns, touch interactions, emotional responses—not just clicks. Every child deserves technology that understands them, protects their curiosity, and grows with them."
                                     />
                                     <DetailItem
                                         title="The pain"
@@ -271,7 +271,7 @@ export default function WhyPage() {
                                 <Accordion type="single" collapsible className="w-full">
                                     <DetailItem
                                         title="Product demo, Features & Data collection"
-                                        content="Komal processes multi-modal behavioral signals (gaze tracking, touch patterns, micro-expressions) in real-time (<200ms latency). All AI processing happens on-device using edge ML. Parents receive weekly plain-language insights via push notifications and email. Zero biometric data stored in cloud."
+                                        content="AgileWeb processes multi-modal behavioral signals (gaze tracking, touch patterns, micro-expressions) in real-time (<200ms latency). All AI processing happens on-device using edge ML. Parents receive weekly plain-language insights via push notifications and email. Zero biometric data stored in cloud."
                                     />
                                     <DetailItem
                                         title="Product roadmap"
@@ -283,7 +283,7 @@ export default function WhyPage() {
                                     />
                                     <DetailItem
                                         title="(Optional) Product vision"
-                                        content="Komal becomes the default OS layer for childhood—an adaptive AI guardian that works across every app, website, and digital experience. Every child gets a personalized learning companion that protects curiosity without surveillance, guides without gatekeeping."
+                                        content="AgileWeb becomes the default OS layer for childhood—an adaptive AI guardian that works across every app, website, and digital experience. Every child gets a personalized learning companion that protects curiosity without surveillance, guides without gatekeeping."
                                     />
                                     <DetailItem
                                         title="Security & Compliance"
@@ -315,7 +315,7 @@ export default function WhyPage() {
                                     />
                                     <DetailItem
                                         title="Competitive landscape"
-                                        content="Competitors (Bark, Qustodio, Google Family Link) focus on blocking and surveillance. Komal focuses on understanding and guidance. Our behavioral AI is 5+ years ahead of competitors. Closest analog: no one is building real-time emotional intelligence for child safety."
+                                        content="Competitors (Bark, Qustodio, Google Family Link) focus on blocking and surveillance. AgileWeb focuses on understanding and guidance. Our behavioral AI is 5+ years ahead of competitors. Closest analog: no one is building real-time emotional intelligence for child safety."
                                     />
                                     <DetailItem
                                         title="Pricing"
@@ -323,7 +323,7 @@ export default function WhyPage() {
                                     />
                                     <DetailItem
                                         title="Revenue expansion"
-                                        content="API licensing to content platforms: Netflix Kids, YouTube Kids, educational app developers can integrate Komal's behavioral safety layer. Estimated $0.50 per child per month recurring revenue from platform partners. Projected 2M licensed children by 2028."
+                                        content="API licensing to content platforms: Netflix Kids, YouTube Kids, educational app developers can integrate AgileWeb's behavioral safety layer. Estimated $0.50 per child per month recurring revenue from platform partners. Projected 2M licensed children by 2028."
                                     />
                                 </Accordion>
                             </div>

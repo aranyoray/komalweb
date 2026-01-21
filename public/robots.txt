@@ -1,4 +1,4 @@
-# robots.txt for KOMAL - Child Internet Safety App
+# robots.txt for AgileWeb - Child Internet Safety App
 # https://komalkids.com
 
 User-agent: *

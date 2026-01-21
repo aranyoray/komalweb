@@ -19,7 +19,7 @@ const coreTeam: TeamMember[] = [
         role: "Co-Founder & CEO",
         credentials: ["Wu Tsai Scholar, Yale University", "Ex-Graymatics, Commenda"],
         image: "/aranyowhitebg.png",
-        description: "Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. A Wu Tsai Scholar at Yale investigating implicit bias in multicultural learning, he won 1st Place from the APA at ISEF for his culturally relevant game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads overall execution and expansion.",
+        description: "Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. A Wu Tsai Scholar at Yale investigating implicit bias in multicultural learning, he won 1st Place from the APA at ISEF for his culturally relevant game app and is published in Harvard's Journal of Emerging Investigators. At AgileWeb, he leads overall execution and expansion.",
         tagline: "Building the future of child development",
     },
     // {
@@ -44,7 +44,7 @@ const coreTeam: TeamMember[] = [
     //     role: "GTM Lead",
     //     credentials: ["US and Korea Markets"],
     //     image: "/l.png",
-    //     description: "Dale leads Komal's go-to-market strategy for the US and Korea markets. He brings extensive expertise in cross-cultural business development and global market expansion to help Komal reach international audiences.",
+    //     description: "Dale leads AgileWeb's go-to-market strategy for the US and Korea markets. He brings extensive expertise in cross-cultural business development and global market expansion to help AgileWeb reach international audiences.",
     //     tagline: "Bridging cultures, opening markets",
     // },
     {
@@ -74,7 +74,7 @@ const advisors: Advisor[] = [
         role: "Research Advisor",
         credentials: ["UC Berkeley", "PhD"],
         image: "/doris.png",
-        description: "Dr. Doris holds a PhD in Integrative Biology from UC Berkeley. She brings deep expertise in biological systems and research methodology to Komal, ensuring our scientific approach is both rigorous and sound.",
+        description: "Dr. Doris holds a PhD in Integrative Biology from UC Berkeley. She brings deep expertise in biological systems and research methodology to AgileWeb, ensuring our scientific approach is both rigorous and sound.",
         tagline: "Deep expertise in biological systems",
     },
     {
@@ -82,7 +82,7 @@ const advisors: Advisor[] = [
         role: "GTM Advisor",
         credentials: ["Co-Founder & CEO, Curious Cardinals", "Forbes 30u30"],
         image: "/audrey.png",
-        description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform connecting students with inspiring role models. A Forbes 30 Under 30 honoree, she brings deep expertise in education technology, youth engagement, and scaling mission-driven startups to help Komal reach families worldwide.",
+        description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform connecting students with inspiring role models. A Forbes 30 Under 30 honoree, she brings deep expertise in education technology, youth engagement, and scaling mission-driven startups to help AgileWeb reach families worldwide.",
         tagline: "Empowering the next generation of learners",
     },
     {
@@ -90,7 +90,7 @@ const advisors: Advisor[] = [
         role: "Principal Investigator",
         credentials: ["Yale Social Robotics Lab"],
         image: "/brian2.png",
-        description: "Prof Scassellati is the Principal Investigator at Yale Social Robotics Lab and Professor at Yale University. He is a leading global expert in social robotics, guiding Komal's human-robot interaction and design.",
+        description: "Prof Scassellati is the Principal Investigator at Yale Social Robotics Lab and Professor at Yale University. He is a leading global expert in social robotics, guiding AgileWeb's human-robot interaction and design.",
         tagline: "Leading the future of human-robot interaction",
     },
     {
@@ -98,7 +98,7 @@ const advisors: Advisor[] = [
         role: "Editor-in-Chief",
         credentials: ["Indian Journal of Psychiatry", "MD, FRCP"],
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
-        description: "Dr. Singh is a senior psychiatrist with three decades of clinical, academic, and leadership experience, shaping psychiatric education, research standards, and policy in South Asia. He specializes in child and adolescent mental health, community psychiatry, ethics, and access to care, authoring 140+ peer-reviewed articles and 2 books. He holds an MD from Lady Hardinge Medical College, is a Fellow of the Royal College of Physicians (Edinburgh) and International Distinguished Fellow of the APA, and served as President of the Indian Psychiatric Society (East Zone). At Komal, he advises our de-addiction strategy and psychosocial framework for children's digital experiences.",
+        description: "Dr. Singh is a senior psychiatrist with three decades of clinical, academic, and leadership experience, shaping psychiatric education, research standards, and policy in South Asia. He specializes in child and adolescent mental health, community psychiatry, ethics, and access to care, authoring 140+ peer-reviewed articles and 2 books. He holds an MD from Lady Hardinge Medical College, is a Fellow of the Royal College of Physicians (Edinburgh) and International Distinguished Fellow of the APA, and served as President of the Indian Psychiatric Society (East Zone). At AgileWeb, he advises our de-addiction strategy and psychosocial framework for children's digital experiences.",
         tagline: "Three decades shaping child mental health",
     },
     {
@@ -114,7 +114,7 @@ const advisors: Advisor[] = [
         role: "GTM Advisor",
         credentials: ["The Stack", "MBA"],
         image: "/shreya-jain-mba-business-gtm-advisor-india.png",
-        description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through growth.",
+        description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping AgileWeb reach and support diverse communities through growth.",
         tagline: "Champion of neurodiversity initiatives",
     },
 ];

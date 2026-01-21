@@ -1,6 +1,6 @@
-# KOMAL - Next.js Application
+# AgileWeb - Next.js Application
 
-This is a Next.js application for KOMAL - an AI companion that understands how children feel and learns.
+This is a Next.js application for AgileWeb - an AI companion that understands how children feel and learns.
 
 ## Getting Started
 
@@ -33,9 +33,9 @@ Open [http://localhost:3001](http://localhost:3001) with your browser to see the
 ├── app/
 │   ├── page.tsx              # Home page
 │   ├── not-found.tsx         # 404 error page
-│   ├── how-komal-works/      # How KOMAL Works page
+│   ├── how-agileweb-works/      # How AgileWeb Works page
 │   │   └── page.tsx
-│   ├── meet-komal/           # Meet KOMAL platform page
+│   ├── meet-agileweb/           # Meet AgileWeb platform page
 │   │   └── page.tsx
 │   ├── privacy-policy/       # Privacy Policy page
 │   │   └── page.tsx
@@ -71,9 +71,9 @@ Open [http://localhost:3001](http://localhost:3001) with your browser to see the
 ## Pages
 
 1. **Home** (`/`) - Landing page with hero section, features, pricing, and FAQ
-2. **How KOMAL Works** (`/how-komal-works`) - Detailed explanation of the technology
-3. **Meet KOMAL** (`/meet-komal`) - Platform overview and technical details
-4. **Team** (`/team`) - Meet the team behind KOMAL
+2. **How AgileWeb Works** (`/how-agileweb-works`) - Detailed explanation of the technology
+3. **Meet AgileWeb** (`/meet-agileweb`) - Platform overview and technical details
+4. **Team** (`/team`) - Meet the team behind AgileWeb
 5. **Privacy Policy** (`/privacy-policy`) - Comprehensive privacy policy with COPPA, DPDPA, and GDPR compliance
 6. **404 Page** (`/not-found`) - Custom 404 error page
 
@@ -93,4 +93,4 @@ npm start              # serves on port 3001
 
 ## License
 
-All rights reserved © KOMAL AI Inc.
+All rights reserved © AgileWeb AI Inc.

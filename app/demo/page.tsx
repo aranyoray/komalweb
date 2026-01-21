@@ -179,7 +179,7 @@ export default function DemoPage() {
       // Log performance metrics to browser console
       if (data.performanceMetrics) {
         const { totalTimeMs, steps } = data.performanceMetrics;
-        console.log('\n%c🔍 KOMAL URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
+        console.log('\n%c🔍 AgileWeb URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
         console.log(`%c📍 Input: ${input}`, 'color: #666;');
         console.log(`%c⏱️  Total Time: ${(totalTimeMs / 1000).toFixed(3)}s`, 'color: #2196F3; font-weight: bold;');
         console.log('%c\n📊 Step Breakdown:', 'color: #6B4E71; font-weight: bold;');
@@ -203,7 +203,7 @@ export default function DemoPage() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('%c❌ KOMAL Analysis Error:', 'color: #F44336; font-weight: bold;', err);
+      console.error('%c❌ AgileWeb Analysis Error:', 'color: #F44336; font-weight: bold;', err);
     } finally {
       setLoading(false);
     }
@@ -436,7 +436,7 @@ export default function DemoPage() {
                 <Calendar className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-2xl font-bold text-primary">Book a Demo</h3>
-              <p className="text-sm text-text-dim mt-2">See how KOMAL can protect your children online</p>
+              <p className="text-sm text-text-dim mt-2">See how AgileWeb can protect your children online</p>
             </div>
 
             <div className="space-y-4">

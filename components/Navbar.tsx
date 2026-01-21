@@ -117,14 +117,14 @@ export default function Navbar() {
           <div className="w-12 h-12 relative shrink-0 flex items-center justify-center hover:animate-[vibrate_0.5s_ease-in-out]">
             <Image
               src="/komaliconnobg.png"
-              alt="KOMAL Logo"
+              alt="AgileWeb Logo"
               width={48}
               height={48}
               className="object-contain"
               priority
             />
           </div>
-          <span className="hidden md:inline text-2xl font-semibold">KOMAL</span>
+          <span className="hidden md:inline text-2xl font-semibold">AgileWeb</span>
         </Link>
 
         {/* Desktop Navigation - Centered with flex-1 */}

@@ -1,6 +1,6 @@
 {
-  "name": "KOMAL - Child Internet Safety & Parental Control App",
-  "short_name": "KOMAL",
+  "name": "AgileWeb - Child Internet Safety & Parental Control App",
+  "short_name": "AgileWeb",
   "description": "AI-powered digital guardian for child internet safety. Protect your children online with smart content filtering, parental controls, and age-appropriate browsing. COPPA compliant.",
   "start_url": "/",
   "display": "standalone",
@@ -43,7 +43,7 @@
       "src": "/heroimage.png",
       "sizes": "1200x1200",
       "type": "image/png",
-      "label": "KOMAL Digital Guardian - Child Safety App"
+      "label": "AgileWeb Digital Guardian - Child Safety App"
     }
   ],
   "related_applications": [],

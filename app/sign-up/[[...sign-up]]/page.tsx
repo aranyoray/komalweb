@@ -22,7 +22,7 @@ export default function SignUpPage() {
               <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Shield className="w-5 h-5 text-primary" />
               </div>
-              <span className="text-xl font-bold text-primary">KOMAL</span>
+              <span className="text-xl font-bold text-primary">AgileWeb</span>
             </Link>
             <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
               Create Your Account

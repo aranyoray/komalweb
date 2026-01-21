@@ -251,12 +251,12 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <Image
                 src="/komaliconnobg.png"
-                alt="Komal Logo"
+                alt="AgileWeb Logo"
                 width={40}
                 height={40}
                 className="rounded-lg"
               />
-              <span className="font-bold text-2xl tracking-tight text-text">KOMAL</span>
+              <span className="font-bold text-2xl tracking-tight text-text">AgileWeb</span>
             </div>
 
             {/* Social Icons */}
@@ -364,7 +364,7 @@ export default function Footer() {
           </div>
         </ScrollReveal>
 
-        {/* Powered by KomalSense */}
+        {/* Powered by AgileWebSense */}
         <ScrollReveal delay={0.35}>
           <div>
             <p className="text-primary text-xs font-medium">

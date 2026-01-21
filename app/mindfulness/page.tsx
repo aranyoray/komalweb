@@ -5,7 +5,7 @@ import Link from "next/link";
 import FloatingParticles from "@/components/FloatingParticles";
 import { Button } from "@/components/ui/button";
 
-// Abstract SVG Icons for "Anatomy of Komal" section
+// Abstract SVG Icons for "Anatomy of AgileWeb" section
 const CoreIdentityIcon = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="24" cy="24" r="20" stroke="#1A1A1A" strokeWidth="2" fill="white" />
@@ -35,7 +35,7 @@ const NavigationIcon = () => (
   </svg>
 );
 
-export default function HowKomalWorks() {
+export default function HowAgileWebWorks() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -139,7 +139,7 @@ export default function HowKomalWorks() {
                 {isInView && (
                   <img
                     src="/elephanthand.png"
-                    alt="Komal Elephant"
+                    alt="AgileWeb Elephant"
                     className={`w-full h-full object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                     onLoad={() => setImageLoaded(true)}
                   />
@@ -152,7 +152,7 @@ export default function HowKomalWorks() {
         </div>
       </section>
 
-      {/* Why Choose KOMAL - Comparison Table */}
+      {/* Why Choose AgileWeb - Comparison Table */}
       <section className="pt-6 md:pt-10 pb-12 md:pb-16 bg-[#F5F5F7] relative overflow-hidden">
         {/* Floating Particles Background */}
         <div className="absolute inset-0 z-0">
@@ -161,7 +161,7 @@ export default function HowKomalWorks() {
         <div className="max-w-[1100px] mx-auto px-6 md:px-16 relative z-10">
           <div className="text-center mb-12">
             <h2 className="font-sans text-[36px] md:text-[48px] font-semibold text-primary mb-4 tracking-[-0.02em] text-center">
-              Why Komal?
+              Why AgileWeb?
             </h2>
 
           </div>
@@ -171,7 +171,7 @@ export default function HowKomalWorks() {
             {/* Table Header */}
             <div className="grid grid-cols-3 border-b border-gray-300">
               <div className="py-3 px-2 md:py-6 md:px-6 bg-[#F5F0FF] flex items-center justify-center border-r border-gray-300">
-                <span className="font-bold text-primary text-[18px] md:text-2xl">KOMAL</span>
+                <span className="font-bold text-primary text-[18px] md:text-2xl">AgileWeb</span>
               </div>
               <div className="py-3 px-2 md:py-6 md:px-6 flex items-center justify-center border-r border-gray-300">
                 <span className="font-bold text-text-dim text-[14px] md:text-lg">Traditional Apps</span>
@@ -324,7 +324,7 @@ export default function HowKomalWorks() {
         </div>
       </section>
 
-      {/* The Anatomy of Komal - Inspired by reference image */}
+      {/* The Anatomy of AgileWeb - Inspired by reference image */}
       <section className="py-6 md:py-10 bg-[#F5F0FF]">
         <div className="max-w-[1100px] mx-auto px-6 md:px-16">
           <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-6">
@@ -333,14 +333,14 @@ export default function HowKomalWorks() {
                 The anatomy of <span className="font-bold">companionship</span>
               </h2>
               <p className="text-lg text-text-dim leading-relaxed max-w-[800px]">
-                Komal incorporates the key signals of development and engagement, to turn each child’s distinct patterns into a system that adapts to how they think, learn, and grow.
+                AgileWeb incorporates the key signals of development and engagement, to turn each child’s distinct patterns into a system that adapts to how they think, learn, and grow.
               </p>
             </div>
             {/* Elephant Mascot */}
             <div className="hidden md:block w-32 h-40 shrink-0 rounded-2xl overflow-hidden bg-gradient-to-br from-[#E8E0F5] to-[#D4C8ED]">
               <img
                 src="/sittingelephant.png"
-                alt="KOMAL Elephant Mascot - Your child's friendly digital guardian"
+                alt="AgileWeb Elephant Mascot - Your child's friendly digital guardian"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -372,10 +372,10 @@ export default function HowKomalWorks() {
             The Big Idea
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
-            Most learning apps are blindfolded—they only see if your child got the answer right or wrong. Komal is different. We watch how your child engages, not just what they click. We use <span className="font-semibold">gaze, speech,</span> and <span className="font-semibold">microexpressions</span> to study <span className="font-semibold">behaviour</span> instead of bombarding them with buttons.
+            Most learning apps are blindfolded—they only see if your child got the answer right or wrong. AgileWeb is different. We watch how your child engages, not just what they click. We use <span className="font-semibold">gaze, speech,</span> and <span className="font-semibold">microexpressions</span> to study <span className="font-semibold">behaviour</span> instead of bombarding them with buttons.
           </p>
           <p className="text-lg text-text-dim leading-relaxed">
-            It&apos;s like a teacher who notices when your child hesitates, when they&apos;re getting frustrated, or when they&apos;re genuinely excited. Komal is <span className="font-bold">(child-first, game-second)</span>.
+            It&apos;s like a teacher who notices when your child hesitates, when they&apos;re getting frustrated, or when they&apos;re genuinely excited. AgileWeb is <span className="font-bold">(child-first, game-second)</span>.
           </p>
         </div>
       </section>
@@ -454,7 +454,7 @@ export default function HowKomalWorks() {
                 <span></span> Instant Adaptation
               </h4>
               <p className="text-text-dim text-[15px] leading-relaxed text-center">
-                When your child shows frustration, Komal adapts in less than a blink of an eye. It might slow down the activity or introduce a calming mini-game—all automatically.
+                When your child shows frustration, AgileWeb adapts in less than a blink of an eye. It might slow down the activity or introduce a calming mini-game—all automatically.
               </p>
             </div>
             <div className="text-center">
@@ -462,7 +462,7 @@ export default function HowKomalWorks() {
                 <span></span> Learning Over Time
               </h4>
               <p className="text-text-dim text-[15px] leading-relaxed text-center">
-                Komal gets smarter about your child the more they play. It learns their unique patterns and adapts personalisation every week.
+                AgileWeb gets smarter about your child the more they play. It learns their unique patterns and adapts personalisation every week.
               </p>
             </div>
             <div className="text-center">
@@ -485,7 +485,7 @@ export default function HowKomalWorks() {
               Experience the App
             </h2>
             <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-              See how KOMAL creates a personalised journey for every child with intuitive interfaces and actionable insights.
+              See how AgileWeb creates a personalised journey for every child with intuitive interfaces and actionable insights.
             </p>
           </div>
 
@@ -508,7 +508,7 @@ export default function HowKomalWorks() {
                   <div className="bg-black rounded-[1.25rem] overflow-hidden">
                     <img
                       src="/komal-personalize-your-profile.jpeg"
-                      alt="KOMAL Profile Personalization"
+                      alt="AgileWeb Profile Personalization"
                       className="w-full h-auto max-w-[180px] md:max-w-[200px]"
                     />
                   </div>
@@ -535,7 +535,7 @@ export default function HowKomalWorks() {
                   <div className="bg-black rounded-[1.25rem] overflow-hidden">
                     <img
                       src="/komal-learner-profile.jpeg"
-                      alt="KOMAL Learner Profile"
+                      alt="AgileWeb Learner Profile"
                       className="w-full h-auto max-w-[180px] md:max-w-[200px]"
                     />
                   </div>
@@ -560,7 +560,7 @@ export default function HowKomalWorks() {
                   <div className="bg-black rounded-[1.25rem] overflow-hidden">
                     <img
                       src="/komal-session-report-extended.jpeg"
-                      alt="KOMAL Session Report"
+                      alt="AgileWeb Session Report"
                       className="w-full h-auto max-w-[180px] md:max-w-[200px]"
                     />
                   </div>
@@ -801,7 +801,7 @@ export default function HowKomalWorks() {
                     Fairness & Ethics
                   </h3>
                   <p className="text-text-dim leading-relaxed mb-6">
-                    Komal works equally well for all children, regardless of age, background, or learning style. We audit for bias and fix issues before they become problems.
+                    AgileWeb works equally well for all children, regardless of age, background, or learning style. We audit for bias and fix issues before they become problems.
                   </p>
                   <div className="flex justify-start">
                     <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-full px-6">
@@ -851,11 +851,11 @@ export default function HowKomalWorks() {
       </section>
 
 
-      {/* What Komal Sees & What Parents See - Side by Side */}
+      {/* What AgileWeb Sees & What Parents See - Side by Side */}
       <section className="py-8 md:py-12 bg-[#F5F5F7]">
         <div className="max-w-[1200px] mx-auto px-6 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - What Komal Sees */}
+            {/* Left Column - What AgileWeb Sees */}
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/30">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-[#E8E0F5] flex items-center justify-center">
@@ -864,10 +864,10 @@ export default function HowKomalWorks() {
                     <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-primary">What Komal Sees</h3>
+                <h3 className="text-xl font-semibold text-primary">What AgileWeb Sees</h3>
               </div>
 
-              <p className="text-text-dim mb-3 text-[15px]">Komal reads behavioural signals in real-time:</p>
+              <p className="text-text-dim mb-3 text-[15px]">AgileWeb reads behavioural signals in real-time:</p>
 
               <div className="grid grid-cols-2 gap-2 mb-4">
                 <div className="bg-[#F5F5F7] rounded-xl p-3">
@@ -1030,7 +1030,7 @@ export default function HowKomalWorks() {
             </svg>
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
-            We&apos;re not just building an app. We&apos;re building the foundation for how AI can understand and support children&apos;s learning. Our goal is to become the &quot;behavioural interface&quot; for childhood learning—meaning any educational tool could use Komal&apos;s understanding to better adapt to your child.
+            We&apos;re not just building an app. We&apos;re building the foundation for how AI can understand and support children&apos;s learning. Our goal is to become the &quot;behavioural interface&quot; for childhood learning—meaning any educational tool could use AgileWeb&apos;s understanding to better adapt to your child.
           </p>
           <p className="text-lg text-text-dim leading-relaxed">
             Imagine if every learning app could answer: &quot;Is the child engaged? Is this too hard? Is this helping?&quot; That&apos;s the future we&apos;re building—one where technology truly understands children, not just tracks them.
@@ -1045,7 +1045,7 @@ export default function HowKomalWorks() {
             Ready to Experience the Magic?
           </h2>
           <p className="text-xl text-center opacity-90 mb-10 max-w-[600px] mx-auto">
-            See how Komal understands your child. Get your FREE AI Report today.
+            See how AgileWeb understands your child. Get your FREE AI Report today.
           </p>
           <Button
             asChild

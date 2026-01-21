@@ -16,7 +16,7 @@ from hybrid_moderation.models import ModerationResult
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("moderation-api")
 
-app = FastAPI(title="Komal Hybrid Moderation API")
+app = FastAPI(title="AgileWeb Hybrid Moderation API")
 
 # Initialize CMS
 cms = ContentModerationSystem(csv_path="Models_Masterdoc_Test.csv")

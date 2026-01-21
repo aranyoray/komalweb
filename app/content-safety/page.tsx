@@ -130,7 +130,7 @@ export default function ContentSafetyPage() {
                             Content Safety for<br />Your Growing Child
                         </h1>
                         <p className="text-lg md:text-xl text-text-dim leading-relaxed max-w-[700px] mx-auto">
-                            Kids need the internet, but not all of it, and not all at once. Komal applies age-based access across content types, using clear rules and context rather than blanket bans.
+                            Kids need the internet, but not all of it, and not all at once. AgileWeb applies age-based access across content types, using clear rules and context rather than blanket bans.
                         </p>
                     </div>
                 </div>
@@ -191,7 +191,7 @@ export default function ContentSafetyPage() {
                             A Calmer Approach
                         </h2>
                         <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-                            Komal uses three actions instead of binary blocking. The goal is not to control children, but to guide them as they grow, while keeping parents in charge.
+                            AgileWeb uses three actions instead of binary blocking. The goal is not to control children, but to guide them as they grow, while keeping parents in charge.
                         </p>
                     </div>
 
@@ -251,7 +251,7 @@ export default function ContentSafetyPage() {
                             How It Works
                         </h2>
                         <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-                            When a child opens a page, Komal follows a simple flow—all happening quietly in the background.
+                            When a child opens a page, AgileWeb follows a simple flow—all happening quietly in the background.
                         </p>
                     </div>
 
@@ -310,7 +310,7 @@ export default function ContentSafetyPage() {
                             You Decide What's Best
                         </h2>
                         <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-                            Komal categorizes content real-time and applies age-appropriate rules. Parents can always customize these settings.
+                            AgileWeb categorizes content real-time and applies age-appropriate rules. Parents can always customize these settings.
                         </p>
                     </div>
 
@@ -375,7 +375,7 @@ export default function ContentSafetyPage() {
                             AI-Powered Analysis
                         </h2>
                         <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-                            Komal uses both language understanding and visual understanding to make decisions. Multiple checks must agree before a category is applied.
+                            AgileWeb uses both language understanding and visual understanding to make decisions. Multiple checks must agree before a category is applied.
                         </p>
                     </div>
 
@@ -546,7 +546,7 @@ export default function ContentSafetyPage() {
                         Growing Access, Not Cutting It Off
                     </h2>
                     <p className="text-xl text-center opacity-90 mb-10 max-w-[800px] mx-auto">
-                        Komal is about guiding children as they grow, keeping parents informed and in control—without frustration on either side.
+                        AgileWeb is about guiding children as they grow, keeping parents informed and in control—without frustration on either side.
                     </p>
                     <div className="flex flex-wrap gap-4 justify-center">
                         <Button

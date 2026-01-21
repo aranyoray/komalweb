@@ -17,7 +17,7 @@ import { ChevronDown } from "lucide-react";
 import Aurora from "@/components/Aurora";
 import FloatingButterflies from "@/components/FloatingButterflies";
 import FloatingDots from "@/components/FloatingDots";
-import KomalYourBestSection from "@/components/KomalYourBestSection";
+import AgileWebYourBestSection from "@/components/AgileWebYourBestSection";
 import SplitText from "@/components/SplitText";
 import WaitlistModal from "@/components/WaitlistModal";
 
@@ -52,7 +52,7 @@ export default function Home() {
     },
     {
       quote:
-        "As a teacher, I've seen many learning apps. Komal is different—it actually adapts to each child in real-time.",
+        "As a teacher, I've seen many learning apps. AgileWeb is different—it actually adapts to each child in real-time.",
       author: "Ananya M.",
       role: "Elementary School Teacher",
     },
@@ -68,29 +68,29 @@ export default function Home() {
 
   const faqs = [
     {
-      question: "What is Komal?",
+      question: "What is AgileWeb?",
       answer:
-        "Komal is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
+        "AgileWeb is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, AgileWeb reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
     },
     {
-      question: "How does Komal protect my child's privacy?",
+      question: "How does AgileWeb protect my child's privacy?",
       answer:
         "All AI processing happens on-device—your child's data never leaves your device without explicit consent. Parents control what’s shared, and we never sell data or use it for advertising.",
     },
     {
-      question: "Does Komal diagnose my child?",
+      question: "Does AgileWeb diagnose my child?",
       answer:
-        "No. Komal provides insights and understanding, not medical or psychological diagnoses. We never label, categorise, or make diagnostic claims.",
+        "No. AgileWeb provides insights and understanding, not medical or psychological diagnoses. We never label, categorise, or make diagnostic claims.",
     },
     {
-      question: "What age is Komal designed for?",
+      question: "What age is AgileWeb designed for?",
       answer:
-        "Komal is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs.",
+        "AgileWeb is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs.",
     },
     {
       question: "How does the real-time adaptation work?",
       answer:
-        "Komal processes behavioural signals in real-time (under ~200ms). When your child hesitates, shows frustration, or loses attention, the app adapts pacing, tone, and difficulty automatically.",
+        "AgileWeb processes behavioural signals in real-time (under ~200ms). When your child hesitates, shows frustration, or loses attention, the app adapts pacing, tone, and difficulty automatically.",
     },
     {
       question: "What do the parent reports include?",
@@ -103,13 +103,13 @@ export default function Home() {
         "Yes. Sharing is parent-initiated and parent-controlled. You can share reports via email or WhatsApp with one click.",
     },
     {
-      question: "Does Komal work offline?",
+      question: "Does AgileWeb work offline?",
       answer: "Yes. Core learning features and real-time adaptation work offline; internet is only needed for syncing and report delivery (if you enable it).",
     },
     {
-      question: "How does Komal filter age-inappropriate content?",
+      question: "How does AgileWeb filter age-inappropriate content?",
       answer:
-        "Komal uses AI to analyze content across multiple signals—text, images, video, and audio—and matches it to age-appropriate rules. Instead of binary blocking, we use three actions: Block (not accessible), Gate (allowed with warning or approval), and Allow. This creates flexibility where educational content can be treated differently from harmful content.",
+        "AgileWeb uses AI to analyze content across multiple signals—text, images, video, and audio—and matches it to age-appropriate rules. Instead of binary blocking, we use three actions: Block (not accessible), Gate (allowed with warning or approval), and Allow. This creates flexibility where educational content can be treated differently from harmful content.",
     },
     {
       question: "Can I customize what content my child sees?",
@@ -128,8 +128,8 @@ export default function Home() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            name: "KOMAL - Child Internet Safety App",
-            alternateName: ["KOMAL Kids", "KOMAL Parental Control", "KOMAL Safe Browser"],
+            name: "AgileWeb - Child Internet Safety App",
+            alternateName: ["AgileWeb Kids", "AgileWeb Parental Control", "AgileWeb Safe Browser"],
             operatingSystem: "Web, iOS, Android",
             applicationCategory: "LifestyleApplication",
             applicationSubCategory: "Parental Control",
@@ -185,11 +185,11 @@ export default function Home() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "KOMAL",
+            name: "AgileWeb",
             legalName: "ChildCog Private Limited",
             url: "https://komalkids.com",
             logo: "https://komalkids.com/komaliconnobg.png",
-            description: "KOMAL is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
+            description: "AgileWeb is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
             foundingDate: "2024",
             founders: [
               {
@@ -227,9 +227,9 @@ export default function Home() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebSite",
-            name: "KOMAL - Child Internet Safety",
+            name: "AgileWeb - Child Internet Safety",
             url: "https://komalkids.com",
-            description: "Protect your children online with KOMAL - the AI-powered child internet safety app.",
+            description: "Protect your children online with AgileWeb - the AI-powered child internet safety app.",
             potentialAction: {
               "@type": "SearchAction",
               target: "https://komalkids.com/search?q={search_term_string}",
@@ -250,26 +250,26 @@ export default function Home() {
             mainEntity: [
               {
                 "@type": "Question",
-                name: "What is Komal?",
+                name: "What is AgileWeb?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Komal is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment."
+                  text: "AgileWeb is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, AgileWeb reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment."
                 }
               },
               {
                 "@type": "Question",
-                name: "How does Komal protect my child's privacy?",
+                name: "How does AgileWeb protect my child's privacy?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "All AI processing happens on-device—your child's data never leaves your device without explicit consent. Parents control what's shared, and we never sell data or use it for advertising. KOMAL is COPPA, GDPR-K, and DPDPA compliant."
+                  text: "All AI processing happens on-device—your child's data never leaves your device without explicit consent. Parents control what's shared, and we never sell data or use it for advertising. AgileWeb is COPPA, GDPR-K, and DPDPA compliant."
                 }
               },
               {
                 "@type": "Question",
-                name: "How does Komal filter age-inappropriate content?",
+                name: "How does AgileWeb filter age-inappropriate content?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Komal uses AI to analyze content across multiple signals—text, images, video, and audio—and matches it to age-appropriate rules. Instead of binary blocking, we use three actions: Block (not accessible), Gate (allowed with warning or approval), and Allow. This creates flexibility where educational content can be treated differently from harmful content."
+                  text: "AgileWeb uses AI to analyze content across multiple signals—text, images, video, and audio—and matches it to age-appropriate rules. Instead of binary blocking, we use three actions: Block (not accessible), Gate (allowed with warning or approval), and Allow. This creates flexibility where educational content can be treated differently from harmful content."
                 }
               },
               {
@@ -282,18 +282,18 @@ export default function Home() {
               },
               {
                 "@type": "Question",
-                name: "What age is Komal designed for?",
+                name: "What age is AgileWeb designed for?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Komal is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs."
+                  text: "AgileWeb is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs."
                 }
               },
               {
                 "@type": "Question",
-                name: "Is Komal a parental control app?",
+                name: "Is AgileWeb a parental control app?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Yes, Komal functions as an advanced parental control app with AI-powered content filtering, screen time management, and real-time child safety monitoring. It goes beyond traditional parental controls by understanding child behavior and adapting content in real-time."
+                  text: "Yes, AgileWeb functions as an advanced parental control app with AI-powered content filtering, screen time management, and real-time child safety monitoring. It goes beyond traditional parental controls by understanding child behavior and adapting content in real-time."
                 }
               }
             ]
@@ -424,7 +424,7 @@ export default function Home() {
                 />
                 <Image
                   src="/heroimage.png"
-                  alt="Komal Digital Guardian"
+                  alt="AgileWeb Digital Guardian"
                   width={1200}
                   height={1200}
                   className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] h-auto relative z-10"
@@ -475,7 +475,7 @@ export default function Home() {
           {/* Core Value Proposition */}
           <ScrollReveal delay={0.2}>
             <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-[700px] mx-auto text-center mb-6">
-              Traditional apps measure completion, not cognition or feelings.<br /> <span className="text-white font-medium">Komal reads behaviour in real-time</span>—attention patterns, emotional responses, and engagement quality—and adapts instantly.
+              Traditional apps measure completion, not cognition or feelings.<br /> <span className="text-white font-medium">AgileWeb reads behaviour in real-time</span>—attention patterns, emotional responses, and engagement quality—and adapts instantly.
             </p>
           </ScrollReveal>
 
@@ -508,7 +508,7 @@ export default function Home() {
                 Kids Need the Internet,<br />But Not All of It
               </h2>
               <p className="text-base sm:text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto text-center">
-                What is fine for an adult can be confusing, scary, or harmful for a child. Komal applies age-based access across content types, using clear rules and context rather than blanket bans.
+                What is fine for an adult can be confusing, scary, or harmful for a child. AgileWeb applies age-based access across content types, using clear rules and context rather than blanket bans.
               </p>
             </div>
           </ScrollReveal>
@@ -601,8 +601,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Komal: Your Best Section */}
-      <KomalYourBestSection />
+      {/* AgileWeb: Your Best Section */}
+      <AgileWebYourBestSection />
 
       {/* Key Features Section */}
       <section className="features-section py-12 md:py-16 bg-white">
@@ -740,7 +740,7 @@ export default function Home() {
             >
               <Image
                 src="/finaliphone.png"
-                alt="Komal App Screenshot"
+                alt="AgileWeb App Screenshot"
                 width={400}
                 height={800}
                 className="w-full h-auto object-cover object-top"
@@ -758,7 +758,7 @@ export default function Home() {
             >
               <Image
                 src="/finaliphone.png"
-                alt="Komal App Screenshot"
+                alt="AgileWeb App Screenshot"
                 width={400}
                 height={800}
                 className="w-full h-auto object-cover object-top"
@@ -776,7 +776,7 @@ export default function Home() {
             >
               <Image
                 src="/finaliphone.png"
-                alt="Komal App Screenshot"
+                alt="AgileWeb App Screenshot"
                 width={400}
                 height={800}
                 className="w-full h-auto object-cover object-top"
@@ -794,7 +794,7 @@ export default function Home() {
             >
               <Image
                 src="/finaliphone.png"
-                alt="Komal App Screenshot"
+                alt="AgileWeb App Screenshot"
                 width={400}
                 height={800}
                 className="w-full h-auto object-cover object-top"
@@ -812,7 +812,7 @@ export default function Home() {
             >
               <Image
                 src="/finaliphone.png"
-                alt="Komal App Screenshot"
+                alt="AgileWeb App Screenshot"
                 width={400}
                 height={800}
                 className="w-full h-auto object-cover object-top"
@@ -838,7 +838,7 @@ export default function Home() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p className="text-lg opacity-90 leading-relaxed mb-8  text-center">
-              Komal integrates seamlessly into your existing workflow. No new systems to learn—just plug into the insights
+              AgileWeb integrates seamlessly into your existing workflow. No new systems to learn—just plug into the insights
               parents already trust. Get classroom-level analytics, SEL compliance dashboards, and early risk identification
               without disrupting your current processes.
             </p>
@@ -867,7 +867,7 @@ export default function Home() {
             <ScrollReveal direction="left">
               <h2 className="section-title font-sans text-[24px] sm:text-[32px] md:text-[38px] lg:text-[42px] font-bold mb-4 md:mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-left">Frequently Asked Questions</h2>
               <p className="section-description text-lg text-text-dim mb-2 md:mb-8 leading-relaxed text-left">
-                Let Komal take the drudgery out of parenting.
+                Let AgileWeb take the drudgery out of parenting.
               </p>
             </ScrollReveal>
           </div>
@@ -908,7 +908,7 @@ export default function Home() {
       <ScrollReveal>
         <div className="my-6 text-center">
           <p className="text-text-dim/60 text-[10px] leading-relaxed  mx-auto">
-            Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of Komal (ChildCog Private Limited).
+            Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of AgileWeb (ChildCog Private Limited).
           </p>
         </div>
       </ScrollReveal>

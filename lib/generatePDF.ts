@@ -226,7 +226,7 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
     }
   };
 
-  // ===== HEADER: KOMAL Branding with Logo & komalkids.com =====
+  // ===== HEADER: AgileWeb Branding with Logo & komalkids.com =====
   currentY = 5; // Start near top with minimal padding
 
   let logoAdded = false;
@@ -244,18 +244,18 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
 
   const textOffset = logoAdded ? 12 : 0;
 
-  // KOMAL text on the left
+  // AgileWeb text on the left
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.primary);
-  doc.text('KOMAL', MARGIN + textOffset, currentY + 7);
+  doc.text('AgileWeb', MARGIN + textOffset, currentY + 7);
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.gray500);
   doc.text('URL / Keyword Safety Analysis Report', MARGIN + textOffset + 22, currentY + 7);
 
-  // komalkids.com on the right (same size as KOMAL)
+  // komalkids.com on the right (same size as AgileWeb)
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.primary);
@@ -758,6 +758,6 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
   }
 
   // Save
-  const filename = `KOMAL_Safety_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+  const filename = `AgileWeb_Safety_Report_${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(filename);
 }

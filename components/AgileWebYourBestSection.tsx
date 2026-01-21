@@ -16,9 +16,9 @@ const roles = [
     "Cheerleader",
 ];
 
-export default function KomalYourBestSection() {
+export default function AgileWebYourBestSection() {
     return (
-        <section className="komal-roles-section py-8 md:py-24 relative overflow-hidden">
+        <section className="agileweb-roles-section py-8 md:py-24 relative overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <Image

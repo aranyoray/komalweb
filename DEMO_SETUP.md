@@ -46,7 +46,7 @@ SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-SMTP_FROM="KOMAL" <noreply@komalkids.com>
+SMTP_FROM="AgileWeb" <noreply@komalkids.com>
 ```
 
 ### Environment Variable Details
@@ -212,11 +212,11 @@ When Google Cloud APIs are configured, the system performs:
 1. **Export PDF**
    - Generate PDF reports with full analysis results
    - Uses html2canvas and jsPDF for client-side PDF generation
-   - KOMAL branded report with safety scores, age actions, and analysis summary
+   - AgileWeb branded report with safety scores, age actions, and analysis summary
 
 2. **Send via Email**
    - Email safety reports directly from the demo page
-   - Beautiful HTML email template with KOMAL branding
+   - Beautiful HTML email template with AgileWeb branding
    - Requires SMTP configuration in environment variables
 
 3. **Book a Demo**

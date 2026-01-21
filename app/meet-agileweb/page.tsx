@@ -2,13 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Meet KOMAL - About Our Platform | KOMAL",
+  title: "Meet AgileWeb - About Our Platform | AgileWeb",
   description:
-    "Meet KOMAL - A comprehensive guide to our hyperpersonalised SEL platform with virtual humans, behavioural tracking, and detailed progress analytics for children ages 3-12.",
+    "Meet AgileWeb - A comprehensive guide to our hyperpersonalised SEL platform with virtual humans, behavioural tracking, and detailed progress analytics for children ages 3-12.",
   robots: "index, follow",
 };
 
-export default function MeetKomal() {
+export default function MeetAgileWeb() {
   return (
     <>
       <style>{`
@@ -260,7 +260,7 @@ export default function MeetKomal() {
           </Link>
 
           <div className="meet-header">
-            <h1 className="animate-[fadeDown_0.8s_ease_forwards]">Meet KOMAL</h1>
+            <h1 className="animate-[fadeDown_0.8s_ease_forwards]">Meet AgileWeb</h1>
             <p className="subtitle">Knowledge-Oriented Mental-Health & Affective Learning</p>
             <p>
               A mobile and web-based application with hyperpersonalised virtual humans for social-emotional learning
@@ -861,7 +861,7 @@ export default function MeetKomal() {
               marginTop: "80px",
             }}
           >
-            <h2 style={{ border: "none", marginBottom: "24px" }}>Ready to Experience KOMAL?</h2>
+            <h2 style={{ border: "none", marginBottom: "24px" }}>Ready to Experience AgileWeb?</h2>
             <p
               style={{
                 maxWidth: "600px",

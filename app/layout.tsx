@@ -11,13 +11,13 @@ import IntroLoader from "@/components/IntroLoader";
 
 export const metadata: Metadata = {
   title: {
-    default: "KOMAL - Child Internet Safety App | Parental Control & Safe Browsing for Kids",
-    template: "%s | KOMAL - Child Safety App",
+    default: "AgileWeb - Child Internet Safety App | Parental Control & Safe Browsing for Kids",
+    template: "%s | AgileWeb - Child Safety App",
   },
-  description: "Protect your children online with KOMAL - the AI-powered child internet safety app. Smart content filtering, parental controls, age-appropriate browsing, and real-time protection. COPPA compliant. Safe screen time for kids ages 3-12.",
+  description: "Protect your children online with AgileWeb - the AI-powered child internet safety app. Smart content filtering, parental controls, age-appropriate browsing, and real-time protection. COPPA compliant. Safe screen time for kids ages 3-12.",
   keywords: "child internet safety, parental control app, kids safe browsing, online safety for children, content filtering for kids, digital guardian, child protection app, safe screen time, age-appropriate content, family safety app, COPPA compliant app, children privacy app, kid-safe browser, internet filter for kids, child online protection, screen time management, parental monitoring app, safe apps for kids, children digital safety, online child protection",
-  authors: [{ name: "KOMAL - ChildCog Private Limited" }],
-  creator: "KOMAL",
+  authors: [{ name: "AgileWeb - ChildCog Private Limited" }],
+  creator: "AgileWeb",
   publisher: "ChildCog Private Limited",
   robots: {
     index: true,
@@ -34,24 +34,24 @@ export const metadata: Metadata = {
     canonical: "https://komalkids.com",
   },
   openGraph: {
-    title: "KOMAL - Child Internet Safety App | Protect Kids Online",
+    title: "AgileWeb - Child Internet Safety App | Protect Kids Online",
     description: "AI-powered digital guardian for child internet safety. Smart content filtering, parental controls, and age-appropriate browsing for kids ages 3-12. COPPA compliant.",
     type: "website",
     url: "https://komalkids.com",
-    siteName: "KOMAL",
+    siteName: "AgileWeb",
     locale: "en_US",
     images: [
       {
         url: "https://komalkids.com/heroimage.png",
         width: 1200,
         height: 1200,
-        alt: "KOMAL - Child Internet Safety App",
+        alt: "AgileWeb - Child Internet Safety App",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "KOMAL - Child Internet Safety App | Parental Control for Kids",
+    title: "AgileWeb - Child Internet Safety App | Parental Control for Kids",
     description: "Protect your children online with AI-powered content filtering and parental controls. Safe screen time for ages 3-12.",
     images: ["https://komalkids.com/heroimage.png"],
     creator: "@komalkids",

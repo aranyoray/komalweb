@@ -83,7 +83,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                         <div className="mb-4 w-16 h-16 mx-auto">
                             <Image
                                 src="/komaliconnobg.png"
-                                alt="KOMAL Logo"
+                                alt="AgileWeb Logo"
                                 width={64}
                                 height={64}
                                 className="object-contain"
@@ -94,7 +94,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                             Join the Waitlist
                         </h2>
                         <p className="text-text-dim mb-6">
-                            Be among the first to experience Komal when we launch. We&apos;ll notify you!
+                            Be among the first to experience AgileWeb when we launch. We&apos;ll notify you!
                         </p>
 
                         {isSubmitted ? (

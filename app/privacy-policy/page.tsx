@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - Komal",
+  title: "Privacy Policy - AgileWeb",
   description:
-    "Komal privacy policy: data minimization, de-identification, no biometric storage, COPPA, DPDPA, and GDPR compliance.",
+    "AgileWeb privacy policy: data minimization, de-identification, no biometric storage, COPPA, DPDPA, and GDPR compliance.",
   robots: "index, follow",
 };
 
@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
 
             <div className="privacy-highlight">
               <p>
-                <strong>Important:</strong> This Privacy Policy applies to Komal, a social-emotional learning (SEL)
+                <strong>Important:</strong> This Privacy Policy applies to AgileWeb, a social-emotional learning (SEL)
                 therapy application designed for children. We are committed to protecting the privacy of children and
                 their parents/guardians in compliance with:
               </p>
@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
                 </li>
               </ul>
               <p>
-                <strong>Legal Compliance:</strong> We are compliant with all applicable local, national, and international laws and regulations governing data protection, privacy, and children&apos;s online safety in all jurisdictions where our services are available. This includes, but is not limited to, compliance with regional data protection laws, children&apos;s privacy regulations, and consumer protection standards across all countries where Komal operates.
+                <strong>Legal Compliance:</strong> We are compliant with all applicable local, national, and international laws and regulations governing data protection, privacy, and children&apos;s online safety in all jurisdictions where our services are available. This includes, but is not limited to, compliance with regional data protection laws, children&apos;s privacy regulations, and consumer protection standards across all countries where AgileWeb operates.
               </p>
               <p>
                 <strong>Critical Privacy Assurance:</strong> We do <strong>NOT</strong> store any biometric data (raw
@@ -51,7 +51,7 @@ export default function PrivacyPolicyPage() {
 
             <h2>1. Introduction</h2>
             <p>
-              Komal (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is a mobile application that provides
+              AgileWeb (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is a mobile application that provides
               therapeutic and social-emotional learning interventions for children ages 3.5-15. This Privacy Policy
               explains how we collect, use, disclose, and safeguard your information when you use our mobile application
               (&quot;App&quot;).
@@ -184,7 +184,7 @@ export default function PrivacyPolicyPage() {
             </ul>
 
             <h3>2.5 Advertising Data</h3>
-            <p>Our App uses Google AdMob to display advertisements. Because Komal is a child-directed app, we configure our advertising requests to support the Google Play Families Policy and applicable children's privacy laws.</p>
+            <p>Our App uses Google AdMob to display advertisements. Because AgileWeb is a child-directed app, we configure our advertising requests to support the Google Play Families Policy and applicable children's privacy laws.</p>
             <ul>
               <li><strong>Child-directed ad requests:</strong> We request ads as child-directed (COPPA) and for users under the age of consent (TFUA) where applicable.</li>
               <li><strong>No personalised ads:</strong> We do not allow interest-based / personalised advertising for children.</li>
@@ -305,7 +305,7 @@ export default function PrivacyPolicyPage() {
             <h3>6.1 COPPA Compliance (United States)</h3>
             <div className="privacy-highlight">
               <p>
-                <strong>Komal is designed for children and fully complies with the Children&apos;s Online Privacy Protection Act (COPPA).</strong>
+                <strong>AgileWeb is designed for children and fully complies with the Children&apos;s Online Privacy Protection Act (COPPA).</strong>
               </p>
             </div>
             <ul>
@@ -328,7 +328,7 @@ export default function PrivacyPolicyPage() {
             <h3>6.2 DPDPA Compliance (India)</h3>
             <div className="privacy-highlight">
               <p>
-                <strong>Komal complies with the Digital Personal Data Protection Act, 2023 (DPDPA) of India.</strong>
+                <strong>AgileWeb complies with the Digital Personal Data Protection Act, 2023 (DPDPA) of India.</strong>
               </p>
             </div>
             <ul>
@@ -370,7 +370,7 @@ export default function PrivacyPolicyPage() {
             <h3>6.3 GDPR Compliance (European Union)</h3>
             <div className="privacy-highlight">
               <p>
-                <strong>Komal complies with the General Data Protection Regulation (GDPR) for users in the European Union.</strong>
+                <strong>AgileWeb complies with the General Data Protection Regulation (GDPR) for users in the European Union.</strong>
               </p>
             </div>
             <ul>
@@ -618,7 +618,7 @@ export default function PrivacyPolicyPage() {
                 <a href="mailto:privacy@komalkids.com">privacy@komalkids.com</a>
               </p>
               <p>
-                <strong>App Name:</strong> Komal
+                <strong>App Name:</strong> AgileWeb
               </p>
               <p>
                 <strong>App ID:</strong> com.komalkids.app
@@ -643,7 +643,7 @@ export default function PrivacyPolicyPage() {
 
             <h2>14. Consent</h2>
             <p>
-              By using Komal, you consent to this Privacy Policy and agree to its terms. If you do not agree to this
+              By using AgileWeb, you consent to this Privacy Policy and agree to its terms. If you do not agree to this
               policy, please do not use the App.
             </p>
             <p>
@@ -654,7 +654,7 @@ export default function PrivacyPolicyPage() {
             <hr className="privacy-divider" />
 
             <p className="privacy-footer">
-              This Privacy Policy is effective as of the date listed above and applies to all users of the Komal
+              This Privacy Policy is effective as of the date listed above and applies to all users of the AgileWeb
               application.
             </p>
           </div>

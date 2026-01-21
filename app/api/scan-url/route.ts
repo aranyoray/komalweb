@@ -64,7 +64,7 @@ async function runPythonAnalysis(text: string, ageGroup: string = '13-16', conte
     return { _debug: { status: 'skipped', reason: 'URL_NOT_SET' } };
   }
 
-  console.log(`[KOMAL] 📡 Calling External Moderation Service at: ${serviceUrl}`);
+  console.log(`[AgileWeb] 📡 Calling External Moderation Service at: ${serviceUrl}`);
 
   try {
     const controller = new AbortController();
@@ -91,7 +91,7 @@ async function runPythonAnalysis(text: string, ageGroup: string = '13-16', conte
     }
 
     const data = await response.json();
-    console.log(`[KOMAL] ✅ Python service response: ${data.final_decision?.decision}`);
+    console.log(`[AgileWeb] ✅ Python service response: ${data.final_decision?.decision}`);
     return { ...data, _debug: { status: 'success', url: serviceUrl } };
   } catch (error) {
     console.error('❌ Failed to call moderation service:', error);
@@ -2208,7 +2208,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     lastStepTime = now;
   };
 
-  console.log(`\n🔍 [KOMAL ANALYSIS] Starting scan for: ${url}`);
+  console.log(`\n🔍 [AgileWeb ANALYSIS] Starting scan for: ${url}`);
   trackStep('Initialize', 'Setting up clients');
   initializeClients();
 
@@ -2223,7 +2223,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   } catch (error) {
     fetchFailed = true;
     trackStep('Fetch HTML', `FAILED - ${error instanceof Error ? error.message : 'Unknown error'}`);
-    console.log(`⚠️ [KOMAL] Direct fetch failed, will use search fallback`);
+    console.log(`⚠️ [AgileWeb] Direct fetch failed, will use search fallback`);
   }
 
   let parsed: ReturnType<typeof parseHTMLContentFast> | null = null;
@@ -2249,7 +2249,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     const hasEnoughContent = parsed.imageUrls.length > 0 || parsed.textContent.length > 500;
 
     if (!hasEnoughContent) {
-      console.log(`⚠️ [KOMAL] Page has minimal content (${parsed.imageUrls.length} images, ${parsed.textContent.length} chars), using search fallback`);
+      console.log(`⚠️ [AgileWeb] Page has minimal content (${parsed.imageUrls.length} images, ${parsed.textContent.length} chars), using search fallback`);
       useSearchFallback = true;
     }
 
@@ -2274,7 +2274,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       );
     } else if (useSearchFallback) {
       // No images on page - search for images
-      console.log(`🔎 [KOMAL] No images on page, searching for images...`);
+      console.log(`🔎 [AgileWeb] No images on page, searching for images...`);
       const searchData = await searchForUrlInfo(url, false);
       trackStep('Search Images', `Found ${searchData.imageUrls.length} images from search`);
 
@@ -2303,13 +2303,13 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
 
   } else {
     // Fetch failed completely - use full search fallback
-    console.log(`🔎 [KOMAL] Using full search fallback for analysis`);
+    console.log(`🔎 [AgileWeb] Using full search fallback for analysis`);
     const searchData = await searchForUrlInfo(url, false);
     trackStep('Search Fallback', `${searchData.searchResults.length} results, ${searchData.imageUrls.length} images`);
 
     // Check if we got any useful data from search
     if (searchData.searchResults.length === 0 && searchData.combinedText.length < 50) {
-      console.log(`❌ [KOMAL] Search fallback returned no useful data`);
+      console.log(`❌ [AgileWeb] Search fallback returned no useful data`);
       throw new Error('ANALYSIS_FAILED');
     }
 
@@ -2344,7 +2344,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   let pythonDebug = null;
   // Hybrid Python Analysis Integration
   try {
-    console.log('[KOMAL] 🐍 Running Python Hybrid Analysis...');
+    console.log('[AgileWeb] 🐍 Running Python Hybrid Analysis...');
     // Extract text from parsed data (up to 20k chars to match python limit if needed, though stdin handles more)
     const pythonResult = await runPythonAnalysis(parsed.textContent || '');
     pythonDebug = pythonResult?._debug || null;
@@ -2352,7 +2352,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     if (pythonResult && pythonResult.final_decision) {
       const decision = pythonResult.final_decision.decision;
       const weightedScore = pythonResult.final_decision.weighted_score;
-      console.log(`[KOMAL] 🐍 Python Result: ${decision} (Score: ${weightedScore})`);
+      console.log(`[AgileWeb] 🐍 Python Result: ${decision} (Score: ${weightedScore})`);
       trackStep('Python Hybrid', `Decision: ${decision}, Score: ${weightedScore}`);
 
       // If flagged by Python system, inject into our local analysis
@@ -2438,7 +2438,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   // Override risk level if all ages blocked
   const finalRiskLevel = allAgesBlocked ? 'dangerous' : childSafetyAnalysis.riskLevel;
 
-  console.log(`\n🎯 [KOMAL ANALYSIS] COMPLETE in ${(totalTimeMs / 1000).toFixed(3)}s | Score: ${overallScore}/100 | Risk: ${finalRiskLevel} | Method: ${analysisMethod}${allAgesBlocked ? ' | ⛔ BLOCKED ALL AGES' : ''}\n`);
+  console.log(`\n🎯 [AgileWeb ANALYSIS] COMPLETE in ${(totalTimeMs / 1000).toFixed(3)}s | Score: ${overallScore}/100 | Risk: ${finalRiskLevel} | Method: ${analysisMethod}${allAgesBlocked ? ' | ⛔ BLOCKED ALL AGES' : ''}\n`);
 
   return {
     url,
@@ -2592,7 +2592,7 @@ function generateDemoAnalysisFast(url: string, priorTimeMs: number = 0): ScanRes
 
   const finalRiskLevel = allAgesBlocked ? 'dangerous' : childSafetyAnalysis.riskLevel;
 
-  console.log(`🎯 [KOMAL DEMO] COMPLETE in ${(totalTimeMs / 1000).toFixed(3)}s | Score: ${overallScore}/100${allAgesBlocked ? ' | ⛔ BLOCKED ALL AGES' : ''}\n`);
+  console.log(`🎯 [AgileWeb DEMO] COMPLETE in ${(totalTimeMs / 1000).toFixed(3)}s | Score: ${overallScore}/100${allAgesBlocked ? ' | ⛔ BLOCKED ALL AGES' : ''}\n`);
 
   return {
     url,
@@ -2665,12 +2665,12 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
     lastStepTime = now;
   };
 
-  console.log(`\n🔍 [KOMAL ANALYSIS] Starting keyword analysis for: "${keyword}"`);
+  console.log(`\n🔍 [AgileWeb ANALYSIS] Starting keyword analysis for: "${keyword}"`);
   trackStep('Initialize', 'Setting up clients');
   initializeClients();
 
   // Perform keyword analysis (direct pattern matching - no external API needed)
-  console.log(`🔎 [KOMAL] Performing direct keyword analysis`);
+  console.log(`🔎 [AgileWeb] Performing direct keyword analysis`);
   const searchData = await searchForUrlInfo(keyword, true);
   trackStep('Keyword Analysis', `Direct pattern matching complete`);
 
@@ -2697,7 +2697,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
   let pythonDebug = null;
   // Hybrid Python Analysis Integration
   try {
-    console.log('[KOMAL] 🐍 Running Python Hybrid Analysis...');
+    console.log('[AgileWeb] 🐍 Running Python Hybrid Analysis...');
     // Use parsed keywords or fallback text
     const textForPython = fallbackSearchData.combinedText || keyword;
     const pythonResult = await runPythonAnalysis(textForPython);
@@ -2706,7 +2706,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
     if (pythonResult && pythonResult.final_decision) {
       const decision = pythonResult.final_decision.decision;
       const weightedScore = pythonResult.final_decision.weighted_score;
-      console.log(`[KOMAL] 🐍 Python Result: ${decision} (Score: ${weightedScore})`);
+      console.log(`[AgileWeb] 🐍 Python Result: ${decision} (Score: ${weightedScore})`);
       trackStep('Python Hybrid', `Decision: ${decision}, Score: ${weightedScore}`);
 
       // If flagged by Python system, inject into our local analysis
@@ -2778,7 +2778,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
   trackStep('Complete', `Total: ${(totalTime / 1000).toFixed(2)}s`);
 
   // Log performance to console
-  console.log(`\n📊 [KOMAL PERFORMANCE] Keyword Analysis: "${keyword}"`);
+  console.log(`\n📊 [AgileWeb PERFORMANCE] Keyword Analysis: "${keyword}"`);
   console.log(`   Total time: ${(totalTime / 1000).toFixed(2)}s`);
   performanceSteps.forEach(step => {
     console.log(`   ${step.name}: ${step.durationMs}ms ${step.details ? `(${step.details})` : ''}`);
@@ -2890,7 +2890,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Not a valid URL - treat as keyword search
-      console.log(`📝 [KOMAL] Input "${input}" is not a URL, treating as keyword search`);
+      console.log(`📝 [AgileWeb] Input "${input}" is not a URL, treating as keyword search`);
       try {
         const result = await analyzeKeywordOptimized(input);
         return NextResponse.json(result);

@@ -6,7 +6,7 @@ import Image from "next/image";
 const floatingImages = [
     {
         src: "/newbaby.png",
-        alt: "KOMAL App Screen",
+        alt: "AgileWeb App Screen",
         position: "left-[-20px] md:left-[-120px] top-[5%] md:top-auto md:bottom-[5%]",
         size: "w-[100px] md:w-[280px]",
         delay: "0.2s",
@@ -110,7 +110,7 @@ export default function HeroImageGallery() {
                 {/* Mobile: landingphone.png */}
                 <Image
                     src="/landingphone.png"
-                    alt="KOMAL - AI Digital Guardian"
+                    alt="AgileWeb - AI Digital Guardian"
                     width={1400}
                     height={900}
                     className="w-full h-full object-cover object-center md:hidden"
@@ -119,7 +119,7 @@ export default function HeroImageGallery() {
                 {/* Desktop/Tablet: newlanding.png */}
                 <Image
                     src="/newlanding.png"
-                    alt="KOMAL - AI Digital Guardian"
+                    alt="AgileWeb - AI Digital Guardian"
                     width={1400}
                     height={900}
                     className="w-full h-full object-cover object-bottom hidden md:block"
