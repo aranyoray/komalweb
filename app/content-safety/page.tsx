@@ -554,7 +554,7 @@ export default function ContentSafetyPage() {
                             size="lg"
                             className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto rounded-full"
                         >
-                            <Link href="/">Join Waitlist</Link>
+                            <Link href="/">Start for free</Link>
                         </Button>
                     
                     </div>

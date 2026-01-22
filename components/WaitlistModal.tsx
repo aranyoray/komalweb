@@ -155,7 +155,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                             Joining...
                                         </span>
                                     ) : (
-                                        "Join Waitlist"
+                                        "Start for Free"
                                     )}
                                 </Button>
                                 {error && (

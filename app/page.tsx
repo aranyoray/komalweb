@@ -395,7 +395,7 @@ export default function Home() {
                   size="lg"
                   className="btn-primary-premium text-white text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full w-full sm:w-auto border-0"
                 >
-                  Join Waitlist
+                  Start for free
                 </Button>
                 <Button
                   asChild
@@ -900,7 +900,7 @@ export default function Home() {
               size="lg"
               className="btn-primary-premium-inverted text-lg px-8 py-5 h-auto rounded-full border-0"
             >
-              Join Waitlist
+              Start for Free
             </Button>
           </ScrollReveal>
         </div>
