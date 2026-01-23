@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import ClientScripts from "@/components/ClientScripts";
 import IntroLoader from "@/components/IntroLoader";
 
+import TopBanner from "@/components/TopBanner";
+
 // Removed Inter configuration
 
 export const metadata: Metadata = {
@@ -88,6 +90,7 @@ export default function RootLayout({
       <body className="antialiased font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
         {/* <ClerkProvider> */}
         <IntroLoader />
+        <TopBanner />
         <Navbar />
         {children}
         <Footer />

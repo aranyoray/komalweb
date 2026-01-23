@@ -30,13 +30,21 @@ const coreTeam: TeamMember[] = [
     //     description: "Jvalaj previously built Grid, which garnered a 400+ user waitlist. He brings technical expertise from internships at Delta and Nucor Steel, leading the platform's core implementation. He is a Green & Gold Scholar at USF.",
     //     tagline: "Engineering solutions that matter",
     // },
+    // {
+    //     name: "Yudhajit Ain",
+    //     role: "Research Lead",
+    //     credentials: ["PhD Candidate, Internal Attention Lab, UCalgary", "IISER BS-MS Neuroscience"],
+    //     image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
+    //     description: "Yudhajit is a PhD Candidate in computational psychology at the Internal Attention Lab, UCalgary, where he has developed novel algorithms for attention tracking. He is first-author on 6+ papers, including research on ADHD in the Journal of Attention Disorders and mindfulness in Psychol. Aging. A Gold Medallist from the IISER BS-MS Neuroscience program.",
+    //     tagline: "Decoding attention, one algorithm at a time",
+    // },
     {
-        name: "Yudhajit Ain",
-        role: "Research Lead",
-        credentials: ["PhD Candidate, Internal Attention Lab, UCalgary", "IISER BS-MS Neuroscience"],
-        image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
-        description: "Yudhajit is a PhD Candidate in computational psychology at the Internal Attention Lab, UCalgary, where he has developed novel algorithms for attention tracking. He is first-author on 6+ papers, including research on ADHD in the Journal of Attention Disorders and mindfulness in Psychol. Aging. A Gold Medallist from the IISER BS-MS Neuroscience program.",
-        tagline: "Decoding attention, one algorithm at a time",
+        name: "Jvalaj Pandey",
+        role: "Co-Founder & CTO",
+        credentials: ["Ex-Delta Air Lines, Nucor", "BS CS @ USF (Honors)", "Full Stack Engineer"],
+        image: "/komaljvalaj.png",
+        description: "Jvalaj is a Full Stack Engineer and Designer specializing in high-performance web interfaces and AI-driven design. With experience at Delta Air Lines and Nucor Steel, he leads Komal's technical implementation. He previously built AI tools like GRID and VS Chat, combining artistic vision with scalable engineering to build the future of child safety.",
+        tagline: "Engineering solutions that matter",
     },
 
     // {
@@ -85,14 +93,7 @@ const advisors: Advisor[] = [
         description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform connecting students with inspiring role models. A Forbes 30 Under 30 honoree, she brings deep expertise in education technology, youth engagement, and scaling mission-driven startups to help Komal reach families worldwide.",
         tagline: "Empowering the next generation of learners",
     },
-    {
-        name: "Prof Brian Scassellati",
-        role: "Principal Investigator",
-        credentials: ["Yale Social Robotics Lab"],
-        image: "/brian2.png",
-        description: "Prof Scassellati is the Principal Investigator at Yale Social Robotics Lab and Professor at Yale University. He is a leading global expert in social robotics, guiding Komal's human-robot interaction and design.",
-        tagline: "Leading the future of human-robot interaction",
-    },
+
     {
         name: "Prof Om Prakash Singh",
         role: "Editor-in-Chief",

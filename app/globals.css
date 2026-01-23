@@ -607,17 +607,16 @@
 
     .neumorphic-card {
         background: #EFEEF3;
-        box-shadow: 
-            6px 6px 12px #c5c5c9, 
-            -6px -6px 12px #ffffff;
-        border-radius: 1.5rem; /* ~24px */
+
+        border-radius: 1.5rem;
+        /* ~24px */
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .neumorphic-pressed {
         background: #EFEEF3;
-        box-shadow: 
-            inset 6px 6px 10px #D1D1D4, 
+        box-shadow:
+            inset 6px 6px 10px #D1D1D4,
             inset -6px -6px 10px #ffffff;
         border-radius: 1rem;
     }

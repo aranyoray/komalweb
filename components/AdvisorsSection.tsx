@@ -26,13 +26,7 @@ const advisors: Advisor[] = [
         description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform for students. A Forbes 30 Under 30 honoree, she brings expertise in education technology and youth engagement, helping Komal scale its mission to families worldwide.",
         image: "/audrey.png",
     },
-    {
-        name: "Prof Brian Scassellati, PhD",
-        title: "PRINCIPAL INVESTIGATOR",
-        company: "@ YALE SOCIAL ROBOTICS LAB",
-        description: "Prof Scassellati is the Principal Investigator at Yale Social Robotics Lab and Professor at Yale University. He is a leading global expert in social robotics, guiding Komal's human-robot interaction and technology design.",
-        image: "/brian2.png",
-    },
+
     {
         name: "Prof (Dr.) Om Prakash Singh, MD, FRCP",
         title: "EDITOR-IN-CHIEF",
@@ -67,7 +61,7 @@ export default function AdvisorsSection() {
                     </h2>
                 </ScrollReveal>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8">
                     {advisors.map((advisor, index) => (
                         <ScrollReveal key={index} delay={index * 0.1} direction="up">
                             <div className="advisor-card group">
