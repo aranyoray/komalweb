@@ -423,7 +423,7 @@ export default function Home() {
                 />
                 <Image
                   src="/heroimage.png"
-                  alt="Komal Digital Guardian"
+                  alt="Komal Digital Buddy"
                   width={1200}
                   height={1200}
                   className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] h-auto relative z-10"
@@ -444,8 +444,8 @@ export default function Home() {
             src="/landingbg.png"
             alt="Section Background"
             fill
-            className="object-cover"
-            quality={100}
+            className="object-cover opacity-50"
+            quality={70}
           />
         </div>
         <div className="container max-w-[1100px] px-8 mx-auto text-slate-900 relative z-10">
@@ -555,15 +555,21 @@ export default function Home() {
                     <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                       <span>Age 5</span>
                       <span className="text-indigo-500">Auto-Adapts</span>
-                      <span>Age 15</span>
+                      <span>Age 14</span>
                     </div>
                     <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden relative shadow-inner ring-1 ring-slate-200">
-                      <div className="absolute inset-y-0 left-0 w-1/3 bg-slate-200"></div>
-                      <div className="absolute inset-y-0 left-1/3 w-1/3 bg-indigo-100/50 striped-bg"></div>
-                      <div className="absolute inset-y-0 right-0 w-1/3 bg-slate-200"></div>
+                      <div className="absolute inset-y-0 left-0 bg-slate-200"></div>
+                      <div className="absolute inset-y-0 left-1/3 bg-indigo-100/50 striped-bg "></div>
+                      <div className="absolute inset-y-0 right-0 bg-slate-200"></div>
 
-                      {/* Interactive Knob Visual */}
-                      <div className="absolute top-0 bottom-0 left-[45%] w-10 bg-indigo-500 rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center border-[3px] border-white active:scale-95 transition-transform cursor-pointer">
+                      {/* Interactive Knob Visual - Animated */}
+                      <div
+                        className="absolute top-0 bottom-0 w-10 bg-indigo-500 rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center border-[3px] border-white cursor-pointer"
+                        style={{
+                          animation: "sliderMove 4s infinite",
+                          left: "calc(45% - 20px)"
+                        }}
+                      >
                         <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                       </div>
                     </div>
@@ -607,12 +613,15 @@ export default function Home() {
                     <span className="text-[10px] font-bold text-slate-600 uppercase">Allow</span>
                   </div>
 
-                  {/* Classroom */}
+                  {/* Timed */}
                   <div className="flex flex-col items-center p-2 rounded-xl bg-blue-50/50 border border-blue-100/50 hover:bg-blue-50 transition-colors">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mb-1">
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-600 uppercase">School</span>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">Timed</span>
                   </div>
                 </div>
               </div>
@@ -983,3 +992,4 @@ export default function Home() {
     </>
   );
 }
+

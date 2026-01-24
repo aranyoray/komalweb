@@ -324,14 +324,7 @@ export default function Footer() {
 
 
         {/* Copyright Line */}
-        <ScrollReveal delay={0.2}>
-          <div className="border-t border-border pt-6 mb-6">
-            <p className="text-text-dim text-sm">
-              © 2024-2025 ChildCog Pvt Ltd. All rights reserved.<br />
-              ISO27001, DPDA, GDPR, and HIPAA compliant.
-            </p>
-          </div>
-        </ScrollReveal>
+       
 
         {/* Navigation Links */}
         <ScrollReveal delay={0.25}>

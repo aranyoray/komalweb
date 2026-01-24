@@ -518,6 +518,54 @@
             background-position: -200% center;
         }
     }
+
+    /* Slider move animation for auto-adapts knob */
+    @keyframes sliderMove {
+        0% {
+            left: calc(35% - 20px);
+        }
+        25% {
+            left: calc(50% - 20px);
+        }
+        50% {
+            left: calc(65% - 20px);
+        }
+        75% {
+            left: calc(45% - 20px);
+        }
+        100% {
+            left: calc(35% - 20px);
+        }
+    }
+}
+
+/* Root-level keyframes for inline animations (outside @theme block for global access) */
+@keyframes shimmer {
+    0% {
+        background-position: 200% center;
+    }
+
+    100% {
+        background-position: -200% center;
+    }
+}
+
+@keyframes sliderMove {
+    0% {
+        left: calc(35% - 20px);
+    }
+    25% {
+        left: calc(50% - 20px);
+    }
+    50% {
+        left: calc(65% - 20px);
+    }
+    75% {
+        left: calc(45% - 20px);
+    }
+    100% {
+        left: calc(35% - 20px);
+    }
 }
 
 /* Utilities */
