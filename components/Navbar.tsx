@@ -4,17 +4,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X, LayoutDashboard, LogIn } from "lucide-react";
+/// import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
-import WaitlistModal from "@/components/WaitlistModal";
+
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  // Transition state no longer strictly needed for layout stability but useful for painting
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   // Scroll-based: flat at top, pill on scroll
   useEffect(() => {
@@ -26,16 +26,13 @@ export default function Navbar() {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
-          const shouldScroll = currentScrollY > 50;
-          
+          const shouldScroll = currentScrollY > 0;
+
           // Only update if state actually changed
           if (shouldScroll !== isScrolled) {
-            setIsTransitioning(true);
             setIsScrolled(shouldScroll);
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => setIsTransitioning(false), 500);
           }
-          
+
           lastScrollY = currentScrollY;
           ticking = false;
         });
@@ -52,7 +49,6 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeoutId);
     };
   }, [isScrolled]);
 
@@ -63,6 +59,7 @@ export default function Navbar() {
 
   const navItems = useMemo(
     () => [
+      { label: "Demo", href: { type: "route", value: "/demo" } as const },
       { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
       { label: "Safety", href: { type: "route", value: "/content-safety" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
@@ -80,33 +77,31 @@ export default function Navbar() {
   const smoothEase = "cubic-bezier(0.4, 0, 0.2, 1)"; // Material Design ease-in-out
 
   // Calculate width using CSS custom property for better performance
-  const maxWidth = "72rem";
-  const scrolledWidth = "min(92%, 72rem)";
+  const maxWidth = "1300px";
+  const scrolledWidth = "min(92%, 1300px)";
 
   return (
     <>
       <nav
-        className={`fixed z-[100] h-[64px] flex items-center ${isScrolled
-          ? "left-1/2 top-4 rounded-full border border-white/10 backdrop-blur-xl bg-black/60 shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-3 md:px-6"
-          : "left-0 right-0 top-0 bg-white border-b border-gray-100 px-3 md:px-10"
+        className={`z-[100] h-[72px] flex items-center left-1/2 -translate-x-1/2 px-6 ${isScrolled
+          ? "fixed top-6 rounded-full border border-black/5 backdrop-blur-xl bg-white/60 shadow-lg"
+          : "fixed top-[72px] rounded-full border border-transparent bg-transparent"
           }`}
         style={{
-          width: isScrolled ? scrolledWidth : "100%",
-          maxWidth: isScrolled ? maxWidth : "none",
-          transform: isScrolled ? "translateX(-50%)" : "translateX(0)",
-          transitionProperty: "width, max-width, transform, top, background-color, border-radius, box-shadow, border-color, padding-left, padding-right, backdrop-filter",
-          transitionDuration: "400ms",
+          width: "min(92%, 1300px)", // Constant width
+          transitionProperty: "top, background-color, border-color, box-shadow, color",
+          transitionDuration: "500ms",
           transitionTimingFunction: smoothEase,
-          willChange: isTransitioning ? "transform, width" : "auto",
+          willChange: "top, background-color",
           contain: "layout style paint",
         } as React.CSSProperties}
       >
         {/* Logo Section - Left */}
         <Link
           href="/"
-          className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-white" : "text-primary"
+          className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-primary" : "text-primary"
             }`}
-          style={{ 
+          style={{
             transitionProperty: "color",
             transitionDuration: "400ms",
             transitionTimingFunction: smoothEase,
@@ -122,7 +117,7 @@ export default function Navbar() {
               priority
             />
           </div>
-          <span className="hidden md:inline text-2xl font-semibold">KOMAL</span>
+          <span className="hidden md:inline text-3xl font-semibold">KOMAL</span>
         </Link>
 
         {/* Desktop Navigation - Centered with flex-1 */}
@@ -131,9 +126,9 @@ export default function Navbar() {
             <Link
               key={item.label}
               href={resolveHref(item)}
-              className={`font-medium text-[14px] hover:opacity-100 ${isScrolled ? "text-white/85 hover:text-white" : "text-primary/80 hover:text-primary"
+              className={`font-medium text-base hover:opacity-100 ${isScrolled ? "text-primary/80 hover:text-primary" : "text-primary/80 hover:text-primary"
                 }`}
-              style={{ 
+              style={{
                 transitionProperty: "color, opacity",
                 transitionDuration: "400ms",
                 transitionTimingFunction: smoothEase,
@@ -147,29 +142,31 @@ export default function Navbar() {
         {/* Mobile: CTA Button + Hamburger Menu */}
         <div className="ml-auto flex items-center gap-2 md:hidden">
           <Button
-            onClick={() => setIsWaitlistOpen(true)}
+            asChild
             className={`h-9 px-4 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
-              ? "bg-white text-black hover:bg-white/90"
+              ? "bg-primary text-white hover:bg-primary/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
-            style={{ 
+            style={{
               transitionProperty: "background-color, color",
               transitionDuration: "400ms",
               transitionTimingFunction: smoothEase,
             }}
           >
-            Get Started
-            <ArrowUpRight className="w-4 h-4" />
+            <Link href="mailto:play@komalkids.com">
+              Get Started
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
           </Button>
 
           {/* Hamburger Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={`p-2 rounded-full ${isScrolled
-              ? "text-white hover:bg-white/10"
+              ? "text-primary hover:bg-primary/10"
               : "text-primary hover:bg-primary/10"
               }`}
-            style={{ 
+            style={{
               transitionProperty: "color, background-color",
               transitionDuration: "400ms",
               transitionTimingFunction: smoothEase,
@@ -185,21 +182,23 @@ export default function Navbar() {
         </div>
 
         {/* Desktop CTA Button - Right */}
-        <div className="hidden md:block shrink-0">
+        <div className="hidden md:flex items-center gap-3 shrink-0">
           <Button
-            onClick={() => setIsWaitlistOpen(true)}
+            asChild
             className={`h-9 px-5 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
-              ? "bg-white text-black hover:bg-white/90"
+              ? "bg-primary text-white hover:bg-primary/90"
               : "bg-primary text-white hover:bg-primary/90"
               }`}
-            style={{ 
+            style={{
               transitionProperty: "background-color, color",
               transitionDuration: "400ms",
               transitionTimingFunction: smoothEase,
             }}
           >
-            Get Started
-            <ArrowUpRight className="w-4 h-4" />
+            <Link href="mailto:play@komalkids.com">
+              Start for free
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
           </Button>
         </div>
       </nav>
@@ -211,7 +210,7 @@ export default function Navbar() {
           : "opacity-0 -translate-y-2 pointer-events-none"
           }`}
         style={{
-          top: isScrolled ? "80px" : "64px",
+          top: isScrolled ? "110px" : "94px",
           transitionProperty: "opacity, transform, top",
           transitionDuration: "400ms",
           transitionTimingFunction: smoothEase,
@@ -225,7 +224,7 @@ export default function Navbar() {
                 key={item.label}
                 href={resolveHref(item)}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100 last:border-0"
+                className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100"
                 style={{
                   transitionProperty: "background-color, opacity, transform",
                   transitionDuration: "400ms",
@@ -238,6 +237,61 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+
+            {/* Auth Links for Mobile */}
+            {/* <SignedOut> */}
+            {/* <Link
+              href="/sign-in"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100 flex items-center gap-2"
+              style={{
+                transitionProperty: "background-color, opacity, transform",
+                transitionDuration: "400ms",
+                transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
+                opacity: isMobileMenuOpen ? 1 : 0,
+                transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+              }}
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Link>
+            <Link
+              href="/sign-up"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="px-6 py-4 bg-primary text-white font-medium text-base hover:bg-primary/90 flex items-center gap-2"
+              style={{
+                transitionProperty: "background-color, opacity, transform",
+                transitionDuration: "400ms",
+                transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                transitionDelay: isMobileMenuOpen ? `${(navItems.length + 1) * 50}ms` : "0ms",
+                opacity: isMobileMenuOpen ? 1 : 0,
+                transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+              }}
+            >
+              <ArrowUpRight className="w-4 h-4" />
+              Get Started
+            </Link> */}
+            {/* </SignedOut> */}
+
+            {/* <SignedIn>
+              <Link
+                href="/dashboard"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-6 py-4 bg-primary text-white font-medium text-base hover:bg-primary/90 flex items-center gap-2"
+                style={{
+                  transitionProperty: "background-color, opacity, transform",
+                  transitionDuration: "400ms",
+                  transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
+                  opacity: isMobileMenuOpen ? 1 : 0,
+                  transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                }}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+            </SignedIn> */}
           </div>
         </div>
       </div>
@@ -250,8 +304,6 @@ export default function Navbar() {
         />
       )}
 
-      {/* Waitlist Modal */}
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
     </>
   );
 }

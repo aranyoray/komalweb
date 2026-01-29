@@ -20,12 +20,13 @@ const advisors: Advisor[] = [
         image: "/doris.png",
     },
     {
-        name: "Prof Brian Scassellati, PhD",
-        title: "PRINCIPAL INVESTIGATOR",
-        company: "@ YALE SOCIAL ROBOTICS LAB",
-        description: "Prof Scassellati is the Principal Investigator at Yale Social Robotics Lab and Professor at Yale University. He is a leading global expert in social robotics, guiding Komal's human-robot interaction and technology design.",
-        image: "/brian2.png",
+        name: "Audrey Wisch",
+        title: "GTM ADVISOR",
+        company: "@ CURIOUS CARDINALS",
+        description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform for students. A Forbes 30 Under 30 honoree, she brings expertise in education technology and youth engagement, helping Komal scale its mission to families worldwide.",
+        image: "/audrey.png",
     },
+
     {
         name: "Prof (Dr.) Om Prakash Singh, MD, FRCP",
         title: "EDITOR-IN-CHIEF",

@@ -86,10 +86,10 @@ export default function PricingPage() {
                     <div className="mt-12 text-center">
                         <p className="text-text-dim text-center mb-4">Don&apos;t find a plan that works?</p>
                         <a
-                            href="mailto:sales@komalkids.com"
+                            href="mailto:play@komalkids.com"
                             className="inline-block bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-full transition-all duration-300"
                         >
-                            Email sales@komalkids.com
+                            Email play@komalkids.com
                         </a>
                     </div>
                 </div>

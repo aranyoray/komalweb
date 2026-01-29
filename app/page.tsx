@@ -13,16 +13,15 @@ import PartnersCarousel from "@/components/PartnersCarousel";
 import HeroImageGallery from "@/components/HeroImageGallery";
 import { BrainIcon, ActivityIcon, ChartIcon, ShieldIcon, LockIcon, ZapIcon } from "@/components/Icons";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, UsersIcon } from "lucide-react";
 import Aurora from "@/components/Aurora";
 import FloatingButterflies from "@/components/FloatingButterflies";
 import FloatingDots from "@/components/FloatingDots";
 import KomalYourBestSection from "@/components/KomalYourBestSection";
 import SplitText from "@/components/SplitText";
-import WaitlistModal from "@/components/WaitlistModal";
+
 
 // Premium dynamic effects
-import SpotlightCursor from "@/components/SpotlightCursor";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
 import TextShimmer from "@/components/TextShimmer";
@@ -31,12 +30,7 @@ import ParticleField from "@/components/ParticleField";
 
 
 export default function Home() {
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
-  // Auto-open waitlist modal when someone visits the website
-  useEffect(() => {
-    setIsWaitlistOpen(true);
-  }, []);
 
   const testimonials = [
     {
@@ -121,31 +115,197 @@ export default function Home() {
 
   return (
     <>
+      {/* Enhanced Schema.org Structured Data for SEO */}
       <Script
+        id="software-application-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            name: "KOMAL AI",
-            operatingSystem: "Web",
-            applicationCategory: "EducationApplication",
+            name: "KOMAL - Child Internet Safety App",
+            alternateName: ["KOMAL Kids", "KOMAL Parental Control", "KOMAL Safe Browser"],
+            operatingSystem: "Web, iOS, Android",
+            applicationCategory: "LifestyleApplication",
+            applicationSubCategory: "Parental Control",
             description:
-              "The world's first AI digital guardian that reads how a child feels, not just what they click. Hyper-personalised platform for children ages 3-12.",
-            screenshot: "https://komal.ai/screenshot.jpg",
-            featureList:
-              "Real-time behavioural AI, Personalised learning, Parent insights, Privacy-first design",
+              "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing. Protects children ages 3-12 online with real-time behavioral AI. COPPA, GDPR-K compliant.",
+            screenshot: "https://komalkids.com/heroimage.png",
+            featureList: [
+              "Child Internet Safety",
+              "Parental Control Dashboard",
+              "Age-Appropriate Content Filtering",
+              "Real-time Behavioral AI",
+              "Safe Browsing for Kids",
+              "Screen Time Management",
+              "COPPA Compliant",
+              "On-Device Privacy Processing",
+              "Parent Insights & Reports",
+              "Custom Content Rules"
+            ],
+            audience: {
+              "@type": "PeopleAudience",
+              suggestedMinAge: "3",
+              suggestedMaxAge: "12",
+              audienceType: "Children, Parents, Families"
+            },
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock"
+            },
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: "4.8",
+              ratingCount: "150",
+              bestRating: "5",
+              worstRating: "1"
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "ChildCog Private Limited",
+              url: "https://komalkids.com",
+              logo: "https://komalkids.com/komaliconnobg.png"
+            }
+          }),
+        }}
+      />
+
+      {/* Organization Schema for Brand Recognition */}
+      <Script
+        id="organization-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "KOMAL",
+            legalName: "ChildCog Private Limited",
+            url: "https://komalkids.com",
+            logo: "https://komalkids.com/komaliconnobg.png",
+            description: "KOMAL is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
+            foundingDate: "2024",
+            founders: [
+              {
+                "@type": "Person",
+                name: "Aranyo Ray",
+                jobTitle: "CEO"
+              }
+            ],
+            contactPoint: {
+              "@type": "ContactPoint",
+              email: "play@komalkids.com",
+              contactType: "customer service"
+            },
+            sameAs: [
+              "https://twitter.com/komalkids",
+              "https://linkedin.com/company/komalkids"
+            ],
+            areaServed: ["US", "IN", "CA", "GB", "AU"],
+            knowsAbout: [
+              "Child Internet Safety",
+              "Parental Control Software",
+              "Online Child Protection",
+              "Content Filtering for Kids",
+              "Digital Wellbeing for Children"
+            ]
+          }),
+        }}
+      />
+
+      {/* WebSite Schema for Sitelinks Search Box */}
+      <Script
+        id="website-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "KOMAL - Child Internet Safety",
+            url: "https://komalkids.com",
+            description: "Protect your children online with KOMAL - the AI-powered child internet safety app.",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://komalkids.com/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }),
+        }}
+      />
+
+      {/* FAQ Schema for Rich Results */}
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What is Komal?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Komal is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "How does Komal protect my child's privacy?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "All AI processing happens on-device—your child's data never leaves your device without explicit consent. Parents control what's shared, and we never sell data or use it for advertising. KOMAL is COPPA, GDPR-K, and DPDPA compliant."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "How does Komal filter age-inappropriate content?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Komal uses AI to analyze content across multiple signals—text, images, video, and audio—and matches it to age-appropriate rules. Instead of binary blocking, we use three actions: Block (not accessible), Gate (allowed with warning or approval), and Allow. This creates flexibility where educational content can be treated differently from harmful content."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Can I customize what content my child sees?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Parents can block specific interests, URLs, or keywords. You can also adjust the default rules per child profile and receive notifications when blocked content is attempted. Parent rules always override the default settings."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "What age is Komal designed for?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Komal is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Is Komal a parental control app?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes, Komal functions as an advanced parental control app with AI-powered content filtering, screen time management, and real-time child safety monitoring. It goes beyond traditional parental controls by understanding child behavior and adapting content in real-time."
+                }
+              }
+            ]
           }),
         }}
       />
 
       {/* Global Premium Effects */}
-      <SpotlightCursor />
       <NoiseOverlay opacity={0.025} />
       <ParticleField count={35} color="263, 50%, 40%" speed={0.2} connectDistance={80} />
 
       {/* Hero Section */}
       <section className="hero-section relative pt-24 md:pt-28 lg:pt-20 pb-12 md:pb-16 overflow-hidden min-h-[90vh] flex items-center justify-center">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+
+        </div>
         {/* Floating Orbs Background */}
         <div className="absolute inset-0 z-0">
           <FloatingOrbs count={4} />
@@ -164,7 +324,7 @@ export default function Home() {
 
 
         {/* Main Container - Constrained width, centered */}
-        <div className="hero-container w-full max-w-[1400px] mx-auto px-6 md:px-10 lg:px-12 relative z-[2]">
+        <div className="hero-container w-full max-w-[1300px] mx-auto px-6 md:px-10 lg:px-12 relative z-[2]">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-6 xl:gap-10 items-center">
 
             {/* Left Column - Text Content */}
@@ -211,7 +371,7 @@ export default function Home() {
                 <span className="block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.35s" }}>
                   We protect
                 </span>
-                <span className="relative inline-block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] whitespace-nowrap hover:text-primary/80 transition-colors duration-300 cursor-help opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.5s" }}>
+                <span className="relative inline-block text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] leading-[1.02] whitespace-nowrap hover:text-primary/80 transition-colors duration-300 opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.5s" }}>
                   <TextShimmer duration={4}>their curiosity.</TextShimmer>
                   <span
                     className="absolute left-0 right-0 bottom-[0.05em] h-[0.3em] rounded-full -z-10"
@@ -230,19 +390,19 @@ export default function Home() {
               {/* CTA Buttons */}
               <div className="cta-group flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 w-full sm:w-auto opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.8s" }}>
                 <Button
-                  onClick={() => setIsWaitlistOpen(true)}
+                  asChild
                   size="lg"
                   className="btn-primary-premium text-white text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full w-full sm:w-auto border-0"
                 >
-                  Join Waitlist
+                  <Link href="mailto:play@komalkids.com">Start for free</Link>
                 </Button>
                 <Button
                   asChild
                   size="lg"
                   variant="outline"
-                  className="btn-secondary-premium text-primary text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full w-full sm:w-auto"
+                  className="bg-white text-primary border-primary border-2 hover:bg-primary/5 text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full w-full sm:w-auto transition-colors"
                 >
-                  <Link href="mailto:sales@komalkids.com">Talk to Us</Link>
+                  <Link href="mailto:play@komalkids.com">Talk to Us</Link>
                 </Button>
               </div>
             </div>
@@ -263,7 +423,7 @@ export default function Home() {
                 />
                 <Image
                   src="/heroimage.png"
-                  alt="Komal Digital Guardian"
+                  alt="Komal Digital Buddy"
                   width={1200}
                   height={1200}
                   className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] h-auto relative z-10"
@@ -271,179 +431,252 @@ export default function Home() {
                 />
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* Talk, Don't Tap - Full-width section */}
-      <section className="w-full bg-primary py-12 md:py-16 relative overflow-hidden" id="how-it-works">
-        {/* Floating orbs for this section */}
-        <div className="absolute inset-0 opacity-30">
-          <FloatingOrbs count={3} />
-        </div>
-
-
-
-        <div className="container max-w-[900px] px-8 mx-auto text-center relative z-10">
-          {/* Main Headline */}
-          <ScrollReveal>
-            <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-bold text-white mb-4 tracking-tight text-center leading-[1.15]">
-              Talk, Don&apos;t{" "}
-              <span className="relative inline-block">
-                <span className="tap-bounce inline-block">Tap</span>
-                {/* Pointing finger emoji */}
-                <span
-                  className="tapping-finger absolute -right-2 -bottom-1 sm:-right-3 sm:-bottom-2 text-xl sm:text-2xl md:text-3xl pointer-events-none z-10 select-none"
-                  style={{ transformOrigin: 'left top' }}
-                >
-                  👆
-                </span>
-                {/* Tap ripple effect */}
-                <span className="tap-ripple absolute right-0 bottom-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/40 pointer-events-none" />
-              </span>
-            </h2>
-          </ScrollReveal>
-
-          {/* Tagline */}
-          <ScrollReveal delay={0.1}>
-            <p className="text-[9px] sm:text-[10px] md:text-[13px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-white/80 font-medium mb-8 text-center">
-              THE WORLD&apos;S FIRST <strong>NON-ADDICTIVE, HANDS-FREE</strong> DIGITAL GUARDIAN
-            </p>
-          </ScrollReveal>
-
-          {/* Core Value Proposition */}
-          <ScrollReveal delay={0.2}>
-            <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-[700px] mx-auto text-center mb-6">
-              Traditional apps measure completion, not cognition or feelings.<br /> <span className="text-white font-medium">Komal reads behaviour in real-time</span>—attention patterns, emotional responses, and engagement quality—and adapts instantly.
-            </p>
-          </ScrollReveal>
-
-          {/* Secondary explanation */}
-          <ScrollReveal delay={0.3}>
-            <p className="text-sm sm:text-base md:text-lg text-white/70 leading-relaxed max-w-[600px] mx-auto text-center mb-10">
-              AI-powered insights delivered daily.
-            </p>
-          </ScrollReveal>
-
-          {/* CTA */}
-          <ScrollReveal delay={0.4}>
-            <Button asChild size="lg" className="btn-primary-premium-inverted rounded-full px-8 py-3.5 h-auto border-0">
-              <Link href="/the-magic">See How It Works</Link>
-            </Button>
-          </ScrollReveal>
-        </div>
-      </section>
-
       {/* Age-Appropriate Access Section */}
-      <section className="w-full bg-white py-12 md:py-16" id="content-safety">
-        <div className="container max-w-[1100px] px-8 mx-auto">
+      <section className="mx-4 md:mx-10  mb-20 relative text-slate-900 py-12 md:py-16 rounded-[40px] overflow-hidden shadow-2xl ring-1 ring-slate-900/5" id="content-safety">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/landingbg.png"
+            alt="Section Background"
+            fill
+            className="object-cover opacity-50"
+            quality={70}
+          />
+        </div>
+        <div className="container max-w-[1100px] px-8 mx-auto text-slate-900 relative z-10">
           {/* Section Header */}
           <ScrollReveal>
-            <div className="text-center mb-10">
-              <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4 inline-block">
-                Age-Appropriate Access
-              </span>
-              <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] font-bold text-primary mb-4 tracking-tight text-center leading-[1.15]">
+            <div className=" text-slate-900 text-center mb-10">
+
+              <h2 className="section-title text-[28px] sm:text-[36px] md:text-[44px] font-bold text-slate-900 mb-4 tracking-tight text-center leading-[1.15]">
                 Kids Need the Internet,<br />But Not All of It
               </h2>
-              <p className="text-base sm:text-lg text-text-dim leading-relaxed max-w-[700px] mx-auto text-center">
+              <p className="text-slate-700 sm:text-lg leading-relaxed max-w-[700px] mx-auto text-center">
                 What is fine for an adult can be confusing, scary, or harmful for a child. Komal applies age-based access across content types, using clear rules and context rather than blanket bans.
               </p>
             </div>
           </ScrollReveal>
 
-          {/* Three Principles */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <ScrollReveal delay={0}>
-              <div className="bg-[#F5F0FF] rounded-2xl p-6 text-center h-full hover:scale-[1.02] hover:shadow-lg transition-all duration-500">
-                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 6v6l4 2" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold text-primary mb-2">MINDFULNESS</h3>
-                <p className="text-sm text-text-dim">Context-aware filtering that understands the difference between education and harm.</p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.1}>
-              <div className="bg-[#E8F5E9] rounded-2xl p-6 text-center h-full hover:scale-[1.02] hover:shadow-lg transition-all duration-500">
-                <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold text-primary mb-2">MODERATION</h3>
-                <p className="text-sm text-text-dim">Not binary—Block, Gate, or Allow based on age, context, and parent preferences.</p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.2}>
-              <div className="bg-[#FFF8E1] rounded-2xl p-6 text-center h-full hover:scale-[1.02] hover:shadow-lg transition-all duration-500">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold text-primary mb-2">MEANINGFUL</h3>
-                <p className="text-sm text-text-dim">Growing access as children grow, keeping parents informed and in control.</p>
-              </div>
-            </ScrollReveal>
-          </div>
-
-          {/* Block / Gate / Allow Visual */}
-          <ScrollReveal delay={0.2}>
-            <div className="bg-[#F5F5F7] rounded-3xl p-6 md:p-8 mb-8">
-              <h3 className="text-xl md:text-2xl font-semibold text-primary text-center mb-6">Instead of Binary Blocking</h3>
-              <div className="grid grid-cols-3 gap-3 md:gap-6">
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-red-200/50 transition-all duration-500 cursor-default">
-                  <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "0s" }}>
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </div>
-                  <h4 className="font-bold text-red-600 text-sm md:text-base mb-1">BLOCK</h4>
-                  <p className="text-xs md:text-sm text-text-dim">Content not accessible</p>
-                </div>
-                <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-amber-200/50 transition-all duration-500 cursor-default">
-                  <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "0.5s" }}>
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 9v4" />
-                      <circle cx="12" cy="17" r="1" fill="currentColor" />
-                    </svg>
-                  </div>
-                  <h4 className="font-bold text-amber-600 text-sm md:text-base mb-1">GATE</h4>
-                  <p className="text-xs md:text-sm text-text-dim">Warning, delay, or parent approval</p>
-                </div>
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg hover:shadow-green-200/50 transition-all duration-500 cursor-default">
-                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-float" style={{ animationDelay: "1s" }}>
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <h4 className="font-bold text-green-600 text-sm md:text-base mb-1">ALLOW</h4>
-                  <p className="text-xs md:text-sm text-text-dim">Unrestricted access</p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-
-          {/* CTA */}
-          <ScrollReveal delay={0.3}>
-            <div className="text-center">
-              <Button asChild size="lg" className="btn-primary-premium text-white rounded-full px-8 py-3.5 h-auto border-0">
-                <Link href="/content-safety">See Full Content Guide</Link>
-              </Button>
-            </div>
-          </ScrollReveal>
         </div>
-      </section>
 
-      {/* Komal: Your Best Section */}
-      <KomalYourBestSection />
+        {/* Full Width Grid Wrapper */}
+        <div className="w-full mb-10 px-4 md:px-8">
+          <div className="max-w-[1240px] mx-auto grid grid-cols-1 md:grid-cols-12 auto-rows-[minmax(180px,auto)] gap-4 md:gap-6">
+
+            {/* --- Left Column (Span 3) --- */}
+
+            {/* Emotional Safety */}
+            <ScrollReveal delay={0.4} className="md:col-span-3 md:row-span-1 h-full">
+              <div className="bg-gradient-to-br from-rose-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-6 h-full flex flex-col justify-between hover:shadow-[0_8px_30px_rgb(251,113,133,0.15)] transition-all duration-300 border border-rose-100/50 group relative overflow-hidden ring-1 ring-rose-200/30">
+                <div className="absolute -right-6 -top-6 w-24 h-24 bg-rose-200/20 rounded-full blur-2xl group-hover:bg-rose-300/30 transition-colors"></div>
+
+                <div className="w-12 h-12 bg-white/80 rounded-2xl shadow-sm text-rose-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  {/* Heart Pulse Icon */}
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                  </svg>
+                </div>
+
+                <div className="relative z-10">
+                  <h3 className="text-base font-bold text-slate-800 mb-1 leading-tight">Emotional Safety</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed font-medium">Detects distress & anxiety signals.</p>
+                </div>
+
+                <div className="flex gap-1.5 items-end h-4 mt-2 opacity-60">
+                  <div className="w-1 bg-rose-400 h-2 rounded-full animate-[pulse_1s_ease-in-out_infinite]"></div>
+                  <div className="w-1 bg-rose-400 h-4 rounded-full animate-[pulse_1.2s_ease-in-out_infinite_0.1s]"></div>
+                  <div className="w-1 bg-rose-400 h-2 rounded-full animate-[pulse_0.8s_ease-in-out_infinite_0.2s]"></div>
+                  <div className="w-1 bg-rose-400 h-3 rounded-full animate-[pulse_1.1s_ease-in-out_infinite_0.3s]"></div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Privacy Box */}
+            <ScrollReveal delay={0.45} className="md:col-span-3 md:row-span-1 h-full">
+              <div className="bg-gradient-to-br from-emerald-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-6 h-full flex flex-col justify-between text-left hover:shadow-[0_8px_30px_rgb(16,185,129,0.15)] transition-all duration-300 border border-emerald-100/50 group relative overflow-hidden ring-1 ring-emerald-200/30">
+                <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-emerald-200/20 rounded-full blur-2xl group-hover:bg-emerald-300/30 transition-colors"></div>
+
+                <div className="w-12 h-12 bg-white/80 rounded-2xl shadow-sm text-emerald-600 flex items-center justify-center mb-3 group-hover:rotate-12 transition-transform">
+                  <LockIcon className="w-6 h-6" />
+                </div>
+
+                <div className="relative z-10">
+                  <h3 className="text-base font-bold text-slate-800 mb-2 leading-tight">Privacy First</h3>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                        <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                      </div>
+                      <span className="text-xs font-medium text-slate-600">On-device processing</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                        <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                      </div>
+                      <span className="text-xs font-medium text-slate-600">COPPA Ready</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+
+            {/* --- Center Hero (Span 6) --- */}
+
+            {/* Mindfulness - Span 6 RowSpan 2 */}
+            <ScrollReveal delay={0} className="md:col-span-6 md:row-span-2 h-full">
+              <div className="bg-gradient-to-b from-white/80 to-indigo-50/50 backdrop-blur-xl rounded-[2.5rem] p-8 md:p-12 h-full flex flex-col justify-between hover:shadow-[0_20px_40px_rgb(99,102,241,0.15)] transition-all duration-500 border border-white/40 group relative overflow-hidden ring-1 ring-indigo-100">
+                {/* Patterns */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] opacity-5 pointer-events-none border-[30px] border-indigo-200 rounded-full"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] opacity-5 pointer-events-none border-[15px] border-indigo-300 rounded-full"></div>
+
+                <div className="flex justify-between items-start relative z-10">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl shadow-lg shadow-indigo-500/20 flex items-center justify-center text-white group-hover:scale-105 transition-transform duration-300">
+                    <svg className="w-8 h-8 md:w-10 md:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                  </div>
+                  <span className="bg-white/60 backdrop-blur text-xs font-bold text-slate-600 px-4 py-1.5 rounded-full border border-white/50 uppercase tracking-widest shadow-sm">
+                    Adaptive AI
+                  </span>
+                </div>
+
+                <div className="relative z-10 mt-auto pt-8">
+                  <h3 className="text-3xl md:text-5xl font-extrabold text-slate-800 mb-4 tracking-tight">Mindfulness</h3>
+                  <p className="text-slate-600 text-lg md:text-xl leading-relaxed mb-10 max-w-lg font-medium">Context-aware filtering that truly understands content, not just keywords.</p>
+
+                  <div className="space-y-4 max-w-xl">
+                    <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      <span>Age 5</span>
+                      <span className="text-indigo-500">Auto-Adapts</span>
+                      <span>Age 14</span>
+                    </div>
+                    <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden relative shadow-inner ring-1 ring-slate-200">
+                      <div className="absolute inset-y-0 left-0 bg-slate-200"></div>
+                      <div className="absolute inset-y-0 left-1/3 bg-indigo-100/50 striped-bg "></div>
+                      <div className="absolute inset-y-0 right-0 bg-slate-200"></div>
+
+                      {/* Interactive Knob Visual - Animated */}
+                      <div
+                        className="absolute top-0 bottom-0 w-10 bg-indigo-500 rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center border-[3px] border-white cursor-pointer"
+                        style={{
+                          animation: "sliderMove 4s infinite",
+                          left: "calc(45% - 20px)"
+                        }}
+                      >
+                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+
+            {/* --- Right Column (Span 3) --- */}
+
+            {/* Smart Controls (Merged) - Span 3 */}
+            <ScrollReveal delay={0.2} className="md:col-span-3 md:row-span-1 h-full">
+              <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] p-6 h-full flex flex-col justify-between border border-white/40 group relative ring-1 ring-slate-900/5 hover:shadow-lg transition-all duration-300">
+                <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Smart Controls
+                </h3>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Block */}
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-red-50/50 border border-red-100/50 hover:bg-red-50 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-500 mb-1">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">Block</span>
+                  </div>
+
+                  {/* Gate */}
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-amber-50/50 border border-amber-100/50 hover:bg-amber-50 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-500 mb-1">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">Gate</span>
+                  </div>
+
+                  {/* Allow */}
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-green-50/50 border border-green-100/50 hover:bg-green-50 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-500 mb-1">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">Allow</span>
+                  </div>
+
+                  {/* Timed */}
+                  <div className="flex flex-col items-center p-2 rounded-xl bg-blue-50/50 border border-blue-100/50 hover:bg-blue-50 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mb-1">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">Timed</span>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Split Family & Insights (Span 3) */}
+
+            {/* Family & Insights Combined Column */}
+            <div className="md:col-span-3 md:row-span-1 flex flex-col gap-4 h-full">
+
+              {/* Family */}
+              <ScrollReveal delay={0.45} className="flex-1">
+                <div className="bg-gradient-to-br from-orange-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-5 w-full h-full flex flex-col justify-center text-left hover:shadow-[0_8px_30px_rgb(249,115,22,0.15)] transition-all duration-300 border border-orange-100/50 group relative overflow-hidden ring-1 ring-orange-200/30">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
+                      <UsersIcon className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-800">Family First</h3>
+                  </div>
+                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mb-1">
+                    <div className="bg-orange-400 h-full w-[98%] rounded-full relative"></div>
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Privacy Score</span>
+                    <span className="text-[10px] text-green-600 font-black">A+</span>
+                  </div>
+                </div>
+              </ScrollReveal>
+
+              {/* Insights */}
+              <ScrollReveal delay={0.45} className="flex-1">
+                <div className="bg-gradient-to-br from-violet-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-5 w-full h-full flex flex-row items-center gap-4 hover:shadow-[0_8px_30px_rgb(139,92,246,0.15)] transition-all duration-300 border border-violet-100/50 group relative overflow-hidden ring-1 ring-violet-200/30">
+                  <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
+                    <ActivityIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 leading-tight">Reports</h3>
+                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">Weekly activity digest.</p>
+                  </div>
+                </div>
+              </ScrollReveal>
+
+            </div>
+
+          </div>
+        </div>
+
+        <div className="container max-w-[1100px] px-8 mx-auto text-white">
+        </div>
+      </section >
+
+
 
       {/* Key Features Section */}
-      <section className="features-section py-12 md:py-16 bg-white">
+      < section className="features-section py-12 md:py-16 bg-white" >
         <div className="container max-w-[1100px] px-8 mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 text-center">
             {/* Feature 1: 100% Hands-Free */}
@@ -513,13 +746,13 @@ export default function Home() {
             </ScrollReveal>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Sleek divider line */}
-      <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-violet-200/60 to-transparent" />
+      < div className="w-full h-[1px] bg-gradient-to-r from-transparent via-violet-200/60 to-transparent" />
 
       {/* Partners Section - Trust through Institutional Legitimacy */}
-      <section className="partners-section pt-4 pb-0 md:py-12 bg-white overflow-hidden relative">
+      < section className="partners-section pt-4 pb-0 md:py-12 bg-white overflow-hidden relative" >
         <div className="partners-container max-w-[1400px] mx-auto px-6 md:px-16">
           <ScrollReveal>
             <h2 className="partners-title text-[22px] sm:text-[24px] md:text-[28px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#1e3a5f] mb-8 md:mb-16 font-semibold text-center">OUR ECOSYSTEM</h2>
@@ -530,10 +763,15 @@ export default function Home() {
           </ScrollReveal>
 
         </div>
-      </section>
+      </section >
 
+      {/* Komal: Your Best Section */}
+      < KomalYourBestSection />
+      <br />
+      <br />
+      <br />
       {/* Testimonials */}
-      <section className="testimonials mt-0 md:mt-4 py-10 md:py-16 bg-white relative overflow-hidden">
+      <section className="testimonials mt-12 md:mt-4 py-10 md:py-16 bg-white relative overflow-hidden">
         {/* Background Image with padding and curved borders */}
         <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none p-4 md:p-6">
           <div className="w-full h-full max-w-[1400px] overflow-hidden rounded-3xl">
@@ -684,10 +922,10 @@ export default function Home() {
           <ScrollReveal delay={0.2}>
             <div className="flex gap-4 justify-center flex-wrap mt-8">
               <Button asChild size="lg" className="btn-primary-premium-inverted rounded-full px-8 py-3.5 h-auto border-0">
-                <Link href="mailto:sales@komalkids.com">Request Demo</Link>
+                <Link href="mailto:play@komalkids.com">Request Demo</Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="btn-secondary-premium-inverted rounded-full px-8 py-3.5 h-auto">
-                <Link href="mailto:sales@komalkids.com">Learn More</Link>
+                <Link href="mailto:play@komalkids.com">Learn More</Link>
               </Button>
             </div>
           </ScrollReveal>
@@ -734,11 +972,11 @@ export default function Home() {
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
             <Button
-              onClick={() => setIsWaitlistOpen(true)}
+              asChild
               size="lg"
               className="btn-primary-premium-inverted text-lg px-8 py-5 h-auto rounded-full border-0"
             >
-              Join Waitlist
+              <Link href="mailto:play@komalkids.com">Start for Free</Link>
             </Button>
           </ScrollReveal>
         </div>
@@ -751,8 +989,7 @@ export default function Home() {
         </div>
       </ScrollReveal>
 
-      {/* Waitlist Modal */}
-      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
     </>
   );
 }
+

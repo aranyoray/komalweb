@@ -51,43 +51,30 @@ export default function WhyPage() {
 
                         {/* Date */}
                         <p className="text-xs tracking-widest text-primary/60 uppercase mb-8 font-medium">
-                            January 2025
+                            September 2025
                         </p>
 
                         {/* Main Title */}
-                        <h1 className=" text-primary/70 text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold  tracking-tight mb-10">
+                        <h1 className="text-primary/70 text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold tracking-tight mb-10">
                             Introducing
 
-                            <span className="text-primary text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold  tracking-tight mb-10">
+                            <span className="text-primary text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold tracking-tight mb-10">
                                 {' '}Komal.
                             </span>
                         </h1>
 
                         {/* Content */}
                         <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-7">
-                            <p>
-                                The history of parenting technology isn't just about setting limits or blocking content. It's about the moments when technology stopped feeling like a barrier and started feeling like support—understanding your child the way you do.
+                            <p className="text-xl font-medium text-primary/80">
+                                Komal is the world&apos;s first AI digital guardian that reads how a child feels, not just what they click.
                             </p>
 
                             <p>
-                                Every leap in child safety has the same story: someone figured out how to make the complex simple, the intrusive invisible, and the protective feel natural. That's what we're building at Komal.
+                                Traditional parental controls operate on a simple binary: block or allow. They build walls. But walls don't teach—they just restrict. We believe children learn by exploring, questioning, and sometimes stumbling. They need a guide that understands context, not a gatekeeper that follows rigid rules.
                             </p>
 
                             <p>
-                                Traditional parental controls work by restriction. They build walls. But walls don't teach—they just block. Children learn by exploring, questioning, and sometimes stumbling. They need a guardian that understands context, not one that follows rigid rules.
-                            </p>
-
-                            <h2 className="text-2xl font-bold text-primary mt-12 mb-5 flex items-center gap-3">
-                                <span className="w-8 h-1 bg-primary/20 rounded-full inline-block" />
-                                The Challenge
-                            </h2>
-
-                            <p>
-                                Digital safety is at a crossroads. To truly protect children while nurturing their curiosity, we need AI that understands behavior—not just keywords. We need technology that reads a child's engagement, notices frustration before it becomes distress, and adapts in real-time.
-                            </p>
-
-                            <p>
-                                Screen time gave us restrictions. Filters gave us crude categories. The question now is: who will give children a digital companion that genuinely understands them?
+                                That&apos;s why we built Komal. It uses real-time behavioral AI to understand your child&apos;s engagement—detecting frustration, hesitation, or delight—and adapts the digital experience instantly. We don&apos;t just filter content; we nurture curiosity while keeping them safe.
                             </p>
 
                             <h2 className="text-2xl font-bold text-primary mt-12 mb-5 flex items-center gap-3">
@@ -96,11 +83,11 @@ export default function WhyPage() {
                             </h2>
 
                             <p>
-                                We're a team of researchers and parents based between Yale and Mumbai, building the next generation of child-safe AI. We believe technology should amplify a parent's intuition, not replace it. We believe in transparency over black boxes. And we believe every child deserves to explore safely.
+                                We&apos;re a team of researchers and parents building the next generation of child-safe AI. We believe technology should amplify a parent&apos;s intuition, not replace it. We believe in transparency over black boxes. And we believe every child deserves to explore safely.
                             </p>
 
-                            <div className="pt-8 mt-12 border-t border-dashed border-primary/20">
-                                <p className="font-semibold text-primary italic">
+                            <div className="pt-8 mt-12 border-b pb-4 border-dashed border-primary/20">
+                                <p className="font-semibold text-primary  text-right italic">
                                     — The Komal Team
                                 </p>
                             </div>
@@ -109,9 +96,7 @@ export default function WhyPage() {
                 </ScrollReveal>
 
                 {/* Bottom subtle text */}
-                <p className="text-center text-primary/30 text-xs mt-8 tracking-wider">
-                    DESIGNED FOR HUMANITY
-                </p>
+
             </article>
 
             {/* ═══════════════════════════════════════════════════════════════════════════
@@ -126,7 +111,7 @@ export default function WhyPage() {
                         <h3 className="bg-blue-50/80 text-xl font-bold text-gray-900 px-4 py-2 mb-4 -mx-4 -mt-4 rounded-t-lg">
                             The deck
                         </h3>
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-4">
                             <span className="w-8 h-8 text-primary shrink-0">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
@@ -144,7 +129,7 @@ export default function WhyPage() {
                         <h3 className="bg-blue-50/80 text-xl font-bold text-gray-900 px-4 py-2 mb-4 -mx-4 -mt-4 rounded-t-lg">
                             The business plan
                         </h3>
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-3">
                             <span className="w-8 h-8 text-primary shrink-0">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="12" y1="20" x2="12" y2="10" />
@@ -161,7 +146,7 @@ export default function WhyPage() {
                 </div>
 
                 {/* Access Note */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6 flex items-start gap-3">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6 flex items-center gap-3">
                     <span className="w-6 h-6 text-amber-600 shrink-0">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -179,7 +164,7 @@ export default function WhyPage() {
                 <h2 className="text-3xl md:text-4xl font-bold text-primary mb-8">Investor FAQ</h2>
 
                 <div className="bg-orange-50/50 border border-orange-100 rounded-lg p-6 mb-6">
-                    <div className="flex items-start gap-3 mb-4">
+                    <div className="flex items-center gap-3 mb-4">
                         <span className="w-8 h-8 text-red-500 shrink-0">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
@@ -191,17 +176,7 @@ export default function WhyPage() {
                             We want investor meetings to be as productive as possible. Below you'll find answers to the most common questions about Komal's technology, market approach, and traction. Reviewing these before our call lets us dive deeper into strategic fit and partnership opportunities.
                         </p>
                     </div>
-                    <div className="flex items-center gap-2 ml-8">
-                        <span className="w-5 h-5 text-orange-500">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <circle cx="12" cy="12" r="4" />
-                            </svg>
-                        </span>
-                        <a href="#faq" className="text-gray-800 font-medium hover:text-primary transition-colors">
-                            Frequently Asked Questions
-                        </a>
-                    </div>
+
                 </div>
 
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
@@ -218,63 +193,36 @@ export default function WhyPage() {
             <section className="relative z-10 max-w-[720px] mx-auto px-6 mb-16">
                 <h2 className="text-3xl md:text-4xl font-bold text-primary mb-8">Contact us</h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1">
                     {/* Founder 1 */}
-                    <div className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
+                        <div className="flex items-center gap-4">
+                            <span className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                     <circle cx="12" cy="7" r="4" />
                                 </svg>
                             </span>
                             <div>
-                                <p className="font-bold text-gray-900">Aranyo Ray</p>
+                                <p className="font-bold text-gray-900 text-lg">Aranyo Ray</p>
                                 <p className="text-gray-500 text-sm">CEO & Founder</p>
                             </div>
                         </div>
-                        <p className="text-gray-600 text-sm mb-1">+91 76670 70012</p>
-                        <p className="text-gray-600 text-sm mb-2">aranyo@komalkids.com</p>
-                        <a href="https://linkedin.com/in/aranyoray" className="text-primary text-sm hover:underline">LinkedIn Profile</a>
+
+                        <div className="flex flex-col items-start md:items-end gap-1.5">
+                            <p className="text-gray-600 font-medium">+91 76670 70012</p>
+                            <p className="text-gray-900 font-medium">aranyo@komalkids.com</p>
+                            <a href="https://linkedin.com/in/aranyoray" className="text-primary text-sm font-medium hover:underline inline-flex items-center gap-1">
+                                LinkedIn Profile
+                                <svg className="w-3 h-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M7 17L17 7" />
+                                    <path d="M7 7h10v10" />
+                                </svg>
+                            </a>
+                        </div>
                     </div>
 
-                    {/* Founder 2 */}
-                    <div className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                            </span>
-                            <div>
-                                <p className="font-bold text-gray-900">Saarthak Kumar</p>
-                                <p className="text-gray-500 text-sm">COO & Co-Founder</p>
-                            </div>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-1">+91 98765 43210</p>
-                        <p className="text-gray-600 text-sm mb-2">saarthak@komalkids.com</p>
-                        <a href="https://linkedin.com/in/saarthakkumar" className="text-primary text-sm hover:underline">LinkedIn Profile</a>
-                    </div>
 
-                    {/* Founder 3 */}
-                    <div className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                            </span>
-                            <div>
-                                <p className="font-bold text-gray-900">Brian Scassellati</p>
-                                <p className="text-gray-500 text-sm">Research Advisor</p>
-                            </div>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-1">Yale University</p>
-                        <p className="text-gray-600 text-sm mb-2">brian.scassellati@yale.edu</p>
-                        <a href="https://linkedin.com/in/brianscassellati" className="text-primary text-sm hover:underline">LinkedIn Profile</a>
-                    </div>
                 </div>
             </section>
 
@@ -302,7 +250,7 @@ export default function WhyPage() {
                                     />
                                     <DetailItem
                                         title="Team & Culture"
-                                        content="Founded by Yale researchers and parents, our team includes AI engineers, child psychologists, and clinical validators. We're backed by institutional investors who believe in patient capital for breakthrough technology. Headquarters: Mumbai. Research partnerships: Yale Child Study Center."
+                                        content="Our team includes AI engineers, child psychologists, and clinical validators. We're backed by institutional investors who believe in patient capital for breakthrough technology."
                                     />
                                     <DetailItem
                                         title="Cap table & financing"
@@ -390,10 +338,7 @@ export default function WhyPage() {
                                         title="Testimonials"
                                         content="'For the first time, I understand when my daughter is actually struggling versus when she's just being playful. The weekly reports are clear and actionable.' — Priya S., Parent of two. 'My son's therapist loves the reports. She can see patterns between sessions that we never noticed before.' — Rajesh K., Mumbai."
                                     />
-                                    <DetailItem
-                                        title="{Company name} in the press"
-                                        content="Featured in TechCrunch (January 2025), EdSurge (February 2025), The New York Times (March 2025). 'Komal is what every parent has been waiting for: technology that actually understands children.' — NYT Education Section."
-                                    />
+
                                 </Accordion>
                             </div>
                         </div>

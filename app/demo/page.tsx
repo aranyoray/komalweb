@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck, FileDown } from "lucide-react";
+import { generateSafetyReportPDF } from "@/lib/generatePDF";
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
 import NoiseOverlay from "@/components/NoiseOverlay";
@@ -68,6 +69,16 @@ interface ScanResult {
   };
   timestamp: string;
   analysisMethod?: 'live' | 'demo';
+  usedSearchFallback?: boolean;
+  performanceMetrics?: {
+    totalTimeMs: number;
+    steps: {
+      name: string;
+      durationMs: number;
+      details?: string;
+    }[];
+  };
+  pythonDebug?: any;
 }
 
 export default function DemoPage() {
@@ -83,9 +94,11 @@ export default function DemoPage() {
   const [demoForm, setDemoForm] = useState({ name: '', email: '', organization: '' });
   const [sendingEmail, setSendingEmail] = useState(false);
   const [submittingDemo, setSubmittingDemo] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   const [modalMessage, setModalMessage] = useState({ type: '', text: '' });
 
   const reportRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const safeKeywords = result?.contentAnalysis.textAnalysis.safeKeywordsFound ?? [];
   const renderSafeKeywords = () => {
     if (safeKeywords.length === 0) {
@@ -113,7 +126,7 @@ export default function DemoPage() {
 
   const handleScan = async () => {
     if (!url.trim()) {
-      setError('Please enter a URL');
+      setError('Please enter a URL or keyword');
       return;
     }
 
@@ -122,9 +135,24 @@ export default function DemoPage() {
     setResult(null);
 
     try {
-      let normalizedUrl = url.trim();
-      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-        normalizedUrl = 'https://' + normalizedUrl;
+      let input = url.trim();
+
+      // Check if input looks like a URL (has domain-like pattern with dots or protocol)
+      const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(input) ||
+        input.includes('.com') ||
+        input.includes('.org') ||
+        input.includes('.net') ||
+        input.includes('.edu') ||
+        input.includes('.gov') ||
+        input.includes('.io') ||
+        input.includes('.co') ||
+        input.includes('.in') ||
+        input.startsWith('http://') ||
+        input.startsWith('https://');
+
+      // Only normalize as URL if it looks like a URL
+      if (looksLikeUrl && !input.startsWith('http://') && !input.startsWith('https://')) {
+        input = 'https://' + input;
       }
 
       const response = await fetch('/api/scan-url', {
@@ -132,18 +160,50 @@ export default function DemoPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: normalizedUrl }),
+        body: JSON.stringify({ url: input }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to scan URL');
+        throw new Error(data.error || 'Failed to analyze');
       }
 
       setResult(data);
+
+      // Scroll to results section after a brief delay for rendering
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+
+      // Log performance metrics to browser console
+      if (data.performanceMetrics) {
+        const { totalTimeMs, steps } = data.performanceMetrics;
+        console.log('\n%c🔍 KOMAL URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
+        console.log(`%c📍 Input: ${input}`, 'color: #666;');
+        console.log(`%c⏱️  Total Time: ${(totalTimeMs / 1000).toFixed(3)}s`, 'color: #2196F3; font-weight: bold;');
+        console.log('%c\n📊 Step Breakdown:', 'color: #6B4E71; font-weight: bold;');
+        console.table(steps.map((step: { name: string; durationMs: number; details?: string }) => ({
+          Step: step.name,
+          'Duration (ms)': step.durationMs,
+          'Duration (s)': (step.durationMs / 1000).toFixed(3),
+          Details: step.details || '-'
+        })));
+        console.log(`%c\n✅ Analysis Method: ${data.analysisMethod?.toUpperCase() || 'UNKNOWN'}`, 'color: #4CAF50; font-weight: bold;');
+        console.log(`%c🎯 Safety Score: ${data.overallScore}/100 | Risk Level: ${data.childSafetyAnalysis?.overallRisk?.toUpperCase() || 'N/A'}`,
+          data.overallScore >= 75 ? 'color: #4CAF50; font-weight: bold;' :
+            data.overallScore >= 50 ? 'color: #FF9800; font-weight: bold;' :
+              'color: #F44336; font-weight: bold;');
+
+        if (data.pythonDebug) {
+          console.log('%c\n🐍 Python Hybrid Debug Info:', 'color: #6B4E71; font-weight: bold;');
+          console.log(data.pythonDebug);
+        }
+        console.log('\n');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('%c❌ KOMAL Analysis Error:', 'color: #F44336; font-weight: bold;', err);
     } finally {
       setLoading(false);
     }
@@ -165,7 +225,6 @@ export default function DemoPage() {
         body: JSON.stringify({
           email: emailInput.trim(),
           report: result,
-          senderEmail: emailInput.trim(),
         }),
       });
 
@@ -223,6 +282,20 @@ export default function DemoPage() {
     }
   };
 
+  // Generate PDF functionality
+  const handleGeneratePDF = async () => {
+    if (!result) return;
+
+    setGeneratingPDF(true);
+    try {
+      await generateSafetyReportPDF(result);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'BLOCK':
@@ -261,35 +334,25 @@ export default function DemoPage() {
     return 'bg-red-100';
   };
 
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'safe':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'caution':
-        return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'unsafe':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'dangerous':
-        return 'bg-red-100 text-red-700 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
-  };
-
   const getSeverityColor = (severity: string) => {
-    switch (severity) {
+    switch (severity.toLowerCase()) {
       case 'critical':
-        return 'bg-red-500 text-white';
+        return 'bg-red-600 text-white';
       case 'high':
-        return 'bg-orange-500 text-white';
+        return 'bg-red-500 text-white';
       case 'medium':
         return 'bg-amber-500 text-white';
       case 'low':
-        return 'bg-blue-500 text-white';
+        return 'bg-yellow-400 text-gray-800';
       default:
-        return 'bg-gray-500 text-white';
+        return 'bg-gray-400 text-white';
     }
   };
+
+  // Check if content should be blocked for under 16 based on child safety analysis
+  const isUnder16Blocked = result?.childSafetyAnalysis?.overallRisk === 'dangerous' ||
+    result?.childSafetyAnalysis?.riskCategories?.some(r => r.severity === 'critical');
+  const displayOverallScore = result ? (isUnder16Blocked ? 0 : result.overallScore) : 0;
 
   return (
     <>
@@ -327,11 +390,10 @@ export default function DemoPage() {
               </div>
 
               {modalMessage.text && (
-                <div className={`p-3 rounded-xl text-sm ${
-                  modalMessage.type === 'success'
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
+                <div className={`p-3 rounded-xl text-sm ${modalMessage.type === 'success'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
                   {modalMessage.text}
                 </div>
               )}
@@ -418,11 +480,10 @@ export default function DemoPage() {
               </div>
 
               {modalMessage.text && (
-                <div className={`p-3 rounded-xl text-sm ${
-                  modalMessage.type === 'success'
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
+                <div className={`p-3 rounded-xl text-sm ${modalMessage.type === 'success'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
                   {modalMessage.text}
                 </div>
               )}
@@ -449,44 +510,36 @@ export default function DemoPage() {
         </div>
       )}
 
-      <section className="min-h-screen pt-20 pb-8 md:pt-28 md:pb-16 bg-gradient-to-b from-white via-purple-50/30 to-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <FloatingOrbs count={3} />
+      <section className="min-h-screen pt-20 pb-8 md:pt-24 md:pb-12 bg-[#F9F9FB] relative overflow-hidden font-sans">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <FloatingOrbs count={2} />
         </div>
 
-        <div className="container max-w-[1100px] px-4 sm:px-6 md:px-8 mx-auto relative z-10">
+        <div className="container max-w-[1000px] px-4 mx-auto relative z-10">
           {/* Header */}
           <ScrollReveal>
-            <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 text-primary font-medium text-xs sm:text-sm mb-4 sm:mb-6">
-                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Child Safety URL Scanner</span>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm text-primary font-medium text-xs mb-4">
+                <Shield className="w-3.5 h-3.5" />
+                <span>Child Safety Analysis Engine</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-primary mb-3 md:mb-4 leading-tight px-2">
-                AI-Powered
-                <br />
-                <span className="relative inline-block">
-                  <span className="relative z-10">Child Safety Analysis</span>
-                  <span
-                    className="absolute left-0 right-0 bottom-[0.1em] h-[0.3em] rounded-full -z-0"
-                    style={{
-                      background: 'linear-gradient(to right, rgba(107, 78, 113, 0.15), rgba(107, 78, 113, 0.25), rgba(107, 78, 113, 0.15))',
-                    }}
-                  />
-                </span>
+              <h1 className="text-3xl md:text-5xl font-bold text-primary mb-3 tracking-tight">
+                AI Content Safety Demo
               </h1>
-              <p className="text-sm sm:text-base md:text-lg text-text-dim max-w-[700px] mx-auto px-2">
-                Enter any URL to analyze content safety for children using deep keyword analysis,
-                Vision AI, NLP, and multimedia scanning.
+              <p className="text-sm md:text-base text-gray-500 max-w-[600px] mx-auto">
+                Real-time multi-modal analysis: NLP, Vision AI, and contextual risk assessment.
               </p>
             </div>
           </ScrollReveal>
 
-          {/* Input Section */}
+          {/* Input Section - Sleek Compact Bar */}
           <ScrollReveal delay={0.1}>
-            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
-              <div className="flex flex-col gap-3 sm:gap-4">
-                <div className="flex-1">
+            <div className="max-w-2xl mx-auto mb-8 relative z-20">
+              <div className="bg-white rounded-2xl shadow-lg shadow-primary/5 border border-gray-200 p-2 flex flex-col sm:flex-row gap-2 transition-all focus-within:ring-2 focus-within:ring-primary/10 focus-within:border-primary/30">
+                <div className="flex-1 relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Search className="w-4 h-4" />
+                  </div>
                   <input
                     type="url"
                     value={url}
@@ -499,434 +552,280 @@ export default function DemoPage() {
                         handleScan();
                       }
                     }}
-                    placeholder="example.com"
-                    className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:border-primary transition-colors"
+                    placeholder="Enter URL (e.g., wikipedia.org) or keyword..."
+                    className="w-full pl-10 pr-4 py-3 bg-transparent border-none text-sm md:text-base text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium"
                     disabled={loading}
                   />
                 </div>
                 <Button
                   onClick={handleScan}
                   disabled={loading || !url.trim()}
-                  size="lg"
-                  className="btn-primary-premium text-white px-6 sm:px-8 py-3 sm:py-4 h-auto rounded-xl sm:rounded-2xl border-0 whitespace-nowrap w-full sm:w-auto"
+                  className="btn-primary-premium text-white px-6 py-2.5 h-auto rounded-xl text-sm font-medium border-0 shadow-none"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Scanning...
                     </>
                   ) : (
-                    <>
-                      <Search className="w-5 h-5 mr-2" />
-                      Scan URL
-                    </>
+                    'Analyze'
                   )}
                 </Button>
               </div>
               {error && (
-                <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-                  {error}
+                <div className="mt-2 text-center">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs border border-red-100">
+                    <AlertTriangle className="w-3 h-3" />
+                    {error}
+                  </span>
                 </div>
               )}
-              <div className="mt-3 sm:mt-4 text-xs text-text-dim text-center">
-                Try: youtube.com, wikipedia.org, cnn.com
-              </div>
             </div>
           </ScrollReveal>
 
-          {/* Results Section */}
+
+          {/* Results Section - Compact Technical Dashboard */}
           {result && (
-            <div className="space-y-4 sm:space-y-6" ref={reportRef}>
-              {/* Action Buttons */}
-              <ScrollReveal delay={0.15}>
-                <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-2 sm:gap-3">
-                  <Button
-                    onClick={() => setShowEmailModal(true)}
-                    variant="outline"
-                    className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Send via Email
+            <div className="space-y-4 max-w-[1000px] mx-auto px-4 pb-20 mt-8" ref={reportRef}>
+
+              {/* Top Bar: Actions */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-sm text-gray-500 font-mono">
+                  <span>Target:</span>
+                  <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-900">{result.url}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button onClick={handleGeneratePDF} disabled={generatingPDF} variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-gray-200">
+                    {generatingPDF ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+                    PDF
                   </Button>
-                  <Button
-                    onClick={() => setShowBookDemoModal(true)}
-                    className="btn-primary-premium text-white rounded-xl px-4 sm:px-5 py-2.5 h-auto border-0 text-sm sm:text-base"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Book a Demo
+                  <Button onClick={() => setShowEmailModal(true)} variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-gray-200">
+                    <Mail className="w-3.5 h-3.5" />
+                    Email
+                  </Button>
+                  <Button onClick={() => setShowBookDemoModal(true)} size="sm" className="h-8 text-xs gap-1.5 btn-primary-premium text-white border-0">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Book Demo
                   </Button>
                 </div>
-              </ScrollReveal>
+              </div>
 
-              {/* Overall Score & Child Safety Risk */}
-              <ScrollReveal delay={0.2}>
-                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div>
-                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary">Child Safety Score</h2>
-                      <div className={`inline-flex items-center gap-2 mt-2 px-3 py-1 rounded-full text-sm font-medium border ${getRiskColor(result.childSafetyAnalysis.overallRisk)}`}>
-                        {result.childSafetyAnalysis.overallRisk === 'safe' && <ShieldCheck className="w-4 h-4" />}
-                        {result.childSafetyAnalysis.overallRisk !== 'safe' && <ShieldAlert className="w-4 h-4" />}
-                        {result.childSafetyAnalysis.overallRisk.toUpperCase()}
+              <ScrollReveal delay={0.1}>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                  {/* Overall Score Card - Compact Vertical */}
+                  <div className="md:col-span-4 bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col justify-center items-center text-center">
+                    <h3 className="text-gray-500 font-medium text-sm mb-2 uppercase tracking-wide">Analysis Score</h3>
+                    <div className="relative mb-3">
+                      <div className={`text-6xl font-bold tracking-tighter ${getScoreColor(displayOverallScore)}`}>
+                        {displayOverallScore}
                       </div>
+                      <span className="text-xs text-gray-400 absolute top-1 -right-4">/100</span>
                     </div>
-                    <div className={`${getScoreBackground(result.overallScore)} px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl self-start sm:self-auto`}>
-                      <span className={`text-2xl sm:text-3xl font-bold ${getScoreColor(result.overallScore)}`}>
-                        {result.overallScore}
+
+                    <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden mb-3">
+                      <div
+                        className={`h-full ${displayOverallScore >= 75 ? 'bg-green-500' : displayOverallScore >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                        style={{ width: `${displayOverallScore}%` }}
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {isUnder16Blocked && (
+                        <span className="px-2 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold border border-red-100 uppercase tracking-tight">
+                          Blocked &lt; 16
+                        </span>
+                      )}
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tight ${result.analysisMethod === 'live' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                        {result.analysisMethod === 'live' ? 'Live Scan' : 'Demo Mode'}
                       </span>
-                      <span className="text-gray-600 text-base sm:text-lg">/100</span>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 sm:h-4 overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-1000 ease-out ${
-                        result.overallScore >= 75
-                          ? 'bg-green-500'
-                          : result.overallScore >= 50
-                          ? 'bg-amber-500'
-                          : 'bg-red-500'
-                      }`}
-                      style={{ width: `${result.overallScore}%` }}
-                    />
-                  </div>
-                  <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <p className="text-xs sm:text-sm text-text-dim break-all">
-                      Scanned: <span className="font-mono text-primary">{result.url}</span>
-                    </p>
-                    {result.analysisMethod && (
-                      <span
-                        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium self-start sm:self-auto ${
-                          result.analysisMethod === 'live'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {result.analysisMethod === 'live' ? 'Live Analysis' : 'Demo Mode'}
-                      </span>
+
+                  {/* Age & Risk Matrix - Denser Grid */}
+                  <div className="md:col-span-8 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <h3 className="text-gray-500 font-medium text-xs mb-4 uppercase tracking-wide flex items-center justify-between">
+                      <span>Age Recommendations</span>
+                      <span className="opacity-50 font-mono text-[10px]">Policy: Default</span>
+                    </h3>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {Object.entries(result.ageGroupScores).map(([ageGroup, data]) => {
+                        const action = isUnder16Blocked ? 'BLOCK' : data.action;
+                        return (
+                          <div key={ageGroup} className={`rounded-lg border p-3 flex flex-col items-center justify-center text-center transition-all ${action === 'BLOCK' ? 'bg-red-50/50 border-red-100' :
+                            action === 'GATE' ? 'bg-amber-50/50 border-amber-100' :
+                              'bg-green-50/50 border-green-100'
+                            }`}>
+                            <span className="text-xs font-semibold text-gray-700 mb-1.5">{ageGroup}</span>
+                            {getActionIcon(action)}
+                            <span className={`text-[10px] font-bold mt-1 ${action === 'BLOCK' ? 'text-red-700' :
+                              action === 'GATE' ? 'text-amber-700' :
+                                'text-green-700'
+                              }`}>{action}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Horizontal Risk Bar if any */}
+                    {result.childSafetyAnalysis.riskCategories.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs text-gray-400 mr-1">Risks:</span>
+                          {result.childSafetyAnalysis.riskCategories.map((risk, i) => (
+                            <span key={i} className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 rounded text-[10px] font-medium flex items-center gap-1">
+                              <span className={`w-1.5 h-1.5 rounded-full ${risk.severity === 'high' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                              {risk.category}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
-
-                  {/* Depth Analysis */}
-                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div className={`p-2 rounded-lg text-center text-xs ${result.childSafetyAnalysis.depthAnalysis.titleSafe ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                      <div className="font-medium">Title</div>
-                      <div>{result.childSafetyAnalysis.depthAnalysis.titleSafe ? 'Safe' : 'Unsafe'}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg text-center text-xs ${result.childSafetyAnalysis.depthAnalysis.metadataSafe ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                      <div className="font-medium">Metadata</div>
-                      <div>{result.childSafetyAnalysis.depthAnalysis.metadataSafe ? 'Safe' : 'Unsafe'}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg text-center text-xs ${result.childSafetyAnalysis.depthAnalysis.contentSafe ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                      <div className="font-medium">Content</div>
-                      <div>{result.childSafetyAnalysis.depthAnalysis.contentSafe ? 'Safe' : 'Unsafe'}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg text-center text-xs ${result.childSafetyAnalysis.depthAnalysis.mediaSafe ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                      <div className="font-medium">Media</div>
-                      <div>{result.childSafetyAnalysis.depthAnalysis.mediaSafe ? 'Safe' : 'Unsafe'}</div>
-                    </div>
-                  </div>
-
-                  {result.contentAnalysis.metadata && (
-                    <div className="mt-3 p-3 bg-gray-50 rounded-xl text-xs space-y-1">
-                      {result.contentAnalysis.metadata.title && (
-                        <p className="break-words"><span className="font-semibold">Title:</span> {result.contentAnalysis.metadata.title}</p>
-                      )}
-                      {result.contentAnalysis.metadata.description && (
-                        <p className="break-words"><span className="font-semibold">Description:</span> {result.contentAnalysis.metadata.description.substring(0, 100)}...</p>
-                      )}
-                      <p>
-                        <span className="font-semibold">Stats:</span> {result.contentAnalysis.metadata.imageCount} images, {result.contentAnalysis.metadata.linkCount} links,
-                        {result.contentAnalysis.metadata.videoCount} videos, {result.contentAnalysis.metadata.audioCount} audio
-                      </p>
-                    </div>
-                  )}
                 </div>
               </ScrollReveal>
 
-              {/* Risk Categories */}
-              {result.childSafetyAnalysis.riskCategories.length > 0 && (
-                <ScrollReveal delay={0.25}>
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-4 sm:mb-6 flex items-center gap-2">
-                      <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6" />
-                      Safety Risks Detected
-                    </h2>
-                    <div className="space-y-3">
-                      {result.childSafetyAnalysis.riskCategories.map((risk, idx) => (
-                        <div key={idx} className="p-3 sm:p-4 bg-red-50/50 border border-red-100 rounded-xl">
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${getSeverityColor(risk.severity)}`}>
-                              {risk.severity.toUpperCase()}
-                            </span>
-                            <span className="font-semibold text-gray-800">{risk.category}</span>
-                            <span className="text-xs text-gray-500">({risk.matchCount} matches)</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {risk.matchedKeywords.map((kw, i) => (
-                              <span key={i} className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">
-                                {kw}
-                              </span>
-                            ))}
-                          </div>
-                          {risk.contextSnippets.length > 0 && (
-                            <div className="text-xs text-gray-600 italic">
-                              {risk.contextSnippets[0]}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </ScrollReveal>
-              )}
+              {/* Deep Analysis Grid */}
+              <ScrollReveal delay={0.2}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              {/* Safe Keywords Found */}
-              {renderSafeKeywords()}
-
-              {/* AI Analysis */}
-              <ScrollReveal delay={0.3}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {/* NLP Text Analysis */}
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                        <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                      </div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">NLP Text Analysis</h3>
+                  {/* NLP Analysis */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50">
+                      <MessageSquare className="w-4 h-4 text-primary opacity-60" />
+                      <h4 className="text-sm font-bold text-gray-900">NLP Content Analysis</h4>
                     </div>
-                    <div className="space-y-3">
+
+                    <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-text-dim mb-1">Sentiment</p>
-                        <p className="text-lg font-semibold text-primary">
-                          {result.contentAnalysis.textAnalysis.sentiment}
-                        </p>
+                        <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Sentiment</div>
+                        <div className="text-sm font-medium">{isUnder16Blocked ? 'Blocked' : result.contentAnalysis.textAnalysis.sentiment}</div>
                       </div>
                       <div>
-                        <p className="text-sm text-text-dim mb-1">Language Safety Score</p>
-                        <p className={`text-lg font-semibold ${getScoreColor(result.contentAnalysis.textAnalysis.languageScore)}`}>
-                          {result.contentAnalysis.textAnalysis.languageScore}/100
-                        </p>
-                      </div>
-                      {result.contentAnalysis.textAnalysis.entities && result.contentAnalysis.textAnalysis.entities.length > 0 && (
-                        <div>
-                          <p className="text-sm text-text-dim mb-2">Entities Detected</p>
-                          <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.textAnalysis.entities.slice(0, 3).map((entity, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm"
-                              >
-                                {entity}
-                              </span>
-                            ))}
-                          </div>
+                        <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Lang Score</div>
+                        <div className={`text-sm font-bold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.textAnalysis.languageScore)}`}>
+                          {isUnder16Blocked ? 0 : result.contentAnalysis.textAnalysis.languageScore}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Vision AI Analysis */}
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
-                        <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                      </div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary">Vision AI Analysis</h3>
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm text-text-dim mb-1">Visual Safety Score</p>
-                        <p className={`text-lg font-semibold ${getScoreColor(result.contentAnalysis.visualAnalysis.safetyScore)}`}>
-                          {result.contentAnalysis.visualAnalysis.safetyScore}/100
-                        </p>
-                      </div>
-                      {result.contentAnalysis.visualAnalysis.concerns.length > 0 && (
-                        <div>
-                          <p className="text-sm text-text-dim mb-2">Visual Concerns</p>
-                          <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.visualAnalysis.concerns.map((concern, idx) => (
-                              <span key={idx} className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm">
-                                {concern}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {result.contentAnalysis.visualAnalysis.labels && result.contentAnalysis.visualAnalysis.labels.length > 0 && (
-                        <div>
-                          <p className="text-sm text-text-dim mb-2">Image Labels</p>
-                          <div className="flex flex-wrap gap-2">
-                            {result.contentAnalysis.visualAnalysis.labels.slice(0, 6).map((label, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
-                              >
-                                {label}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              {/* Multimedia Analysis */}
-              {result.contentAnalysis.multimediaAnalysis && (
-                <ScrollReveal delay={0.35}>
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6">
-                    <h3 className="text-base sm:text-lg font-bold text-primary mb-4 flex items-center gap-2">
-                      <Video className="w-4 h-4 sm:w-5 sm:h-5" />
-                      Multimedia Analysis
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="p-3 bg-gray-50 rounded-xl text-center">
-                        <Video className="w-6 h-6 mx-auto mb-1 text-purple-600" />
-                        <div className="text-sm font-medium">Video</div>
-                        <div className={`text-xs ${result.contentAnalysis.multimediaAnalysis.videoDetected ? 'text-amber-600' : 'text-green-600'}`}>
-                          {result.contentAnalysis.multimediaAnalysis.videoDetected ? 'Detected' : 'None'}
-                        </div>
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded-xl text-center">
-                        <Music className="w-6 h-6 mx-auto mb-1 text-blue-600" />
-                        <div className="text-sm font-medium">Audio</div>
-                        <div className={`text-xs ${result.contentAnalysis.multimediaAnalysis.audioDetected ? 'text-amber-600' : 'text-green-600'}`}>
-                          {result.contentAnalysis.multimediaAnalysis.audioDetected ? 'Detected' : 'None'}
-                        </div>
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded-xl text-center col-span-2">
-                        <Shield className="w-6 h-6 mx-auto mb-1 text-primary" />
-                        <div className="text-sm font-medium">Media Safety</div>
-                        <div className={`text-xs font-medium ${getScoreColor(result.contentAnalysis.multimediaAnalysis.mediaSafetyScore)}`}>
-                          {result.contentAnalysis.multimediaAnalysis.mediaSafetyScore}/100
-                        </div>
-                      </div>
-                    </div>
-                    {result.contentAnalysis.multimediaAnalysis.mediaTypes.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {result.contentAnalysis.multimediaAnalysis.mediaTypes.map((type, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-purple-50 text-purple-600 rounded text-xs">
-                            {type}
+                    <div>
+                      <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Topics</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(isUnder16Blocked ? ['Restricted'] : result.contentAnalysis.textAnalysis.keyTopics).map((t, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-gray-50 text-gray-600 border border-gray-100 rounded text-[10px]">
+                            {t}
                           </span>
                         ))}
                       </div>
-                    )}
-                    {result.contentAnalysis.multimediaAnalysis.mediaConcerns.length > 0 && (
-                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-xs font-medium text-amber-800 mb-1">Media Concerns:</p>
-                        {result.contentAnalysis.multimediaAnalysis.mediaConcerns.map((concern, idx) => (
-                          <p key={idx} className="text-xs text-amber-700">{concern}</p>
-                        ))}
-                      </div>
-                    )}
+                    </div>
                   </div>
-                </ScrollReveal>
-              )}
 
-              {/* Age Group Actions */}
-              <ScrollReveal delay={0.4}>
-                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-4 sm:mb-6">Age-Appropriate Actions</h2>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-                    {Object.entries(result.ageGroupScores).map(([ageGroup, data]) => (
-                      <div
-                        key={ageGroup}
-                        className={`border-2 rounded-xl sm:rounded-2xl p-3 sm:p-5 transition-all hover:scale-105 hover:shadow-lg ${getActionColor(data.action)}`}
-                      >
-                        <div className="flex items-center justify-between mb-2 sm:mb-3">
-                          <h3 className="text-sm sm:text-lg font-bold">{ageGroup}</h3>
-                          <div className="hidden sm:block">{getActionIcon(data.action)}</div>
-                        </div>
-                        <div className="mb-2 sm:mb-3">
-                          <div className="text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1">{data.action}</div>
-                          <div className="text-xs sm:text-sm opacity-75">Score: {data.score}/100</div>
-                        </div>
-                        <p className="text-[10px] sm:text-xs leading-relaxed opacity-90 line-clamp-2 sm:line-clamp-3">
-                          {data.reason}
-                        </p>
-                        {data.risks.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-current/20">
-                            <p className="text-[9px] sm:text-[10px] opacity-75">
-                              Risks: {data.risks.slice(0, 2).join(', ')}
-                            </p>
+                  {/* Vision Analysis */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50">
+                      <Eye className="w-4 h-4 text-purple-600 opacity-60" />
+                      <h4 className="text-sm font-bold text-gray-900">Vision AI Analysis</h4>
+                    </div>
+
+                    {!result.usedSearchFallback ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Visual Safety</div>
+                            <div className={`text-sm font-bold ${getScoreColor(isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore)}`}>
+                              {isUnder16Blocked ? 0 : result.contentAnalysis.visualAnalysis.safetyScore}
+                            </div>
                           </div>
-                        )}
+                          <div>
+                            <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Objects</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {result.contentAnalysis.visualAnalysis.detectedObjects.length} Detected
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5">
+                          {(isUnder16Blocked ? ['Hidden'] : result.contentAnalysis.visualAnalysis.detectedObjects.slice(0, 6)).map((o, i) => (
+                            <span key={i} className="px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-100 rounded text-[10px]">
+                              {o}
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-gray-400 text-xs italic">
+                        Vision analysis unavailable for this result type
                       </div>
-                    ))}
+                    )}
                   </div>
+
                 </div>
               </ScrollReveal>
 
-              {/* Info Footer */}
-              <ScrollReveal delay={0.6}>
-                <div className="bg-primary/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center">
-                  <p className="text-xs sm:text-sm text-text-dim">
-                    This analysis uses deep keyword context analysis, Vision AI, NLP, and multimedia scanning
-                    to evaluate child safety. Scores are calculated based on age-appropriate content guidelines.
-                  </p>
-                </div>
-              </ScrollReveal>
+              {/* Technical Footer */}
+              <div className="text-center pt-8 border-t border-gray-100">
+                <p className="text-[10px] text-gray-400 font-mono">
+                  ID: {result.timestamp} • Latency: {result.performanceMetrics ? (result.performanceMetrics.totalTimeMs / 1000).toFixed(2) + 's' : 'N/A'} • Engine: v2.4.1-hybrid
+                </p>
+              </div>
             </div>
           )}
 
-          {/* How It Works */}
+          {/* How It Works - Compact */}
           {!result && !loading && (
             <ScrollReveal delay={0.3}>
-              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-4 sm:mb-6 text-center">How It Works</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="text-center flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 sm:mx-auto sm:mb-4">
-                      <Search className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8 max-w-4xl mx-auto">
+                <h2 className="text-lg font-bold text-primary mb-6 text-center tracking-tight">How It Works</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div className="text-center group">
+                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mx-auto mb-3 border border-blue-100 group-hover:scale-105 transition-transform">
+                      <Search className="w-5 h-5 text-blue-600" />
                     </div>
-                    <div className="text-left sm:text-center">
-                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">1. Enter URL</h3>
-                      <p className="text-xs sm:text-sm text-text-dim">
-                        Provide any website URL to analyze
-                      </p>
-                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-1">1. Enter URL</h3>
+                    <p className="text-xs text-gray-500">
+                      Provide any website URL or keyword to analyze
+                    </p>
                   </div>
-                  <div className="text-center flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 sm:mx-auto sm:mb-4">
-                      <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
+                  <div className="text-center group">
+                    <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mx-auto mb-3 border border-purple-100 group-hover:scale-105 transition-transform">
+                      <Shield className="w-5 h-5 text-purple-600" />
                     </div>
-                    <div className="text-left sm:text-center">
-                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">2. AI Analysis</h3>
-                      <p className="text-xs sm:text-sm text-text-dim">
-                        Deep keyword, Vision AI, NLP & multimedia scan
-                      </p>
-                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-1">2. AI Analysis</h3>
+                    <p className="text-xs text-gray-500">
+                      Deep context, Vision AI, NLP & multimedia scan
+                    </p>
                   </div>
-                  <div className="text-center flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 sm:mx-auto sm:mb-4">
-                      <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+                  <div className="text-center group">
+                    <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mx-auto mb-3 border border-green-100 group-hover:scale-105 transition-transform">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
                     </div>
-                    <div className="text-left sm:text-center">
-                      <h3 className="font-bold text-primary text-sm sm:text-base mb-1 sm:mb-2">3. Get Results</h3>
-                      <p className="text-xs sm:text-sm text-text-dim">
-                        Receive age-specific safety scores
-                      </p>
-                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-1">3. Get Insight</h3>
+                    <p className="text-xs text-gray-500">
+                      Receive age-specific safety scores & risks
+                    </p>
                   </div>
                 </div>
 
                 {/* Book Demo CTA */}
-                <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-100 text-center">
-                  <p className="text-text-dim text-sm mb-3 sm:mb-4">Want to see more? Get a personalized demo.</p>
+                <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                  <p className="text-gray-500 text-xs mb-3">Enterprise-grade safety for your platform?</p>
                   <Button
                     onClick={() => setShowBookDemoModal(true)}
-                    className="btn-primary-premium text-white rounded-xl px-5 sm:px-6 py-2.5 sm:py-3 h-auto border-0 text-sm sm:text-base"
+                    size="sm"
+                    className="btn-primary-premium text-white rounded-lg px-5 py-2 h-auto border-0 text-xs font-medium"
                   >
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <Calendar className="w-3.5 h-3.5 mr-2" />
                     Book a Demo
                   </Button>
                 </div>
               </div>
             </ScrollReveal>
           )}
-        </div>
-      </section>
+        </div >
+      </section >
     </>
   );
 }

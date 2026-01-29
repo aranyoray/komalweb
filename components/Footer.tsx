@@ -293,7 +293,7 @@ export default function Footer() {
         <ScrollReveal delay={0.1}>
           <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
           <Link
-            href="#"
+            href="/marketing"
             className="flex items-center gap-2 bg-text text-surface px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -321,18 +321,6 @@ export default function Footer() {
           </div>
         </ScrollReveal>
 
-
-
-        {/* Copyright Line */}
-        <ScrollReveal delay={0.2}>
-          <div className="border-t border-border pt-6 mb-6">
-            <p className="text-text-dim text-sm">
-              © 2024-2025 ChildCog Pvt Ltd. All rights reserved.<br />
-              ISO27001, DPDA, GDPR, and HIPAA compliant.
-            </p>
-          </div>
-        </ScrollReveal>
-
         {/* Navigation Links */}
         <ScrollReveal delay={0.25}>
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm mb-8">
@@ -342,6 +330,10 @@ export default function Footer() {
             <span className="text-border">|</span>
             <Link href="/content-safety" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
               Content Safety
+            </Link>
+            <span className="text-border">|</span>
+            <Link href="/safety-trust" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+              Safety & Trust
             </Link>
             <span className="text-border">|</span>
             <Link href="/privacypolicy" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
