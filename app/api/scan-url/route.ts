@@ -747,6 +747,14 @@ function isDangerousSite(url: string): DangerousSiteInfo | null {
 
 // Pre-compiled regex patterns for faster matching
 const CHILD_UNSAFE_PATTERNS: { [category: string]: RegExp } = {};
+const NEUTRAL_IDENTITY_TERMS = new Set([
+  'woman',
+  'man',
+  'girl',
+  'boy',
+  'child',
+  'person',
+]);
 const CHILD_UNSAFE_KEYWORDS = {
   explicit: [
     'porn', 'xxx', 'sex', 'nsfw', 'nude', 'naked', 'erotic', 'fetish',
@@ -798,7 +806,8 @@ const CHILD_UNSAFE_KEYWORDS = {
 
 // Pre-compile regex patterns at module load for performance
 for (const [category, keywords] of Object.entries(CHILD_UNSAFE_KEYWORDS)) {
-  const pattern = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const filteredKeywords = keywords.filter(keyword => !NEUTRAL_IDENTITY_TERMS.has(keyword.toLowerCase()));
+  const pattern = filteredKeywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
   CHILD_UNSAFE_PATTERNS[category] = new RegExp(`\\b(${pattern})`, 'gi');
 }
 
@@ -972,6 +981,16 @@ function analyzeKeywordContext(keyword: string, context: string): ContextAnalysi
   const lowerKeyword = keyword.toLowerCase();
   const lowerContext = context.toLowerCase();
 
+  if (NEUTRAL_IDENTITY_TERMS.has(lowerKeyword)) {
+    return {
+      shouldFlag: false,
+      isDangerous: false,
+      severity: 0,
+      reason: 'Neutral identity term - always safe',
+      ageMultipliers: { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 }
+    };
+  }
+
   // Default: NOT flagged (safe until proven dangerous)
   const safeResult: ContextAnalysisResult = {
     shouldFlag: false,
@@ -1060,15 +1079,6 @@ const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
   { category: 'profanity', severity: 'medium', deduction: { '<10': 60, '10-13': 50, '13-16': 30, '16+': 15 } },
   { category: 'dangerous', severity: 'high', deduction: { '<10': 85, '10-13': 75, '13-16': 55, '16+': 35 } },
 ];
-
-const NEUTRAL_IDENTITY_TERMS = new Set([
-  'woman',
-  'man',
-  'girl',
-  'boy',
-  'child',
-  'person',
-]);
 
 const getModerationThresholds = () => {
   const caution = Number.parseFloat(process.env.MODERATION_CAUTION_DENSITY || '0.004');
@@ -1223,6 +1233,20 @@ function analyzeChildSafetyFast(
   const unsafeKeywordsFound: KeywordFinding[] = [];
   let filteredByContext = 0;
   const ageSpecificRiskScores: { [key in AgeGroup]: number } = { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 };
+  const contentTokens = allContent.split(/\s+/).filter(Boolean);
+  const isNeutralIdentityOnly = contentTokens.length > 0
+    && contentTokens.every(token => NEUTRAL_IDENTITY_TERMS.has(token));
+
+  if (isNeutralIdentityOnly) {
+    return {
+      unsafeKeywordsFound: [],
+      safeKeywordsFound: Array.from(new Set(contentTokens)),
+      riskScore: 0,
+      riskLevel: 'safe',
+      filteredByContext: 0,
+      ageSpecificRiskScores
+    };
+  }
 
   // Use pre-compiled patterns for fast matching with CONTEXT AWARENESS
   for (const [category, pattern] of Object.entries(CHILD_UNSAFE_PATTERNS)) {
@@ -1345,14 +1369,17 @@ function analyzeChildSafetyFast(
   );
 
   const moderationThresholds = getModerationThresholds();
+  const totalFlaggedKeywords = unsafeKeywordsFound.reduce((sum, keyword) => sum + keyword.count, 0);
+  const tokenCount = contentTokens.length || 1;
+  const keywordDensity = totalFlaggedKeywords / tokenCount;
 
   // Determine risk level
   let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
-  if (riskScore >= 50 || unsafeKeywordsFound.some(u => u.isDangerous)) {
+  if (keywordDensity >= moderationThresholds.riskLevels.dangerous || unsafeKeywordsFound.some(u => u.isDangerous)) {
     riskLevel = 'dangerous';
-  } else if (riskScore >= 25) {
+  } else if (keywordDensity >= moderationThresholds.riskLevels.unsafe) {
     riskLevel = 'unsafe';
-  } else if (riskScore >= 10) {
+  } else if (keywordDensity >= moderationThresholds.riskLevels.caution) {
     riskLevel = 'caution';
   }
 
