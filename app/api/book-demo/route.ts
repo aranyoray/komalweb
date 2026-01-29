@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+
+const loadNodemailer = () => {
+  try {
+    const requireFn = eval('require') as NodeRequire;
+    return requireFn('nodemailer') as {
+      createTransport: (options: Record<string, unknown>) => {
+        sendMail: (mailOptions: Record<string, unknown>) => Promise<unknown>;
+      };
+    };
+  } catch (error) {
+    console.error('Nodemailer dependency is missing:', error);
+    throw new Error('Email service is unavailable. Please install nodemailer.');
+  }
+};
 
 // Create nodemailer transporter
 const createTransporter = () => {
+  const nodemailer = loadNodemailer();
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
