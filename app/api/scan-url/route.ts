@@ -1061,6 +1061,29 @@ const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
   { category: 'dangerous', severity: 'high', deduction: { '<10': 85, '10-13': 75, '13-16': 55, '16+': 35 } },
 ];
 
+const NEUTRAL_IDENTITY_TERMS = new Set([
+  'woman',
+  'man',
+  'girl',
+  'boy',
+  'child',
+  'person',
+]);
+
+const getModerationThresholds = () => {
+  const caution = Number.parseFloat(process.env.MODERATION_CAUTION_DENSITY || '0.004');
+  const unsafe = Number.parseFloat(process.env.MODERATION_UNSAFE_DENSITY || '0.01');
+  const dangerous = Number.parseFloat(process.env.MODERATION_DANGEROUS_DENSITY || '0.02');
+
+  return {
+    riskLevels: {
+      caution,
+      unsafe,
+      dangerous,
+    },
+  };
+};
+
 // ============================================================================
 // INTERFACES
 // ============================================================================
@@ -1320,6 +1343,8 @@ function analyzeChildSafetyFast(
       ageSpecificRiskScores['13-16'] * 0.20 +
       ageSpecificRiskScores['16+'] * 0.15)
   );
+
+  const moderationThresholds = getModerationThresholds();
 
   // Determine risk level
   let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
