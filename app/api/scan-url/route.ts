@@ -7,7 +7,6 @@ import {
   loadAndVectorizeKeywords,
   extractWordFrequencies,
   findSimilarKeywords,
-  deepContextSearch,
   generateSimilarityReport,
   SimilarityMatch,
   CategoryKeywords,
@@ -158,6 +157,29 @@ const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
   },
 ];
 
+const NEUTRAL_IDENTITY_TERMS = new Set([
+  'woman',
+  'man',
+  'girl',
+  'boy',
+  'child',
+  'person',
+]);
+
+const getModerationThresholds = () => {
+  const caution = Number.parseFloat(process.env.MODERATION_CAUTION_DENSITY || '0.004');
+  const unsafe = Number.parseFloat(process.env.MODERATION_UNSAFE_DENSITY || '0.01');
+  const dangerous = Number.parseFloat(process.env.MODERATION_DANGEROUS_DENSITY || '0.02');
+
+  return {
+    riskLevels: {
+      caution,
+      unsafe,
+      dangerous,
+    },
+  };
+};
+
 // ============================================================================
 // INTERFACES
 // ============================================================================
@@ -262,10 +284,14 @@ function analyzeChildSafety(
   safeKeywordsFound: string[];
   riskScore: number;
   riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous';
+  totalUnsafeMatches: number;
+  unsafeDensity: number;
 } {
   const allContent = `${title} ${description} ${keywords.join(' ')} ${text}`.toLowerCase();
   const unsafeKeywordsFound: { category: string; keyword: string; count: number; context: string[] }[] = [];
   const safeKeywordsFound: string[] = [];
+  const words = allContent.split(/\s+/).filter(Boolean);
+  const totalWords = Math.max(words.length, 1);
 
   // Check for unsafe keywords in each category
   for (const [category, keywords] of Object.entries(CHILD_UNSAFE_KEYWORDS)) {
@@ -273,6 +299,10 @@ function analyzeChildSafety(
       const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
       const matches = allContent.match(regex);
       if (matches && matches.length > 0) {
+        if (NEUTRAL_IDENTITY_TERMS.has(keyword.toLowerCase())) {
+          continue;
+        }
+
         // Extract context snippets
         const contexts: string[] = [];
         let searchIndex = 0;
@@ -303,6 +333,9 @@ function analyzeChildSafety(
     }
   }
 
+  const totalUnsafeMatches = unsafeKeywordsFound.reduce((sum, match) => sum + match.count, 0);
+  const unsafeDensity = totalUnsafeMatches / totalWords;
+
   // Calculate risk score
   let riskScore = 0;
   for (const unsafe of unsafeKeywordsFound) {
@@ -319,13 +352,26 @@ function analyzeChildSafety(
   const safeReduction = Math.min(safeKeywordsFound.length * 2, 30);
   riskScore = Math.max(0, riskScore - safeReduction);
 
+  const moderationThresholds = getModerationThresholds();
+
   // Determine risk level
   let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
-  if (riskScore >= 50) riskLevel = 'dangerous';
-  else if (riskScore >= 25) riskLevel = 'unsafe';
-  else if (riskScore >= 10) riskLevel = 'caution';
+  if (unsafeDensity >= moderationThresholds.riskLevels.dangerous) {
+    riskLevel = 'dangerous';
+  } else if (unsafeDensity >= moderationThresholds.riskLevels.unsafe) {
+    riskLevel = 'unsafe';
+  } else if (unsafeDensity >= moderationThresholds.riskLevels.caution) {
+    riskLevel = 'caution';
+  }
 
-  return { unsafeKeywordsFound, safeKeywordsFound, riskScore, riskLevel };
+  return {
+    unsafeKeywordsFound,
+    safeKeywordsFound,
+    riskScore,
+    riskLevel,
+    totalUnsafeMatches,
+    unsafeDensity,
+  };
 }
 
 /**
@@ -566,7 +612,7 @@ async function fetchWebpageContent(url: string): Promise<string> {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; KomalSafetyBot/1.0; +https://komalkids.com)',
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(7000),
     });
 
     if (!response.ok) {
@@ -651,7 +697,7 @@ async function captureScreenshot(url: string): Promise<Buffer | null> {
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 720 });
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 8000 });
 
     const screenshot = await page.screenshot({ type: 'png' });
     return screenshot as Buffer;
@@ -829,19 +875,20 @@ function getLikelihoodScore(likelihood: string | number | null | undefined): num
 async function analyzeUrlForChildSafety(url: string): Promise<ScanResult> {
   try {
     console.log('Fetching webpage content...');
-    const html = await fetchWebpageContent(url);
+    const htmlPromise = fetchWebpageContent(url);
+    const screenshotPromise = visionClient ? captureScreenshot(url) : Promise.resolve(null);
+    const html = await htmlPromise;
 
     console.log('Parsing HTML and extracting content...');
     const parsedContent = parseHTMLContent(html, url);
 
-    console.log('Capturing screenshot...');
-    const screenshot = await captureScreenshot(url);
-
     console.log('Analyzing text with NLP...');
-    const nlpResults = await analyzeTextWithNLP(parsedContent.textContent);
+    const nlpPromise = analyzeTextWithNLP(parsedContent.textContent);
 
     console.log('Analyzing images with Vision API...');
-    const visionResults = await analyzeImagesWithVision(parsedContent.imageUrls, screenshot);
+    const visionPromise = screenshotPromise.then((screenshot) =>
+      analyzeImagesWithVision(parsedContent.imageUrls, screenshot)
+    );
 
     console.log('Performing child safety analysis...');
     const childSafetyAnalysis = analyzeChildSafety(
@@ -856,8 +903,9 @@ async function analyzeUrlForChildSafety(url: string): Promise<ScanResult> {
     const categoryKeywords = loadAndVectorizeKeywords();
     const wordFrequencies = extractWordFrequencies(parsedContent.textContent);
     const similarityMatches = findSimilarKeywords(wordFrequencies, categoryKeywords, 50, parsedContent.textContent);
-    const depthSearch = deepContextSearch(parsedContent.textContent, categoryKeywords, 50);
     const similarityReport = generateSimilarityReport(similarityMatches, wordFrequencies);
+
+    const [nlpResults, visionResults] = await Promise.all([nlpPromise, visionPromise]);
 
     // Calculate multimedia risk
     const multimediaRisk = 100 - parsedContent.multimedia.mediaSafetyScore;
@@ -901,7 +949,12 @@ async function analyzeUrlForChildSafety(url: string): Promise<ScanResult> {
         textAnalysis: {
           sentiment: nlpResults?.sentiment || 'Neutral',
           keyTopics: similarityReport.topCategories.slice(0, 5).map(c => c.category),
-          languageScore: Math.max(0, 100 - childSafetyAnalysis.riskScore * 2),
+          languageScore: childSafetyAnalysis.totalUnsafeMatches === 0
+            ? 100
+            : Math.max(
+                0,
+                Math.round(100 - childSafetyAnalysis.unsafeDensity * 1000)
+              ),
           entities: nlpResults?.entities || [],
           unsafeKeywordsFound: childSafetyAnalysis.unsafeKeywordsFound.map(u => u.keyword),
           safeKeywordsFound: childSafetyAnalysis.safeKeywordsFound,
