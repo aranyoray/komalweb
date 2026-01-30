@@ -78,16 +78,16 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Doris E. V.",
-        role: "Research Advisor",
-        credentials: ["UC Berkeley", "PhD"],
-        image: "/doris.png",
-        description: "Dr. Doris holds a PhD in Integrative Biology from UC Berkeley. She brings deep expertise in biological systems and research methodology to Komal, ensuring our scientific approach is both rigorous and sound.",
-        tagline: "Deep expertise in biological systems",
+        name: "Linda Xu",
+        role: "Parent Advocacy & Community Growth",
+        credentials: ["MBA", "Sunshine Foundation", "Canadian Women's Federation"],
+        image: "/advisor-canada-parent-advocate-gtm.png",
+        description: "Linda Xu is a nonprofit leader and parent advocate with experience across major community and public welfare organizations. She advises Komal on parent trust and community-led distribution, helping shape go-to-market strategy starting in Canada. She has held senior leadership roles with the Sunshine Foundation, the Canadian Women's Federation, and the United Global Chinese Women's Association of Canada, supporting initiatives in youth development, education access, and family wellbeing. Linda has led large-scale fundraising efforts totaling $250k+ in support of children, families, and healthcare initiatives, including programs benefiting UNICEF and the Red Cross.",
+        tagline: "Parent trust and community-led distribution",
     },
     {
         name: "Audrey Wisch",
-        role: "GTM Advisor",
+        role: "CEO",
         credentials: ["Co-Founder & CEO, Curious Cardinals", "Forbes 30u30"],
         image: "/audrey.png",
         description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform connecting students with inspiring role models. A Forbes 30 Under 30 honoree, she brings deep expertise in education technology, youth engagement, and scaling mission-driven startups to help Komal reach families worldwide.",
@@ -112,7 +112,7 @@ const advisors: Advisor[] = [
     },
     {
         name: "Shreya Jain",
-        role: "GTM Advisor",
+        role: "CEO",
         credentials: ["The Stack", "MBA"],
         image: "/shreya-jain-mba-business-gtm-advisor-india.png",
         description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through growth.",
@@ -152,7 +152,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
     // Determine object position
     const objectPos = member.name.includes('Shreya')
         ? 'center top'
-        : member.name.includes('Doris')
+        : member.name.includes('Linda')
             ? 'center 15%'
             : member.name.includes('Brian')
                 ? 'center 5%'
