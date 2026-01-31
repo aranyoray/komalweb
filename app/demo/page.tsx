@@ -86,6 +86,12 @@ export default function DemoPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState('');
+  const [analysisContext, setAnalysisContext] = useState<{
+    inputType: 'url' | 'keyword';
+    normalizedInput: string;
+    warnings: string[];
+  } | null>(null);
+  const [longRunning, setLongRunning] = useState(false);
 
   // Modal states
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -124,6 +130,48 @@ export default function DemoPage() {
     );
   };
 
+  const buildInputDiagnostics = (rawInput: string) => {
+    const trimmed = rawInput.trim();
+    const warnings: string[] = [];
+    const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(trimmed) ||
+      trimmed.includes('.com') ||
+      trimmed.includes('.org') ||
+      trimmed.includes('.net') ||
+      trimmed.includes('.edu') ||
+      trimmed.includes('.gov') ||
+      trimmed.includes('.io') ||
+      trimmed.includes('.co') ||
+      trimmed.includes('.in') ||
+      trimmed.startsWith('http://') ||
+      trimmed.startsWith('https://');
+
+    const normalizedInput = looksLikeUrl && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')
+      ? `https://${trimmed}`
+      : trimmed;
+
+    if (/^<\s*script|<\/\s*script>|on\w+=|javascript:/i.test(trimmed)) {
+      warnings.push('Potentially malicious script input detected. Results are flagged as a security test.');
+    }
+
+    if (/\b(select|insert|update|delete|drop|union|alter)\b/i.test(trimmed) || /--|;{2,}|\bOR\b\s+1=1/i.test(trimmed)) {
+      warnings.push('Possible injection pattern detected. Treat results as a security test.');
+    }
+
+    if (/^[\d\s]+$/.test(trimmed)) {
+      warnings.push('Numeric-only input detected. Results may be less reliable for contextual safety.');
+    }
+
+    if (trimmed.length > 400) {
+      warnings.push('Long input detected. Analysis may take longer than usual.');
+    }
+
+    return {
+      inputType: looksLikeUrl ? 'url' : 'keyword',
+      normalizedInput,
+      warnings,
+    };
+  };
+
   const handleScan = async () => {
     if (!url.trim()) {
       setError('Please enter a URL or keyword');
@@ -133,37 +181,27 @@ export default function DemoPage() {
     setLoading(true);
     setError('');
     setResult(null);
+    setLongRunning(false);
+    let timeoutId: number | undefined;
+    let longRunningTimer: number | undefined;
 
     try {
-      let input = url.trim();
-
-      // Check if input looks like a URL (has domain-like pattern with dots or protocol)
-      const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(input) ||
-        input.includes('.com') ||
-        input.includes('.org') ||
-        input.includes('.net') ||
-        input.includes('.edu') ||
-        input.includes('.gov') ||
-        input.includes('.io') ||
-        input.includes('.co') ||
-        input.includes('.in') ||
-        input.startsWith('http://') ||
-        input.startsWith('https://');
-
-      // Only normalize as URL if it looks like a URL
-      if (looksLikeUrl && !input.startsWith('http://') && !input.startsWith('https://')) {
-        input = 'https://' + input;
-      }
+      const diagnostics = buildInputDiagnostics(url);
+      setAnalysisContext(diagnostics);
+      const controller = new AbortController();
+      timeoutId = window.setTimeout(() => controller.abort(), 20000);
+      longRunningTimer = window.setTimeout(() => setLongRunning(true), 5000);
 
       const response = await fetch('/api/scan-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: input }),
+        signal: controller.signal,
+        body: JSON.stringify({ url: diagnostics.normalizedInput }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to analyze');
@@ -180,7 +218,7 @@ export default function DemoPage() {
       if (data.performanceMetrics) {
         const { totalTimeMs, steps } = data.performanceMetrics;
         console.log('\n%c🔍 KOMAL URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
-        console.log(`%c📍 Input: ${input}`, 'color: #666;');
+        console.log(`%c📍 Input: ${diagnostics.normalizedInput}`, 'color: #666;');
         console.log(`%c⏱️  Total Time: ${(totalTimeMs / 1000).toFixed(3)}s`, 'color: #2196F3; font-weight: bold;');
         console.log('%c\n📊 Step Breakdown:', 'color: #6B4E71; font-weight: bold;');
         console.table(steps.map((step: { name: string; durationMs: number; details?: string }) => ({
@@ -202,10 +240,21 @@ export default function DemoPage() {
         console.log('\n');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError('The analysis timed out after 20 seconds. Please try again or use a shorter input.');
+      } else {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      }
       console.error('%c❌ KOMAL Analysis Error:', 'color: #F44336; font-weight: bold;', err);
     } finally {
       setLoading(false);
+      setLongRunning(false);
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      if (longRunningTimer) {
+        window.clearTimeout(longRunningTimer);
+      }
     }
   };
 
@@ -401,6 +450,7 @@ export default function DemoPage() {
               <Button
                 onClick={handleSendEmail}
                 disabled={sendingEmail || !emailInput.trim()}
+                type="button"
                 className="w-full btn-primary-premium text-white py-3 h-auto rounded-xl border-0"
               >
                 {sendingEmail ? (
@@ -491,6 +541,7 @@ export default function DemoPage() {
               <Button
                 onClick={handleBookDemo}
                 disabled={submittingDemo || !demoForm.name.trim() || !demoForm.email.trim()}
+                type="button"
                 className="w-full btn-primary-premium text-white py-3 h-auto rounded-xl border-0"
               >
                 {submittingDemo ? (
@@ -549,7 +600,7 @@ export default function DemoPage() {
               <div className="flex flex-col gap-3 sm:gap-4">
                 <div className="flex-1">
                   <input
-                    type="url"
+                    type="text"
                     value={url}
                     onChange={(e) => {
                       setUrl(e.target.value);
@@ -569,6 +620,7 @@ export default function DemoPage() {
                   onClick={handleScan}
                   disabled={loading || !url.trim()}
                   size="lg"
+                  type="button"
                   className="btn-primary-premium text-white px-6 sm:px-8 py-3 sm:py-4 h-auto rounded-xl sm:rounded-2xl border-0 whitespace-nowrap w-full sm:w-auto"
                 >
                   {loading ? (
@@ -589,8 +641,15 @@ export default function DemoPage() {
                   {error}
                 </div>
               )}
-              <div className="mt-3 sm:mt-4 text-xs text-text-dim text-center">
-                Try: youtube.com, wikipedia.org, cnn.com
+              {loading && longRunning && (
+                <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center">
+                  Still analyzing... larger pages can take a few extra seconds.
+                </div>
+              )}
+              <div className="mt-3 sm:mt-4 text-xs text-text-dim text-center space-y-1">
+                <p>Tip: URLs fetch site content. Keywords analyze search results for context.</p>
+                <p>Try: youtube.com, wikipedia.org, cnn.com, "educational games for kids"</p>
+                <p>{url.trim().length} characters</p>
               </div>
             </div>
           </ScrollReveal>
@@ -604,6 +663,7 @@ export default function DemoPage() {
                   <Button
                     onClick={handleGeneratePDF}
                     disabled={generatingPDF}
+                    type="button"
                     variant="outline"
                     className="border-2 border-green-500/30 text-green-700 hover:bg-green-50 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
                   >
@@ -621,6 +681,7 @@ export default function DemoPage() {
                   </Button>
                   <Button
                     onClick={() => setShowEmailModal(true)}
+                    type="button"
                     variant="outline"
                     className="border-2 border-primary/20 text-primary hover:bg-primary/5 rounded-xl px-4 sm:px-5 py-2.5 h-auto text-sm sm:text-base"
                   >
@@ -629,6 +690,7 @@ export default function DemoPage() {
                   </Button>
                   <Button
                     onClick={() => setShowBookDemoModal(true)}
+                    type="button"
                     className="btn-primary-premium text-white rounded-xl px-4 sm:px-5 py-2.5 h-auto border-0 text-sm sm:text-base"
                   >
                     <Calendar className="w-4 h-4 mr-2" />
@@ -664,6 +726,16 @@ export default function DemoPage() {
                     <p className="text-xs sm:text-sm text-text-dim break-all">
                       Scanned: <span className="font-mono text-primary">{result.url}</span>
                     </p>
+                    {analysisContext && (
+                      <span
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium self-start sm:self-auto ${analysisContext.inputType === 'url'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-purple-100 text-purple-700'
+                          }`}
+                      >
+                        {analysisContext.inputType === 'url' ? 'URL Content' : 'Keyword Search'}
+                      </span>
+                    )}
                     {result.analysisMethod && (
                       <span
                         className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium self-start sm:self-auto ${result.analysisMethod === 'live'
@@ -674,12 +746,26 @@ export default function DemoPage() {
                         {result.analysisMethod === 'live' ? 'Live Analysis' : 'Demo Mode'}
                       </span>
                     )}
+                    {result.usedSearchFallback && (
+                      <span className="px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                        Fallback: Search Snapshot
+                      </span>
+                    )}
                     {isUnder16Blocked && (
                       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
                         🚫 Flagged: Blocked for under 16
                       </span>
                     )}
                   </div>
+                  {analysisContext?.warnings.length ? (
+                    <div className="mt-4 space-y-2">
+                      {analysisContext.warnings.map((warning, idx) => (
+                        <div key={idx} className="px-3 py-2 rounded-lg text-xs sm:text-sm bg-amber-50 border border-amber-200 text-amber-700">
+                          {warning}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
 
                   {/* Depth Analysis */}
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -1044,6 +1130,7 @@ export default function DemoPage() {
                   <p className="text-text-dim text-sm mb-3 sm:mb-4">Want to see more? Get a personalized demo.</p>
                   <Button
                     onClick={() => setShowBookDemoModal(true)}
+                    type="button"
                     className="btn-primary-premium text-white rounded-xl px-5 sm:px-6 py-2.5 sm:py-3 h-auto border-0 text-sm sm:text-base"
                   >
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
