@@ -11,12 +11,14 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from hybrid_moderation.core import ContentModerationSystem
 from hybrid_moderation.models import ModerationResult
+from hybrid_moderation.config import SYSTEM_PROMPT
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("moderation-api")
 
 app = FastAPI(title="Komal Hybrid Moderation API")
+app.state.system_prompt = SYSTEM_PROMPT
 
 # Initialize CMS
 cms = ContentModerationSystem(csv_path="Models_Masterdoc_Test.csv")

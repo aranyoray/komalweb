@@ -6,16 +6,13 @@ import Image from "next/image";
 const partners = [
     { src: "/startup_yale_logo.png", name: "Yale University", caption: "Early Learning Partner" },
     { src: "/reservoir_neurodiversity_consultants_india_logo.png", name: "Reservoir Neurodiversity Consultants", caption: "Research Partner" },
-    { src: "/trehaus_singapore_logo.png", name: "Trehaus Singapore", caption: "Brand Partner" },
     { src: "/california-state-university-longbeach_seal-pilot-partners-komalkids.png", name: "California State University Long Beach", caption: "Pilot Partners" },
-    { src: "/zeelearn.png", name: "Zee Learn", caption: "Scaling Partner" },
     { src: "/ucal.jpg", name: "UCAL", caption: "Institutional Partner" },
-    { src: "/unep.png", name: "UNEP", caption: "Global Impact Collaborator" },
 ];
 
 export default function PartnersCarousel() {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const visibleCount = 5;
+    const visibleCount = 4;
 
     const nextSlide = useCallback(() => {
         setCurrentIndex((prev) => (prev + 1) % partners.length);

@@ -55,10 +55,10 @@ export default function WhyPage() {
                         </p>
 
                         {/* Main Title */}
-                        <h1 className=" text-primary/70 text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold  tracking-tight mb-10">
+                        <h1 className="text-primary/70 text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold tracking-tight mb-10">
                             Introducing
 
-                            <span className="text-primary text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold  tracking-tight mb-10">
+                            <span className="text-primary text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] leading-[1.1] font-bold tracking-tight mb-10">
                                 {' '}Komal.
                             </span>
                         </h1>
