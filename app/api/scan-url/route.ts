@@ -2135,40 +2135,6 @@ async function analyzeImagesWithVisionFast(imageUrls: string[]) {
     },
     detectedObjects: [],
   };
-        new Promise<[null]>(resolve => setTimeout(() => resolve([null]), 1500)),
-      ])
-    );
-
-    const allResults = await Promise.all(requests);
-
-    for (const [result] of allResults) {
-      if (!result) continue;
-
-      const highConfLabels = result.labelAnnotations
-        ?.filter((l: any) => (l.score || 0) > 0.7)
-        ?.map((l: any) => l.description || '') || [];
-      results.labels.push(...highConfLabels);
-
-      if (result.safeSearchAnnotation) {
-        if (!results.safeSearchAnnotation) {
-          results.safeSearchAnnotation = result.safeSearchAnnotation;
-        } else {
-          const current = results.safeSearchAnnotation;
-          const newAnnotation = result.safeSearchAnnotation;
-          results.safeSearchAnnotation = {
-            adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
-            violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
-            racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
-          };
-        }
-      }
-    }
-
-    results.labels = [...new Set(results.labels)].slice(0, 8);
-    return results;
-  } catch {
-    return null;
-  }
 }
 
 /**
