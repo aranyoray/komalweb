@@ -153,7 +153,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
     const objectPos = member.name.includes('Shreya')
         ? 'center top'
         : member.name.includes('Linda')
-            ? 'center 30%'
+            ? 'center top'
             : member.name.includes('Brian')
                 ? 'center 5%'
                 : member.name.includes('Om')
