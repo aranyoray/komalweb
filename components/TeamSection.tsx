@@ -83,7 +83,7 @@ const advisors: Advisor[] = [
         credentials: ["Master of Business Administration (MBA)", "Chair, Canada Sunshine Foundation", "Executive President, Canadian Women's Federation"],
         image: "/advisor-canada-parent-advocate-gtm.png",
         description: "Ms. Xu serves as Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. She has extensive experience as a senior leader of multiple non-profit organizations and an advocate for parental rights. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Xu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.",
-        tagline: "Parent trust and community-led distribution",
+        tagline: "Regional CEO for Canada & China",
     },
     {
         name: "Audrey Wisch",
@@ -153,7 +153,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
     const objectPos = member.name.includes('Shreya')
         ? 'center top'
         : member.name.includes('Linda')
-            ? 'center 15%'
+            ? 'center 30%'
             : member.name.includes('Brian')
                 ? 'center 5%'
                 : member.name.includes('Om')
