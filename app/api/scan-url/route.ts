@@ -1185,40 +1185,67 @@ let clientsInitialized = false;
 function initializeClients() {
   if (clientsInitialized) return;
   
-  // Skip initialization during build time
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
+  // Skip initialization during build time to prevent build failures
+  // Check multiple conditions to ensure we're not in a build context
+  const isBuildTime = 
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    (typeof process.env.VERCEL === 'undefined' && process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) ||
+    process.env.CI === 'true';
+  
+  if (isBuildTime) {
+    console.log('⏭️ Skipping Google Cloud client initialization during build');
+    clientsInitialized = true; // Mark as initialized to prevent retries
     return;
   }
   
   clientsInitialized = true;
 
   try {
-    // Use API key if available (simpler for development)
+    // Priority 1: Use API key if available (simplest and recommended)
     if (process.env.GOOGLE_CLOUD_API_KEY) {
+      console.log('✅ Initializing Google Cloud clients with API key');
       visionClient = new ImageAnnotatorClient({
         apiKey: process.env.GOOGLE_CLOUD_API_KEY,
       });
       languageClient = new LanguageServiceClient({
         apiKey: process.env.GOOGLE_CLOUD_API_KEY,
       });
+      console.log('✅ Google Cloud Vision and Language clients initialized successfully');
+      return;
     }
-    // Use service account credentials if available (production)
-    else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      const clientConfig: any = {};
-      // Provide projectId if available (required for service account)
-      if (process.env.GOOGLE_CLOUD_PROJECT_ID) {
-        clientConfig.projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
-      }
-      // Only initialize if we have projectId (required for service account)
-      if (clientConfig.projectId) {
+    
+    // Priority 2: Use service account credentials (only if API key not available)
+    // Note: Service account requires projectId - if missing, skip to demo mode
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.GOOGLE_CLOUD_PROJECT_ID) {
+      console.log('✅ Initializing Google Cloud clients with service account');
+      try {
+        const clientConfig = {
+          projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+        };
+        
         visionClient = new ImageAnnotatorClient(clientConfig);
         languageClient = new LanguageServiceClient(clientConfig);
-      } else {
-        console.warn('⚠️ GOOGLE_CLOUD_PROJECT_ID not set. Skipping service account initialization.');
+        console.log('✅ Google Cloud Vision and Language clients initialized with service account');
+        return;
+      } catch (saError) {
+        console.warn('⚠️ Service account initialization failed:', saError instanceof Error ? saError.message : String(saError));
+        console.warn('💡 Tip: Use GOOGLE_CLOUD_API_KEY instead for simpler setup');
+        console.warn('ℹ️ Continuing in demo mode');
+        return;
       }
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.GOOGLE_CLOUD_PROJECT_ID) {
+      console.warn('⚠️ GOOGLE_APPLICATION_CREDENTIALS set but GOOGLE_CLOUD_PROJECT_ID missing.');
+      console.warn('💡 Tip: Set GOOGLE_CLOUD_PROJECT_ID or use GOOGLE_CLOUD_API_KEY instead for simpler setup');
+      console.warn('ℹ️ Continuing in demo mode');
     }
+    
+    // No credentials available - will run in demo mode
+    console.log('ℹ️ No Google Cloud credentials found. Running in demo mode with pattern-based analysis.');
+    
   } catch (error) {
-    console.warn('Google Cloud APIs not configured:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn('⚠️ Google Cloud APIs initialization failed:', errorMessage);
+    console.warn('💡 The app will continue in demo mode with pattern-based analysis');
     // Don't fail build - clients will be null and fallback to demo mode
     visionClient = null;
     languageClient = null;
