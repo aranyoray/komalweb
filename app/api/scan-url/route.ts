@@ -1184,10 +1184,17 @@ let clientsInitialized = false;
 
 function initializeClients() {
   if (clientsInitialized) return;
+  
+  // Skip initialization during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return;
+  }
+  
   clientsInitialized = true;
 
   try {
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_API_KEY) {
+    // Use API key if available (simpler for development)
+    if (process.env.GOOGLE_CLOUD_API_KEY) {
       visionClient = new ImageAnnotatorClient({
         apiKey: process.env.GOOGLE_CLOUD_API_KEY,
       });
@@ -1195,8 +1202,26 @@ function initializeClients() {
         apiKey: process.env.GOOGLE_CLOUD_API_KEY,
       });
     }
+    // Use service account credentials if available (production)
+    else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      const clientConfig: any = {};
+      // Provide projectId if available (required for service account)
+      if (process.env.GOOGLE_CLOUD_PROJECT_ID) {
+        clientConfig.projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
+      }
+      // Only initialize if we have projectId (required for service account)
+      if (clientConfig.projectId) {
+        visionClient = new ImageAnnotatorClient(clientConfig);
+        languageClient = new LanguageServiceClient(clientConfig);
+      } else {
+        console.warn('⚠️ GOOGLE_CLOUD_PROJECT_ID not set. Skipping service account initialization.');
+      }
+    }
   } catch (error) {
     console.warn('Google Cloud APIs not configured:', error);
+    // Don't fail build - clients will be null and fallback to demo mode
+    visionClient = null;
+    languageClient = null;
   }
 }
 
