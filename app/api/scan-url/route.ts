@@ -1185,16 +1185,19 @@ let clientsInitialized = false;
 function initializeClients() {
   if (clientsInitialized) return;
   
-  // Skip initialization during build time to prevent build failures
-  // Check multiple conditions to ensure we're not in a build context
+  // AGGRESSIVE BUILD-TIME CHECK: Skip ALL initialization during build
+  // Next.js tries to analyze routes during build, causing service account errors
   const isBuildTime = 
     process.env.NEXT_PHASE === 'phase-production-build' ||
-    (typeof process.env.VERCEL === 'undefined' && process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) ||
-    process.env.CI === 'true';
+    process.env.NEXT_PHASE === 'phase-development-build' ||
+    !process.env.VERCEL_ENV ||
+    (process.env.NODE_ENV === 'production' && !process.env.VERCEL);
   
   if (isBuildTime) {
-    console.log('⏭️ Skipping Google Cloud client initialization during build');
-    clientsInitialized = true; // Mark as initialized to prevent retries
+    console.log('⏭️ BUILD TIME: Skipping Google Cloud client initialization');
+    clientsInitialized = true;
+    visionClient = null;
+    languageClient = null;
     return;
   }
   
@@ -1214,8 +1217,10 @@ function initializeClients() {
       return;
     }
     
+    // TEMPORARILY DISABLED: Service account initialization causes build failures
     // Priority 2: Use service account credentials (only if API key not available)
-    // Note: Service account requires projectId - if missing, skip to demo mode
+    // Uncomment below when GOOGLE_CLOUD_PROJECT_ID is properly set in build environment
+    /*
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.GOOGLE_CLOUD_PROJECT_ID) {
       console.log('✅ Initializing Google Cloud clients with service account');
       try {
@@ -1238,6 +1243,7 @@ function initializeClients() {
       console.warn('💡 Tip: Set GOOGLE_CLOUD_PROJECT_ID or use GOOGLE_CLOUD_API_KEY instead for simpler setup');
       console.warn('ℹ️ Continuing in demo mode');
     }
+    */
     
     // No credentials available - will run in demo mode
     console.log('ℹ️ No Google Cloud credentials found. Running in demo mode with pattern-based analysis.');
