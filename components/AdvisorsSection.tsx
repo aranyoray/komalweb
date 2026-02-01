@@ -16,7 +16,7 @@ const advisors: Advisor[] = [
         name: "Linda Xu, MBA",
         title: "REGIONAL CEO FOR CANADA & CHINA",
         company: "@ CANADA SUNSHINE FOUNDATION, CANADIAN WOMEN'S FEDERATION",
-        description: "Ms. Xu serves as Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. She has extensive experience as a senior leader of multiple non-profit organizations and an advocate for parental rights. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Xu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.",
+        description: "Linda is Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. A nonprofit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
         image: "/advisor-canada-parent-advocate-gtm.png",
     },
     {

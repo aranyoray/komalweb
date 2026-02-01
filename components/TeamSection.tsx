@@ -82,7 +82,7 @@ const advisors: Advisor[] = [
         role: "Regional CEO for Canada & China",
         credentials: ["Master of Business Administration (MBA)", "Chair, Canada Sunshine Foundation", "Executive President, Canadian Women's Federation"],
         image: "/advisor-canada-parent-advocate-gtm.png",
-        description: "Ms. Xu serves as Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. She has extensive experience as a senior leader of multiple non-profit organizations and an advocate for parental rights. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Xu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.",
+        description: "Linda is Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. A nonprofit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
         tagline: "Regional CEO for Canada & China",
     },
     {
@@ -107,7 +107,7 @@ const advisors: Advisor[] = [
         role: "Consultant Psychologist",
         credentials: ["22+ years experience", "Apollo Clinic"],
         image: "/balaji.png",
-        description: "Bratati is a Consultant Psychologist and Psychotherapist at Apollo Clinic with 22+ years of experience in child psychology, working pan-India across cultural boundaries with clients aged 5-85. She specializes in supporting children and adolescents with ADHD, learning disorders, ASD, OCD, anxiety, depression, and addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counselling and Clinical Psychology, and is a certified Trauma Healer.",
+        description: "Bratati is a Consultant Psychologist and Psychotherapist at Apollo Clinic with 22+ years of experience in child psychology, working pan-India across cultural boundaries with clients aged 5-85. She specializes in supporting children and adolescents with ADHD, learning disorders, ASD, OCD, anxiety, depression, and addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counseling and Clinical Psychology, and is a certified Trauma Healer.",
         tagline: "22+ years healing young minds",
     },
     {

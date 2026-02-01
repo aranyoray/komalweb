@@ -28,7 +28,7 @@ export default function AICompanionForKidsPage() {
                 AI Companion for Kids: Reads How They Feel, Not Just What They Click
               </h1>
               <p className="text-xl text-text-dim max-w-3xl mx-auto">
-                Komal Kids is a hyper-personalised digital guardian that uses real-time behavioral AI to understand 
+                Komal Kids is a hyper-personalized digital guardian that uses real-time behavioral AI to understand 
                 how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, 
                 touch interactions, and micro-expressions to adapt learning moment-by-moment.
               </p>

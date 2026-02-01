@@ -5,18 +5,13 @@ export default function TopBanner() {
     return (
         <div className="h-9 w-full bg-violet-100/90 text-[11px] sm:text-xs font-medium text-violet-900 flex justify-between items-center px-4 md:px-8 border-b border-violet-200/50 relative">
             {/* Left: Navigation Links */}
-            <div className="hidden sm:flex items-center gap-4 z-10">
-                <Link href="/children" className="hover:underline opacity-90 hover:opacity-100 transition-opacity">
-                    For Children
-                </Link>
-                <div className="h-3 w-px bg-violet-300 transform rotate-12" />
-                <Link href="/parents" className="hover:underline opacity-90 hover:opacity-100 transition-opacity">
-                    For Parents
-                </Link>
-                <div className="h-3 w-px bg-violet-300 transform rotate-12" />
-                <Link href="/institutions" className="hover:underline opacity-90 hover:opacity-100 transition-opacity">
-                    For Institutions
-                </Link>
+            <div className="hidden sm:flex items-center gap-1 z-10">
+                <span className="opacity-90">For</span>
+                <Link href="/children" className="hover:underline opacity-90 hover:opacity-100 transition-opacity">Children</Link>
+                <span className="opacity-90"> / </span>
+                <Link href="/parents" className="hover:underline opacity-90 hover:opacity-100 transition-opacity">Parents</Link>
+                <span className="opacity-90"> / </span>
+                <Link href="/institutions" className="hover:underline opacity-90 hover:opacity-100 transition-opacity">Institutions</Link>
             </div>
 
             {/* Mobile Only Left Placeholder */}

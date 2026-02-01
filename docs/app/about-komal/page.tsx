@@ -227,7 +227,7 @@ export default function AboutKomalPage() {
                     Bratati is a Consultant Psychologist and Psychotherapist at Apollo Clinic with 22+ years of experience 
                     in child psychology, working pan-India across cultural boundaries with clients aged 5-85. She specializes 
                     in supporting children and adolescents with ADHD, learning disorders, ASD, OCD, anxiety, depression, and 
-                    addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counselling and Clinical 
+                    addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counseling and Clinical 
                     Psychology, and is a certified Trauma Healer.
                   </p>
                 </div>
