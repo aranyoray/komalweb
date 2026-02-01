@@ -130,7 +130,11 @@ export default function DemoPage() {
     );
   };
 
-  const buildInputDiagnostics = (rawInput: string) => {
+  const buildInputDiagnostics = (rawInput: string): {
+    inputType: 'url' | 'keyword';
+    normalizedInput: string;
+    warnings: string[];
+  } => {
     const trimmed = rawInput.trim();
     const warnings: string[] = [];
     const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(trimmed) ||
