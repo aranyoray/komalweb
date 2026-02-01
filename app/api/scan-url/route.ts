@@ -1189,18 +1189,26 @@ let clientsInitialized = false;
 async function initializeClients() {
   if (clientsInitialized) return;
   
-  // AGGRESSIVE BUILD-TIME CHECK: Skip ALL initialization during build
-  // Next.js tries to analyze routes during build, causing service account errors
-  const isBuildTime = 
+  // CRITICAL: Skip ALL Google Cloud initialization during build
+  // Next.js statically analyzes routes during build, which triggers Google Cloud lib initialization
+  // This causes errors if GOOGLE_APPLICATION_CREDENTIALS is set without project_id
+  const isBuildContext = 
     typeof window === 'undefined' && (
+      // Next.js build phases
       process.env.NEXT_PHASE === 'phase-production-build' ||
       process.env.NEXT_PHASE === 'phase-development-build' ||
       process.env.NEXT_PHASE?.includes('build') ||
-      (!process.env.VERCEL_ENV && process.env.NODE_ENV === 'production')
+      process.env.NEXT_PHASE?.includes('compile') ||
+      // CI/CD environments
+      process.env.CI === 'true' ||
+      // Production builds without Vercel (local builds)
+      (!process.env.VERCEL_ENV && process.env.NODE_ENV === 'production') ||
+      // If service account env var exists but we're not in runtime, skip
+      (process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.VERCEL_ENV && !process.env.GOOGLE_CLOUD_PROJECT_ID)
     );
   
-  if (isBuildTime) {
-    console.log('⏭️ BUILD TIME: Skipping Google Cloud client initialization');
+  if (isBuildContext) {
+    // During build, NEVER initialize Google Cloud clients
     clientsInitialized = true;
     visionClient = null;
     languageClient = null;
@@ -1210,32 +1218,34 @@ async function initializeClients() {
   clientsInitialized = true;
 
   try {
-    // Lazy load the Google Cloud modules only at runtime
-    const { ImageAnnotatorClient } = await import('@google-cloud/vision');
-    const { LanguageServiceClient } = await import('@google-cloud/language');
-    
-    // Priority 1: Use API key if available (simplest and recommended)
-    if (process.env.GOOGLE_CLOUD_API_KEY) {
-      console.log('✅ Initializing Google Cloud clients with API key');
-      visionClient = new ImageAnnotatorClient({
-        apiKey: process.env.GOOGLE_CLOUD_API_KEY,
-      });
-      languageClient = new LanguageServiceClient({
-        apiKey: process.env.GOOGLE_CLOUD_API_KEY,
-      });
-      console.log('✅ Google Cloud Vision and Language clients initialized successfully');
+    // Only use API key authentication (service account disabled to prevent build errors)
+    if (!process.env.GOOGLE_CLOUD_API_KEY) {
+      console.log('ℹ️ No Google Cloud API key found. Running in demo mode.');
+      visionClient = null;
+      languageClient = null;
       return;
     }
     
-    // Service account disabled - use API key instead
-    // No credentials available - will run in demo mode
-    console.log('ℹ️ No Google Cloud API key found. Running in demo mode with pattern-based analysis.');
+    // Lazy load Google Cloud modules ONLY at runtime (never during build)
+    const { ImageAnnotatorClient } = await import('@google-cloud/vision');
+    const { LanguageServiceClient } = await import('@google-cloud/language');
+    
+    console.log('✅ Initializing Google Cloud clients with API key');
+    visionClient = new ImageAnnotatorClient({
+      apiKey: process.env.GOOGLE_CLOUD_API_KEY,
+    });
+    languageClient = new LanguageServiceClient({
+      apiKey: process.env.GOOGLE_CLOUD_API_KEY,
+    });
+    console.log('✅ Google Cloud clients initialized');
     
   } catch (error) {
+    // Swallow ALL errors during initialization - never fail build
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.warn('⚠️ Google Cloud APIs initialization failed:', errorMessage);
-    console.warn('💡 The app will continue in demo mode with pattern-based analysis');
-    // Don't fail build - clients will be null and fallback to demo mode
+    if (!errorMessage.includes('project_id')) {
+      // Only log non-service-account errors
+      console.warn('⚠️ Google Cloud initialization failed:', errorMessage);
+    }
     visionClient = null;
     languageClient = null;
   }
@@ -2954,6 +2964,11 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
 // ============================================================================
 // API ROUTE HANDLER
 // ============================================================================
+
+// Force dynamic rendering to prevent build-time static analysis
+// This prevents Next.js from trying to analyze Google Cloud imports during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
