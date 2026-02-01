@@ -189,10 +189,10 @@ export default function AboutKomalPage() {
               <h2 className="text-3xl font-bold mb-6 text-text">Advisory Board</h2>
               <div className="space-y-6">
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Linda Xu, MBA</h3>
-                  <p className="text-sm text-text-dim mb-3">Parent Advocacy & Community Growth</p>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Linda Xu, Master of Business Administration (MBA)</h3>
+                  <p className="text-sm text-text-dim mb-3">Regional CEO for Canada & China</p>
                   <p className="text-text-dim leading-relaxed">
-                    Linda Xu is a nonprofit leader and parent advocate with experience across major community and public welfare organizations. She advises Komal on parent trust and community-led distribution, helping shape go-to-market strategy starting in Canada. She has held senior leadership roles with the Sunshine Foundation, the Canadian Women's Federation, and the United Global Chinese Women's Association of Canada, supporting initiatives in youth development, education access, and family wellbeing. Linda has led large-scale fundraising efforts totaling $250k+ in support of children, families, and healthcare initiatives, including programs benefiting UNICEF and the Red Cross.
+                    Ms. Xu serves as Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. She has extensive experience as a senior leader of multiple non-profit organizations and an advocate for parental rights. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Xu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.
                   </p>
                 </div>
 

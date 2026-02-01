@@ -79,10 +79,10 @@ interface Advisor {
 const advisors: Advisor[] = [
     {
         name: "Linda Xu",
-        role: "Parent Advocacy & Community Growth",
-        credentials: ["MBA", "Sunshine Foundation", "Canadian Women's Federation"],
+        role: "Regional CEO for Canada & China",
+        credentials: ["Master of Business Administration (MBA)", "Chair, Canada Sunshine Foundation", "Executive President, Canadian Women's Federation"],
         image: "/advisor-canada-parent-advocate-gtm.png",
-        description: "Linda Xu is a nonprofit leader and parent advocate with experience across major community and public welfare organizations. She advises Komal on parent trust and community-led distribution, helping shape go-to-market strategy starting in Canada. She has held senior leadership roles with the Sunshine Foundation, the Canadian Women's Federation, and the United Global Chinese Women's Association of Canada, supporting initiatives in youth development, education access, and family wellbeing. Linda has led large-scale fundraising efforts totaling $250k+ in support of children, families, and healthcare initiatives, including programs benefiting UNICEF and the Red Cross.",
+        description: "Ms. Xu serves as Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. She has extensive experience as a senior leader of multiple non-profit organizations and an advocate for parental rights. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Xu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.",
         tagline: "Parent trust and community-led distribution",
     },
     {
