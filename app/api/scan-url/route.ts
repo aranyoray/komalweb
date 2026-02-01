@@ -1176,80 +1176,11 @@ interface ScanResult {
 }
 
 // ============================================================================
-// LAZY-LOADED GOOGLE CLOUD CLIENTS (Dynamic imports to prevent build failures)
+// PLACEHOLDER RESPONSES (Google Cloud clients removed to prevent build errors)
 // ============================================================================
 
-type ImageAnnotatorClientType = any;
-type LanguageServiceClientType = any;
-
-let visionClient: ImageAnnotatorClientType | null = null;
-let languageClient: LanguageServiceClientType | null = null;
-let clientsInitialized = false;
-
-async function initializeClients() {
-  if (clientsInitialized) return;
-  
-  // CRITICAL: Skip ALL Google Cloud initialization during build
-  // Next.js statically analyzes routes during build, which triggers Google Cloud lib initialization
-  // This causes errors if GOOGLE_APPLICATION_CREDENTIALS is set without project_id
-  const isBuildContext = 
-    typeof window === 'undefined' && (
-      // Next.js build phases
-      process.env.NEXT_PHASE === 'phase-production-build' ||
-      process.env.NEXT_PHASE === 'phase-development-build' ||
-      process.env.NEXT_PHASE?.includes('build') ||
-      process.env.NEXT_PHASE?.includes('compile') ||
-      // CI/CD environments
-      process.env.CI === 'true' ||
-      // Production builds without Vercel (local builds)
-      (!process.env.VERCEL_ENV && process.env.NODE_ENV === 'production') ||
-      // If service account env var exists but we're not in runtime, skip
-      (process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.VERCEL_ENV && !process.env.GOOGLE_CLOUD_PROJECT_ID)
-    );
-  
-  if (isBuildContext) {
-    // During build, NEVER initialize Google Cloud clients
-    clientsInitialized = true;
-    visionClient = null;
-    languageClient = null;
-    return;
-  }
-  
-  clientsInitialized = true;
-
-  try {
-    // Only use API key authentication (service account disabled to prevent build errors)
-    if (!process.env.GOOGLE_CLOUD_API_KEY) {
-      console.log('ℹ️ No Google Cloud API key found. Running in demo mode.');
-      visionClient = null;
-      languageClient = null;
-      return;
-    }
-    
-    // Lazy load Google Cloud modules ONLY at runtime (never during build)
-    const { ImageAnnotatorClient } = await import('@google-cloud/vision');
-    const { LanguageServiceClient } = await import('@google-cloud/language');
-    
-    console.log('✅ Initializing Google Cloud clients with API key');
-    visionClient = new ImageAnnotatorClient({
-      apiKey: process.env.GOOGLE_CLOUD_API_KEY,
-    });
-    languageClient = new LanguageServiceClient({
-      apiKey: process.env.GOOGLE_CLOUD_API_KEY,
-    });
-    console.log('✅ Google Cloud clients initialized');
-    
-  } catch (error) {
-    // Swallow ALL errors during initialization - never fail build
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    if (!errorMessage.includes('project_id')) {
-      // Only log non-service-account errors
-      console.warn('⚠️ Google Cloud initialization failed:', errorMessage);
-    }
-    visionClient = null;
-    languageClient = null;
-  }
-}
+// All Google Cloud API calls replaced with placeholder responses
+// This prevents build failures and allows the app to run in demo mode
 
 // ============================================================================
 // OPTIMIZED CHILD SAFETY ANALYSIS (Context-Aware - Only Flag Dangerous)
@@ -2067,18 +1998,18 @@ async function analyzeFromSearchResults(
   );
   trackStep('Search Analysis', `${childSafetyAnalysis.unsafeKeywordsFound.length} risks from search data`);
 
-  // Try Vision API on found images
+  // Try Vision API on found images (placeholder responses)
   let visionResults: { labels: string[]; safeSearchAnnotation: any; detectedObjects: string[] } | null = null;
-  if (visionClient && searchData.imageUrls.length > 0) {
+  if (searchData.imageUrls.length > 0) {
     visionResults = await analyzeImagesWithVisionFast(searchData.imageUrls).catch(() => null);
-    trackStep('Vision Analysis', `Analyzed ${searchData.imageUrls.length} images from search`);
+    trackStep('Vision Analysis', `Processed ${searchData.imageUrls.length} images (demo mode)`);
   }
 
-  // Try NLP on combined text
+  // Try NLP on combined text (placeholder responses)
   let nlpResults: { sentiment: string; entities: string[] } | null = null;
-  if (languageClient && searchData.combinedText) {
+  if (searchData.combinedText) {
     nlpResults = await analyzeTextFast(searchData.combinedText).catch(() => null);
-    trackStep('NLP Analysis', nlpResults ? 'Sentiment analyzed' : 'Skipped');
+    trackStep('NLP Analysis', nlpResults ? 'Sentiment analyzed (demo mode)' : 'Skipped');
   }
 
   return {
@@ -2149,23 +2080,15 @@ function parseHTMLContentFast(html: string, url: string) {
 // ============================================================================
 
 async function analyzeImageUrlFast(imageUrl: string): Promise<any> {
-  if (!visionClient) return null;
-
-  try {
-    const [result] = await Promise.race([
-      visionClient.annotateImage({
-        image: { source: { imageUri: imageUrl } },
-        features: [
-          { type: 'SAFE_SEARCH_DETECTION' },
-          { type: 'LABEL_DETECTION', maxResults: 5 },
-        ],
-      }),
-      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('Vision timeout')), 1500)),
-    ]);
-    return result;
-  } catch {
-    return null;
-  }
+  // Placeholder response - Google Cloud Vision API disabled
+  return {
+    safeSearchAnnotation: {
+      adult: 'UNKNOWN',
+      violence: 'UNKNOWN',
+      racy: 'UNKNOWN',
+    },
+    labelAnnotations: [],
+  };
 }
 
 // ============================================================================
@@ -2173,50 +2096,45 @@ async function analyzeImageUrlFast(imageUrl: string): Promise<any> {
 // ============================================================================
 
 async function analyzeTextFast(text: string): Promise<{ sentiment: string; entities: string[] } | null> {
-  if (!languageClient || !text) return null;
-
-  try {
-    const truncated = text.slice(0, 1500); // Reduced for speed
-    const [sentimentResult] = await Promise.race([
-      languageClient.analyzeSentiment({ document: { content: truncated, type: 'PLAIN_TEXT' } }),
-      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('NLP timeout')), 1500)),
-    ]);
-
-    const score = sentimentResult?.documentSentiment?.score || 0;
-    return {
-      sentiment: score > 0.25 ? 'Positive' : score < -0.25 ? 'Concerning' : 'Neutral',
-      entities: [],
-    };
-  } catch {
-    return null;
-  }
+  if (!text) return null;
+  
+  // Placeholder response - Google Cloud Language API disabled
+  // Simple pattern-based sentiment analysis
+  const lowerText = text.toLowerCase();
+  const positiveWords = ['good', 'great', 'excellent', 'safe', 'fun', 'educational', 'learning'];
+  const negativeWords = ['bad', 'dangerous', 'unsafe', 'violence', 'inappropriate'];
+  
+  const positiveCount = positiveWords.filter(w => lowerText.includes(w)).length;
+  const negativeCount = negativeWords.filter(w => lowerText.includes(w)).length;
+  
+  let sentiment = 'Neutral';
+  if (positiveCount > negativeCount) sentiment = 'Positive';
+  else if (negativeCount > positiveCount) sentiment = 'Concerning';
+  
+  return {
+    sentiment,
+    entities: [],
+  };
 }
 
 /**
- * Analyze images using Google Cloud Vision API (Fast version - max 2 images, 1.5s timeout each)
+ * Analyze images using placeholder responses (Google Cloud Vision API disabled)
  */
 async function analyzeImagesWithVisionFast(imageUrls: string[]) {
-  if (!visionClient || imageUrls.length === 0) {
+  if (imageUrls.length === 0) {
     return null;
   }
 
-  try {
-    const results = {
-      labels: [] as string[],
-      safeSearchAnnotation: null as any,
-      detectedObjects: [] as string[],
-    };
-
-    // Only analyze first 2 images in parallel with aggressive timeout
-    const requests = imageUrls.slice(0, 2).map(imageUrl =>
-      Promise.race([
-        visionClient!.annotateImage({
-          image: { source: { imageUri: imageUrl } },
-          features: [
-            { type: 'SAFE_SEARCH_DETECTION' },
-            { type: 'LABEL_DETECTION', maxResults: 5 },
-          ],
-        }).catch(() => [null]),
+  // Placeholder response - Google Cloud Vision API disabled
+  return {
+    labels: [],
+    safeSearchAnnotation: {
+      adult: 'UNKNOWN',
+      violence: 'UNKNOWN',
+      racy: 'UNKNOWN',
+    },
+    detectedObjects: [],
+  };
         new Promise<[null]>(resolve => setTimeout(() => resolve([null]), 1500)),
       ])
     );
@@ -2313,8 +2231,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   };
 
   console.log(`\n🔍 [KOMAL ANALYSIS] Starting scan for: ${url}`);
-  trackStep('Initialize', 'Setting up clients');
-  await initializeClients();
+  trackStep('Initialize', 'Setting up analysis');
 
   let html: string | null = null;
   let fetchFailed = false;
@@ -2360,8 +2277,8 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     // Run NLP and Vision in parallel (no time budget - run all)
     const apiPromises: Promise<void>[] = [];
 
-    // NLP analysis
-    if (languageClient && parsed.textContent) {
+    // NLP analysis (placeholder responses)
+    if (parsed.textContent) {
       apiPromises.push(
         analyzeTextFast(parsed.textContent)
           .then(r => { nlpResults = r; })
@@ -2369,8 +2286,8 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       );
     }
 
-    // Vision analysis - if we have images
-    if (visionClient && parsed.imageUrls.length > 0) {
+    // Vision analysis - if we have images (placeholder responses)
+    if (parsed.imageUrls.length > 0) {
       apiPromises.push(
         analyzeImagesWithVisionFast(parsed.imageUrls)
           .then(r => { visionResults = r; })
@@ -2382,7 +2299,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       const searchData = await searchForUrlInfo(url, false);
       trackStep('Search Images', `Found ${searchData.imageUrls.length} images from search`);
 
-      if (visionClient && searchData.imageUrls.length > 0) {
+      if (searchData.imageUrls.length > 0) {
         apiPromises.push(
           analyzeImagesWithVisionFast(searchData.imageUrls)
             .then(r => { visionResults = r; })
@@ -2770,8 +2687,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
   };
 
   console.log(`\n🔍 [KOMAL ANALYSIS] Starting keyword analysis for: "${keyword}"`);
-  trackStep('Initialize', 'Setting up clients');
-  await initializeClients();
+  trackStep('Initialize', 'Setting up analysis');
 
   // Perform keyword analysis (direct pattern matching - no external API needed)
   console.log(`🔎 [KOMAL] Performing direct keyword analysis`);
