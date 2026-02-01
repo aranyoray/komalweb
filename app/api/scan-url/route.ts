@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { LanguageServiceClient } from '@google-cloud/language';
+import { db } from '@/lib/firebase-admin';
 
 // ============================================================================
 // GOOGLE CUSTOM SEARCH API CONFIGURATION
@@ -2929,6 +2930,21 @@ export async function POST(request: NextRequest) {
       // It's a valid URL - analyze it
       try {
         const result = await analyzeUrlOptimized(input);
+
+        // Save to Firestore
+        try {
+          await db.collection('scans').add({
+            input: input,
+            type: 'url',
+            result: result,
+            timestamp: new Date().toISOString(),
+            userId: 'anonymous',
+          });
+          console.log('✅ Scan saved to Firestore');
+        } catch (firestoreError) {
+          console.error('❌ Failed to save to Firestore:', firestoreError);
+        }
+
         return NextResponse.json(result);
       } catch (error) {
         // If URL analysis fails completely, return error
@@ -2945,6 +2961,21 @@ export async function POST(request: NextRequest) {
       console.log(`📝 [KOMAL] Input "${input}" is not a URL, treating as keyword search`);
       try {
         const result = await analyzeKeywordOptimized(input);
+
+        // Save to Firestore
+        try {
+          await db.collection('scans').add({
+            input: input,
+            type: 'keyword',
+            result: result,
+            timestamp: new Date().toISOString(),
+            userId: 'anonymous',
+          });
+          console.log('✅ Scan saved to Firestore');
+        } catch (firestoreError) {
+          console.error('❌ Failed to save to Firestore:', firestoreError);
+        }
+
         return NextResponse.json(result);
       } catch (error) {
         // Keyword analysis should rarely fail since it uses direct pattern matching
