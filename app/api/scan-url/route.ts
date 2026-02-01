@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 // import { spawn } from 'child_process';
 import * as cheerio from 'cheerio';
-import { ImageAnnotatorClient } from '@google-cloud/vision';
-import { LanguageServiceClient } from '@google-cloud/language';
+// LAZY LOAD: Google Cloud clients imported only at runtime to prevent build failures
+// import { ImageAnnotatorClient } from '@google-cloud/vision';
+// import { LanguageServiceClient } from '@google-cloud/language';
 import { db } from '@/lib/firebase-admin';
 
 // ============================================================================
@@ -1175,23 +1176,28 @@ interface ScanResult {
 }
 
 // ============================================================================
-// LAZY-LOADED GOOGLE CLOUD CLIENTS
+// LAZY-LOADED GOOGLE CLOUD CLIENTS (Dynamic imports to prevent build failures)
 // ============================================================================
 
-let visionClient: ImageAnnotatorClient | null = null;
-let languageClient: LanguageServiceClient | null = null;
+type ImageAnnotatorClientType = any;
+type LanguageServiceClientType = any;
+
+let visionClient: ImageAnnotatorClientType | null = null;
+let languageClient: LanguageServiceClientType | null = null;
 let clientsInitialized = false;
 
-function initializeClients() {
+async function initializeClients() {
   if (clientsInitialized) return;
   
   // AGGRESSIVE BUILD-TIME CHECK: Skip ALL initialization during build
   // Next.js tries to analyze routes during build, causing service account errors
   const isBuildTime = 
-    process.env.NEXT_PHASE === 'phase-production-build' ||
-    process.env.NEXT_PHASE === 'phase-development-build' ||
-    !process.env.VERCEL_ENV ||
-    (process.env.NODE_ENV === 'production' && !process.env.VERCEL);
+    typeof window === 'undefined' && (
+      process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.NEXT_PHASE === 'phase-development-build' ||
+      process.env.NEXT_PHASE?.includes('build') ||
+      (!process.env.VERCEL_ENV && process.env.NODE_ENV === 'production')
+    );
   
   if (isBuildTime) {
     console.log('⏭️ BUILD TIME: Skipping Google Cloud client initialization');
@@ -1204,6 +1210,10 @@ function initializeClients() {
   clientsInitialized = true;
 
   try {
+    // Lazy load the Google Cloud modules only at runtime
+    const { ImageAnnotatorClient } = await import('@google-cloud/vision');
+    const { LanguageServiceClient } = await import('@google-cloud/language');
+    
     // Priority 1: Use API key if available (simplest and recommended)
     if (process.env.GOOGLE_CLOUD_API_KEY) {
       console.log('✅ Initializing Google Cloud clients with API key');
@@ -1217,36 +1227,9 @@ function initializeClients() {
       return;
     }
     
-    // TEMPORARILY DISABLED: Service account initialization causes build failures
-    // Priority 2: Use service account credentials (only if API key not available)
-    // Uncomment below when GOOGLE_CLOUD_PROJECT_ID is properly set in build environment
-    /*
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.GOOGLE_CLOUD_PROJECT_ID) {
-      console.log('✅ Initializing Google Cloud clients with service account');
-      try {
-        const clientConfig = {
-          projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-        };
-        
-        visionClient = new ImageAnnotatorClient(clientConfig);
-        languageClient = new LanguageServiceClient(clientConfig);
-        console.log('✅ Google Cloud Vision and Language clients initialized with service account');
-        return;
-      } catch (saError) {
-        console.warn('⚠️ Service account initialization failed:', saError instanceof Error ? saError.message : String(saError));
-        console.warn('💡 Tip: Use GOOGLE_CLOUD_API_KEY instead for simpler setup');
-        console.warn('ℹ️ Continuing in demo mode');
-        return;
-      }
-    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.GOOGLE_CLOUD_PROJECT_ID) {
-      console.warn('⚠️ GOOGLE_APPLICATION_CREDENTIALS set but GOOGLE_CLOUD_PROJECT_ID missing.');
-      console.warn('💡 Tip: Set GOOGLE_CLOUD_PROJECT_ID or use GOOGLE_CLOUD_API_KEY instead for simpler setup');
-      console.warn('ℹ️ Continuing in demo mode');
-    }
-    */
-    
+    // Service account disabled - use API key instead
     // No credentials available - will run in demo mode
-    console.log('ℹ️ No Google Cloud credentials found. Running in demo mode with pattern-based analysis.');
+    console.log('ℹ️ No Google Cloud API key found. Running in demo mode with pattern-based analysis.');
     
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -2321,7 +2304,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
 
   console.log(`\n🔍 [KOMAL ANALYSIS] Starting scan for: ${url}`);
   trackStep('Initialize', 'Setting up clients');
-  initializeClients();
+  await initializeClients();
 
   let html: string | null = null;
   let fetchFailed = false;
@@ -2778,7 +2761,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
 
   console.log(`\n🔍 [KOMAL ANALYSIS] Starting keyword analysis for: "${keyword}"`);
   trackStep('Initialize', 'Setting up clients');
-  initializeClients();
+  await initializeClients();
 
   // Perform keyword analysis (direct pattern matching - no external API needed)
   console.log(`🔎 [KOMAL] Performing direct keyword analysis`);
