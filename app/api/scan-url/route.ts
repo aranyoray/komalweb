@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 // import { spawn } from 'child_process';
 import * as cheerio from 'cheerio';
-// LAZY LOAD: Google Cloud clients imported only at runtime to prevent build failures
-// import { ImageAnnotatorClient } from '@google-cloud/vision';
-// import { LanguageServiceClient } from '@google-cloud/language';
-import { db } from '@/lib/firebase-admin';
+import { ImageAnnotatorClient } from '@google-cloud/vision';
+import { LanguageServiceClient } from '@google-cloud/language';
 
 // ============================================================================
 // GOOGLE CUSTOM SEARCH API CONFIGURATION
@@ -749,14 +747,6 @@ function isDangerousSite(url: string): DangerousSiteInfo | null {
 
 // Pre-compiled regex patterns for faster matching
 const CHILD_UNSAFE_PATTERNS: { [category: string]: RegExp } = {};
-const NEUTRAL_IDENTITY_TERMS = new Set([
-  'woman',
-  'man',
-  'girl',
-  'boy',
-  'child',
-  'person',
-]);
 const CHILD_UNSAFE_KEYWORDS = {
   explicit: [
     'porn', 'xxx', 'sex', 'nsfw', 'nude', 'naked', 'erotic', 'fetish',
@@ -808,8 +798,7 @@ const CHILD_UNSAFE_KEYWORDS = {
 
 // Pre-compile regex patterns at module load for performance
 for (const [category, keywords] of Object.entries(CHILD_UNSAFE_KEYWORDS)) {
-  const filteredKeywords = keywords.filter(keyword => !NEUTRAL_IDENTITY_TERMS.has(keyword.toLowerCase()));
-  const pattern = filteredKeywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const pattern = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
   CHILD_UNSAFE_PATTERNS[category] = new RegExp(`\\b(${pattern})`, 'gi');
 }
 
@@ -983,16 +972,6 @@ function analyzeKeywordContext(keyword: string, context: string): ContextAnalysi
   const lowerKeyword = keyword.toLowerCase();
   const lowerContext = context.toLowerCase();
 
-  if (NEUTRAL_IDENTITY_TERMS.has(lowerKeyword)) {
-    return {
-      shouldFlag: false,
-      isDangerous: false,
-      severity: 0,
-      reason: 'Neutral identity term - always safe',
-      ageMultipliers: { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 }
-    };
-  }
-
   // Default: NOT flagged (safe until proven dangerous)
   const safeResult: ContextAnalysisResult = {
     shouldFlag: false,
@@ -1082,26 +1061,11 @@ const CHILD_SAFETY_RISKS: ChildSafetyRisk[] = [
   { category: 'dangerous', severity: 'high', deduction: { '<10': 85, '10-13': 75, '13-16': 55, '16+': 35 } },
 ];
 
-const getModerationThresholds = () => {
-  const caution = Number.parseFloat(process.env.MODERATION_CAUTION_DENSITY || '0.004');
-  const unsafe = Number.parseFloat(process.env.MODERATION_UNSAFE_DENSITY || '0.01');
-  const dangerous = Number.parseFloat(process.env.MODERATION_DANGEROUS_DENSITY || '0.02');
-
-  return {
-    riskLevels: {
-      caution,
-      unsafe,
-      dangerous,
-    },
-  };
-};
-
 // ============================================================================
 // INTERFACES
 // ============================================================================
 import { CONTENT_RULES } from '@/lib/content-rules';
-// Removed Google Cloud type import to prevent build errors
-// import type { protos } from '@google-cloud/vision';
+import type { protos } from '@google-cloud/vision';
 
 interface ScanResult {
   url: string;
@@ -1177,11 +1141,30 @@ interface ScanResult {
 }
 
 // ============================================================================
-// PLACEHOLDER RESPONSES (Google Cloud clients removed to prevent build errors)
+// LAZY-LOADED GOOGLE CLOUD CLIENTS
 // ============================================================================
 
-// All Google Cloud API calls replaced with placeholder responses
-// This prevents build failures and allows the app to run in demo mode
+let visionClient: ImageAnnotatorClient | null = null;
+let languageClient: LanguageServiceClient | null = null;
+let clientsInitialized = false;
+
+function initializeClients() {
+  if (clientsInitialized) return;
+  clientsInitialized = true;
+
+  try {
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_API_KEY) {
+      visionClient = new ImageAnnotatorClient({
+        apiKey: process.env.GOOGLE_CLOUD_API_KEY,
+      });
+      languageClient = new LanguageServiceClient({
+        apiKey: process.env.GOOGLE_CLOUD_API_KEY,
+      });
+    }
+  } catch (error) {
+    console.warn('Google Cloud APIs not configured:', error);
+  }
+}
 
 // ============================================================================
 // OPTIMIZED CHILD SAFETY ANALYSIS (Context-Aware - Only Flag Dangerous)
@@ -1217,20 +1200,6 @@ function analyzeChildSafetyFast(
   const unsafeKeywordsFound: KeywordFinding[] = [];
   let filteredByContext = 0;
   const ageSpecificRiskScores: { [key in AgeGroup]: number } = { '<10': 0, '10-13': 0, '13-16': 0, '16+': 0 };
-  const contentTokens = allContent.split(/\s+/).filter(Boolean);
-  const isNeutralIdentityOnly = contentTokens.length > 0
-    && contentTokens.every(token => NEUTRAL_IDENTITY_TERMS.has(token));
-
-  if (isNeutralIdentityOnly) {
-    return {
-      unsafeKeywordsFound: [],
-      safeKeywordsFound: Array.from(new Set(contentTokens)),
-      riskScore: 0,
-      riskLevel: 'safe',
-      filteredByContext: 0,
-      ageSpecificRiskScores
-    };
-  }
 
   // Use pre-compiled patterns for fast matching with CONTEXT AWARENESS
   for (const [category, pattern] of Object.entries(CHILD_UNSAFE_PATTERNS)) {
@@ -1352,18 +1321,13 @@ function analyzeChildSafetyFast(
       ageSpecificRiskScores['16+'] * 0.15)
   );
 
-  const moderationThresholds = getModerationThresholds();
-  const totalFlaggedKeywords = unsafeKeywordsFound.reduce((sum, keyword) => sum + keyword.count, 0);
-  const tokenCount = contentTokens.length || 1;
-  const keywordDensity = totalFlaggedKeywords / tokenCount;
-
   // Determine risk level
   let riskLevel: 'safe' | 'caution' | 'unsafe' | 'dangerous' = 'safe';
-  if (keywordDensity >= moderationThresholds.riskLevels.dangerous || unsafeKeywordsFound.some(u => u.isDangerous)) {
+  if (riskScore >= 50 || unsafeKeywordsFound.some(u => u.isDangerous)) {
     riskLevel = 'dangerous';
-  } else if (keywordDensity >= moderationThresholds.riskLevels.unsafe) {
+  } else if (riskScore >= 25) {
     riskLevel = 'unsafe';
-  } else if (keywordDensity >= moderationThresholds.riskLevels.caution) {
+  } else if (riskScore >= 10) {
     riskLevel = 'caution';
   }
 
@@ -1999,18 +1963,18 @@ async function analyzeFromSearchResults(
   );
   trackStep('Search Analysis', `${childSafetyAnalysis.unsafeKeywordsFound.length} risks from search data`);
 
-  // Try Vision API on found images (placeholder responses)
+  // Try Vision API on found images
   let visionResults: { labels: string[]; safeSearchAnnotation: any; detectedObjects: string[] } | null = null;
-  if (searchData.imageUrls.length > 0) {
+  if (visionClient && searchData.imageUrls.length > 0) {
     visionResults = await analyzeImagesWithVisionFast(searchData.imageUrls).catch(() => null);
-    trackStep('Vision Analysis', `Processed ${searchData.imageUrls.length} images (demo mode)`);
+    trackStep('Vision Analysis', `Analyzed ${searchData.imageUrls.length} images from search`);
   }
 
-  // Try NLP on combined text (placeholder responses)
+  // Try NLP on combined text
   let nlpResults: { sentiment: string; entities: string[] } | null = null;
-  if (searchData.combinedText) {
+  if (languageClient && searchData.combinedText) {
     nlpResults = await analyzeTextFast(searchData.combinedText).catch(() => null);
-    trackStep('NLP Analysis', nlpResults ? 'Sentiment analyzed (demo mode)' : 'Skipped');
+    trackStep('NLP Analysis', nlpResults ? 'Sentiment analyzed' : 'Skipped');
   }
 
   return {
@@ -2081,15 +2045,23 @@ function parseHTMLContentFast(html: string, url: string) {
 // ============================================================================
 
 async function analyzeImageUrlFast(imageUrl: string): Promise<any> {
-  // Placeholder response - Google Cloud Vision API disabled
-  return {
-    safeSearchAnnotation: {
-      adult: 'UNKNOWN',
-      violence: 'UNKNOWN',
-      racy: 'UNKNOWN',
-    },
-    labelAnnotations: [],
-  };
+  if (!visionClient) return null;
+
+  try {
+    const [result] = await Promise.race([
+      visionClient.annotateImage({
+        image: { source: { imageUri: imageUrl } },
+        features: [
+          { type: 'SAFE_SEARCH_DETECTION' },
+          { type: 'LABEL_DETECTION', maxResults: 5 },
+        ],
+      }),
+      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('Vision timeout')), 1500)),
+    ]);
+    return result;
+  } catch {
+    return null;
+  }
 }
 
 // ============================================================================
@@ -2097,52 +2069,91 @@ async function analyzeImageUrlFast(imageUrl: string): Promise<any> {
 // ============================================================================
 
 async function analyzeTextFast(text: string): Promise<{ sentiment: string; entities: string[] } | null> {
-  if (!text) return null;
-  
-  // Placeholder response - Google Cloud Language API disabled
-  // Simple pattern-based sentiment analysis
-  const lowerText = text.toLowerCase();
-  const positiveWords = ['good', 'great', 'excellent', 'safe', 'fun', 'educational', 'learning'];
-  const negativeWords = ['bad', 'dangerous', 'unsafe', 'violence', 'inappropriate'];
-  
-  const positiveCount = positiveWords.filter(w => lowerText.includes(w)).length;
-  const negativeCount = negativeWords.filter(w => lowerText.includes(w)).length;
-  
-  let sentiment = 'Neutral';
-  if (positiveCount > negativeCount) sentiment = 'Positive';
-  else if (negativeCount > positiveCount) sentiment = 'Concerning';
-  
-  return {
-    sentiment,
-    entities: [],
-  };
+  if (!languageClient || !text) return null;
+
+  try {
+    const truncated = text.slice(0, 1500); // Reduced for speed
+    const [sentimentResult] = await Promise.race([
+      languageClient.analyzeSentiment({ document: { content: truncated, type: 'PLAIN_TEXT' } }),
+      new Promise<[null]>((_, reject) => setTimeout(() => reject(new Error('NLP timeout')), 1500)),
+    ]);
+
+    const score = sentimentResult?.documentSentiment?.score || 0;
+    return {
+      sentiment: score > 0.25 ? 'Positive' : score < -0.25 ? 'Concerning' : 'Neutral',
+      entities: [],
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Analyze images using placeholder responses (Google Cloud Vision API disabled)
+ * Analyze images using Google Cloud Vision API (Fast version - max 2 images, 1.5s timeout each)
  */
 async function analyzeImagesWithVisionFast(imageUrls: string[]) {
-  if (imageUrls.length === 0) {
+  if (!visionClient || imageUrls.length === 0) {
     return null;
   }
 
-  // Placeholder response - Google Cloud Vision API disabled
-  return {
-    labels: [],
-    safeSearchAnnotation: {
-      adult: 'UNKNOWN',
-      violence: 'UNKNOWN',
-      racy: 'UNKNOWN',
-    },
-    detectedObjects: [],
-  };
+  try {
+    const results = {
+      labels: [] as string[],
+      safeSearchAnnotation: null as any,
+      detectedObjects: [] as string[],
+    };
+
+    // Only analyze first 2 images in parallel with aggressive timeout
+    const requests = imageUrls.slice(0, 2).map(imageUrl =>
+      Promise.race([
+        visionClient!.annotateImage({
+          image: { source: { imageUri: imageUrl } },
+          features: [
+            { type: 'SAFE_SEARCH_DETECTION' },
+            { type: 'LABEL_DETECTION', maxResults: 5 },
+          ],
+        }).catch(() => [null]),
+        new Promise<[null]>(resolve => setTimeout(() => resolve([null]), 1500)),
+      ])
+    );
+
+    const allResults = await Promise.all(requests);
+
+    for (const [result] of allResults) {
+      if (!result) continue;
+
+      const highConfLabels = result.labelAnnotations
+        ?.filter((l: any) => (l.score || 0) > 0.7)
+        ?.map((l: any) => l.description || '') || [];
+      results.labels.push(...highConfLabels);
+
+      if (result.safeSearchAnnotation) {
+        if (!results.safeSearchAnnotation) {
+          results.safeSearchAnnotation = result.safeSearchAnnotation;
+        } else {
+          const current = results.safeSearchAnnotation;
+          const newAnnotation = result.safeSearchAnnotation;
+          results.safeSearchAnnotation = {
+            adult: Math.max(getLikelihoodScore(current.adult), getLikelihoodScore(newAnnotation.adult)),
+            violence: Math.max(getLikelihoodScore(current.violence), getLikelihoodScore(newAnnotation.violence)),
+            racy: Math.max(getLikelihoodScore(current.racy), getLikelihoodScore(newAnnotation.racy)),
+          };
+        }
+      }
+    }
+
+    results.labels = [...new Set(results.labels)].slice(0, 8);
+    return results;
+  } catch {
+    return null;
+  }
 }
 
 /**
  * Convert Google Cloud Vision likelihood to numeric score
  */
 function getLikelihoodScore(
-  likelihood: string | null | undefined
+  likelihood: protos.google.cloud.vision.v1.Likelihood | string | null | undefined
 ): number {
   if (typeof likelihood === 'number') {
     switch (likelihood) {
@@ -2198,7 +2209,8 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
   };
 
   console.log(`\n🔍 [KOMAL ANALYSIS] Starting scan for: ${url}`);
-  trackStep('Initialize', 'Setting up analysis');
+  trackStep('Initialize', 'Setting up clients');
+  initializeClients();
 
   let html: string | null = null;
   let fetchFailed = false;
@@ -2244,8 +2256,8 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
     // Run NLP and Vision in parallel (no time budget - run all)
     const apiPromises: Promise<void>[] = [];
 
-    // NLP analysis (placeholder responses)
-    if (parsed.textContent) {
+    // NLP analysis
+    if (languageClient && parsed.textContent) {
       apiPromises.push(
         analyzeTextFast(parsed.textContent)
           .then(r => { nlpResults = r; })
@@ -2253,8 +2265,8 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       );
     }
 
-    // Vision analysis - if we have images (placeholder responses)
-    if (parsed.imageUrls.length > 0) {
+    // Vision analysis - if we have images
+    if (visionClient && parsed.imageUrls.length > 0) {
       apiPromises.push(
         analyzeImagesWithVisionFast(parsed.imageUrls)
           .then(r => { visionResults = r; })
@@ -2266,7 +2278,7 @@ async function analyzeUrlOptimized(url: string): Promise<ScanResult> {
       const searchData = await searchForUrlInfo(url, false);
       trackStep('Search Images', `Found ${searchData.imageUrls.length} images from search`);
 
-      if (searchData.imageUrls.length > 0) {
+      if (visionClient && searchData.imageUrls.length > 0) {
         apiPromises.push(
           analyzeImagesWithVisionFast(searchData.imageUrls)
             .then(r => { visionResults = r; })
@@ -2654,7 +2666,8 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
   };
 
   console.log(`\n🔍 [KOMAL ANALYSIS] Starting keyword analysis for: "${keyword}"`);
-  trackStep('Initialize', 'Setting up analysis');
+  trackStep('Initialize', 'Setting up clients');
+  initializeClients();
 
   // Perform keyword analysis (direct pattern matching - no external API needed)
   console.log(`🔎 [KOMAL] Performing direct keyword analysis`);
@@ -2848,14 +2861,7 @@ async function analyzeKeywordOptimized(keyword: string): Promise<ScanResult> {
 // API ROUTE HANDLER
 // ============================================================================
 
-// Force dynamic rendering to prevent build-time static analysis
-// This prevents Next.js from trying to analyze Google Cloud imports during build
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
-
 export async function POST(request: NextRequest) {
-  // TEMPORARILY DISABLED: Return placeholder to prevent build errors
-  // TODO: Re-enable after fixing Google Cloud initialization issues
   try {
     const body = await request.json();
     const { url } = body;
@@ -2864,43 +2870,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL or keyword is required' }, { status: 400 });
     }
 
-    // Return placeholder response for now
-    return NextResponse.json({
-      url: url.trim(),
-      overallScore: 75,
-      ageGroupScores: {
-        '3-6': { score: 80, action: 'ALLOW', reason: 'Demo mode', risks: [] },
-        '7-9': { score: 75, action: 'ALLOW', reason: 'Demo mode', risks: [] },
-        '10-12': { score: 70, action: 'GATE', reason: 'Demo mode', risks: [] },
-        '13-16': { score: 65, action: 'GATE', reason: 'Demo mode', risks: [] },
-      },
-      contentAnalysis: {
-        textAnalysis: {
-          sentiment: 'Neutral',
-          keyTopics: [],
-          languageScore: 75,
-          unsafeKeywordsFound: [],
-          safeKeywordsFound: [],
-        },
-        visualAnalysis: {
-          detectedObjects: [],
-          safetyScore: 75,
-          concerns: [],
-        },
-      },
-      childSafetyAnalysis: {
-        overallRisk: 'safe',
-        riskCategories: [],
-        depthAnalysis: {
-          titleSafe: true,
-          metadataSafe: true,
-          contentSafe: true,
-          mediaSafe: true,
-        },
-      },
-      timestamp: new Date().toISOString(),
-      analysisMethod: 'demo',
-    });
+    const input = url.trim();
+
+    // Check if input is a valid URL or a keyword
+    if (isValidUrl(input)) {
+      // It's a valid URL - analyze it
+      try {
+        const result = await analyzeUrlOptimized(input);
+        return NextResponse.json(result);
+      } catch (error) {
+        // If URL analysis fails completely, return error
+        console.error('URL analysis failed:', error);
+        if (error instanceof Error && error.message === 'ANALYSIS_FAILED') {
+          return NextResponse.json({
+            error: 'The entered link could not be analyzed. Please re-check the URL and try again.'
+          }, { status: 400 });
+        }
+        return NextResponse.json({ error: 'Failed to analyze URL' }, { status: 500 });
+      }
+    } else {
+      // Not a valid URL - treat as keyword search
+      console.log(`📝 [KOMAL] Input "${input}" is not a URL, treating as keyword search`);
+      try {
+        const result = await analyzeKeywordOptimized(input);
+        return NextResponse.json(result);
+      } catch (error) {
+        // Keyword analysis should rarely fail since it uses direct pattern matching
+        console.error('Keyword analysis failed:', error);
+        return NextResponse.json({
+          error: 'Failed to analyze the keyword. Please try again.'
+        }, { status: 500 });
+      }
+    }
   } catch (error) {
     console.error('Error in scan endpoint:', error);
     return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });

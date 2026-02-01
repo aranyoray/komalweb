@@ -86,12 +86,6 @@ export default function DemoPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState('');
-  const [analysisContext, setAnalysisContext] = useState<{
-    inputType: 'url' | 'keyword';
-    normalizedInput: string;
-    warnings: string[];
-  } | null>(null);
-  const [longRunning, setLongRunning] = useState(false);
 
   // Modal states
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -130,52 +124,6 @@ export default function DemoPage() {
     );
   };
 
-  const buildInputDiagnostics = (rawInput: string): {
-    inputType: 'url' | 'keyword';
-    normalizedInput: string;
-    warnings: string[];
-  } => {
-    const trimmed = rawInput.trim();
-    const warnings: string[] = [];
-    const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(trimmed) ||
-      trimmed.includes('.com') ||
-      trimmed.includes('.org') ||
-      trimmed.includes('.net') ||
-      trimmed.includes('.edu') ||
-      trimmed.includes('.gov') ||
-      trimmed.includes('.io') ||
-      trimmed.includes('.co') ||
-      trimmed.includes('.in') ||
-      trimmed.startsWith('http://') ||
-      trimmed.startsWith('https://');
-
-    const normalizedInput = looksLikeUrl && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')
-      ? `https://${trimmed}`
-      : trimmed;
-
-    if (/^<\s*script|<\/\s*script>|on\w+=|javascript:/i.test(trimmed)) {
-      warnings.push('Potentially malicious script input detected. Results are flagged as a security test.');
-    }
-
-    if (/\b(select|insert|update|delete|drop|union|alter)\b/i.test(trimmed) || /--|;{2,}|\bOR\b\s+1=1/i.test(trimmed)) {
-      warnings.push('Possible injection pattern detected. Treat results as a security test.');
-    }
-
-    if (/^[\d\s]+$/.test(trimmed)) {
-      warnings.push('Numeric-only input detected. Results may be less reliable for contextual safety.');
-    }
-
-    if (trimmed.length > 400) {
-      warnings.push('Long input detected. Analysis may take longer than usual.');
-    }
-
-    return {
-      inputType: looksLikeUrl ? 'url' : 'keyword',
-      normalizedInput,
-      warnings,
-    };
-  };
-
   const handleScan = async () => {
     if (!url.trim()) {
       setError('Please enter a URL or keyword');
@@ -185,27 +133,37 @@ export default function DemoPage() {
     setLoading(true);
     setError('');
     setResult(null);
-    setLongRunning(false);
-    let timeoutId: number | undefined;
-    let longRunningTimer: number | undefined;
 
     try {
-      const diagnostics = buildInputDiagnostics(url);
-      setAnalysisContext(diagnostics);
-      const controller = new AbortController();
-      timeoutId = window.setTimeout(() => controller.abort(), 20000);
-      longRunningTimer = window.setTimeout(() => setLongRunning(true), 5000);
+      let input = url.trim();
+
+      // Check if input looks like a URL (has domain-like pattern with dots or protocol)
+      const looksLikeUrl = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(input) ||
+        input.includes('.com') ||
+        input.includes('.org') ||
+        input.includes('.net') ||
+        input.includes('.edu') ||
+        input.includes('.gov') ||
+        input.includes('.io') ||
+        input.includes('.co') ||
+        input.includes('.in') ||
+        input.startsWith('http://') ||
+        input.startsWith('https://');
+
+      // Only normalize as URL if it looks like a URL
+      if (looksLikeUrl && !input.startsWith('http://') && !input.startsWith('https://')) {
+        input = 'https://' + input;
+      }
 
       const response = await fetch('/api/scan-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: controller.signal,
-        body: JSON.stringify({ url: diagnostics.normalizedInput }),
+        body: JSON.stringify({ url: input }),
       });
 
-      const data = await response.json().catch(() => ({}));
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to analyze');
@@ -222,7 +180,7 @@ export default function DemoPage() {
       if (data.performanceMetrics) {
         const { totalTimeMs, steps } = data.performanceMetrics;
         console.log('\n%c🔍 KOMAL URL SAFETY ANALYSIS - PERFORMANCE REPORT', 'color: #6B4E71; font-weight: bold; font-size: 14px;');
-        console.log(`%c📍 Input: ${diagnostics.normalizedInput}`, 'color: #666;');
+        console.log(`%c📍 Input: ${input}`, 'color: #666;');
         console.log(`%c⏱️  Total Time: ${(totalTimeMs / 1000).toFixed(3)}s`, 'color: #2196F3; font-weight: bold;');
         console.log('%c\n📊 Step Breakdown:', 'color: #6B4E71; font-weight: bold;');
         console.table(steps.map((step: { name: string; durationMs: number; details?: string }) => ({
@@ -244,21 +202,10 @@ export default function DemoPage() {
         console.log('\n');
       }
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        setError('The analysis timed out after 20 seconds. Please try again or use a shorter input.');
-      } else {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      }
+      setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('%c❌ KOMAL Analysis Error:', 'color: #F44336; font-weight: bold;', err);
     } finally {
       setLoading(false);
-      setLongRunning(false);
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
-      }
-      if (longRunningTimer) {
-        window.clearTimeout(longRunningTimer);
-      }
     }
   };
 
@@ -454,7 +401,6 @@ export default function DemoPage() {
               <Button
                 onClick={handleSendEmail}
                 disabled={sendingEmail || !emailInput.trim()}
-                type="button"
                 className="w-full btn-primary-premium text-white py-3 h-auto rounded-xl border-0"
               >
                 {sendingEmail ? (
@@ -545,7 +491,6 @@ export default function DemoPage() {
               <Button
                 onClick={handleBookDemo}
                 disabled={submittingDemo || !demoForm.name.trim() || !demoForm.email.trim()}
-                type="button"
                 className="w-full btn-primary-premium text-white py-3 h-auto rounded-xl border-0"
               >
                 {submittingDemo ? (
@@ -596,7 +541,7 @@ export default function DemoPage() {
                     <Search className="w-4 h-4" />
                   </div>
                   <input
-                    type="text"
+                    type="url"
                     value={url}
                     onChange={(e) => {
                       setUrl(e.target.value);
