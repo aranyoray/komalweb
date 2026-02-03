@@ -94,3 +94,7 @@ npm start              # serves on port 3001
 ## License
 
 All rights reserved © KOMAL AI Inc.
+
+---
+
+*Last updated: February 2026*
