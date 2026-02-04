@@ -9,7 +9,7 @@ import NoiseOverlay from "@/components/NoiseOverlay";
 import ParticleField from "@/components/ParticleField";
 import { LockIcon, ActivityIcon, ChartIcon, ShieldIcon, SparklesIcon, HeartIcon } from "@/components/Icons";
 
-const auraFeatures = [
+const komalFeatures = [
   {
     title: "Set Granular Controls",
     description: "Fine-tune what your child can access. Block specific apps, set time limits, and customize rules for each child.",
@@ -103,7 +103,7 @@ export default function ParentsPage() {
         </div>
       </section>
 
-      {/* Aura Features Section */}
+      {/* Komal Features Section */}
       <section className="py-20 bg-gradient-to-b from-white to-slate-50 relative">
         <div className="container max-w-[1100px] px-8 mx-auto">
           <ScrollReveal>
@@ -116,7 +116,7 @@ export default function ParentsPage() {
           </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {auraFeatures.map((feature, index) => (
+            {komalFeatures.map((feature, index) => (
               <ScrollReveal key={feature.title} delay={index * 0.1}>
                 <div className="group bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100">
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform`}>
@@ -282,7 +282,7 @@ export default function ParentsPage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-center">
               <TextShimmer duration={4}>Ready to Parent Smarter?</TextShimmer>
             </h2>
-            <p className="text-lg opacity-90 mb-10 text-center">Join thousands of parents who trust Aura to guide their children's digital journey.</p>
+            <p className="text-lg opacity-90 mb-10 text-center">Join thousands of parents who trust Komal to guide their children's digital journey.</p>
             <Button
               asChild
               size="lg"
