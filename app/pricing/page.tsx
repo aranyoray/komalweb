@@ -6,8 +6,8 @@ export default function PricingPage() {
     const pricingPlans = [
         {
             name: "Essentials",
-            priceDisplay: "₹0",
-            priceDisplayUSD: "$0",
+            priceINR: 0,
+            priceUSD: 0,
             periodMonthlyLabel: "/month",
             tagline: "Perfect for getting started",
             cta: "Start Free",
@@ -21,8 +21,8 @@ export default function PricingPage() {
         },
         {
             name: "Grow",
-            priceDisplay: "₹99",
-            priceDisplayUSD: "$9.99",
+            priceINR: 99,
+            priceUSD: 10,
             periodMonthlyLabel: "/month",
             tagline: "Built for growing families",
             featured: true,
@@ -38,8 +38,8 @@ export default function PricingPage() {
         },
         {
             name: "Thrive",
-            priceDisplay: "₹299",
-            priceDisplayUSD: "$14.99",
+            priceINR: 299,
+            priceUSD: 15,
             periodMonthlyLabel: "per child / month",
             tagline: "For advanced insights",
             cta: "Contact Sales",
@@ -54,8 +54,8 @@ export default function PricingPage() {
         },
         {
             name: "Partner",
-            priceDisplay: "₹49",
-            priceDisplayUSD: "$4.99",
+            priceINR: 49,
+            priceUSD: 5,
             periodMonthlyLabel: "per child / month",
             tagline: "For therapy and intervention centers",
             cta: "Contact Sales",
