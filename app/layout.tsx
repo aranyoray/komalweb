@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 // import { Inter } from "next/font/google"; // Removed as per user request
 import "./globals.css";
 //import { ClerkProvider } from "@clerk/nextjs";
@@ -10,6 +11,51 @@ import IntroLoader from "@/components/IntroLoader";
 import TopBanner from "@/components/TopBanner";
 
 // Removed Inter configuration
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://komalkids.com/#organization",
+      name: "KOMAL",
+      legalName: "ChildCog Private Limited",
+      url: "https://komalkids.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://komalkids.com/komaliconnobg.png",
+      },
+      sameAs: [
+        "https://twitter.com/komalkids",
+      ],
+      description:
+        "AI-powered digital guardian for child internet safety. Protect your children online with smart content filtering, parental controls, and age-appropriate browsing.",
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://komalkids.com/#website",
+      url: "https://komalkids.com",
+      name: "KOMAL - Child Internet Safety App",
+      publisher: { "@id": "https://komalkids.com/#organization" },
+      inLanguage: "en-US",
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "KOMAL",
+      applicationCategory: "EducationalApplication",
+      operatingSystem: "iOS, Android",
+      description:
+        "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing for kids ages 3-12.",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      author: { "@id": "https://komalkids.com/#organization" },
+    },
+  ],
+};
 
 export const metadata: Metadata = {
   title: {
@@ -72,6 +118,9 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   verification: {
     google: "google-site-verification-code",
+    other: {
+      "msvalidate.01": "bing-webmaster-verification-code",
+    },
   },
 };
 
@@ -86,6 +135,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <Script
+          id="json-ld"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className="antialiased font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
         {/* <ClerkProvider> */}
