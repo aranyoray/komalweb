@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Why KOMAL | The Future of Child Internet Safety",
-  description: "Discover why KOMAL is different from traditional parental controls. AI-powered digital guardian that understands children through behavior, not just blocking content. Built by researchers and parents.",
+  description: "Discover why KOMAL goes beyond traditional parental controls. AI-powered guardian that understands children through behavior, not just blocking.",
   keywords: "why parental control, child internet safety solution, digital guardian for kids, AI child protection, behavioral AI for children, modern parental controls, child online safety, why content filtering",
   openGraph: {
     title: "Why KOMAL | Beyond Traditional Parental Controls",

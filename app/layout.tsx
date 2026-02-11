@@ -59,11 +59,11 @@ const jsonLd = {
 
 export const metadata: Metadata = {
   title: {
-    default: "KOMAL - Child Internet Safety App | Parental Control & Safe Browsing for Kids",
+    default: "KOMAL - Child Internet Safety App | Safe AI",
     template: "%s | KOMAL - Child Safety App",
   },
-  description: "Protect your children online with KOMAL - the AI-powered child internet safety app. Smart content filtering, parental controls, age-appropriate browsing, and real-time protection. COPPA compliant. Safe screen time for kids ages 3-12.",
-  keywords: "child internet safety, parental control app, kids safe browsing, online safety for children, content filtering for kids, digital guardian, child protection app, safe screen time, age-appropriate content, family safety app, COPPA compliant app, children privacy app, kid-safe browser, internet filter for kids, child online protection, screen time management, parental monitoring app, safe apps for kids, children digital safety, online child protection",
+  description: "KOMAL is an AI-powered child internet safety app with parental controls, content filtering, and safe browsing for kids ages 3-12. COPPA compliant.",
+  keywords: "child internet safety, parental control app, safe browsing for kids, content filtering for kids, AI child safety, online child protection, screen time management, kid-safe browser",
   authors: [{ name: "KOMAL - ChildCog Private Limited" }],
   creator: "KOMAL",
   publisher: "ChildCog Private Limited",
@@ -82,8 +82,8 @@ export const metadata: Metadata = {
     canonical: "https://komalkids.com",
   },
   openGraph: {
-    title: "KOMAL - Child Internet Safety App | Protect Kids Online",
-    description: "AI-powered digital guardian for child internet safety. Smart content filtering, parental controls, and age-appropriate browsing for kids ages 3-12. COPPA compliant.",
+    title: "KOMAL - Child Internet Safety App | Safe AI",
+    description: "AI-powered child internet safety with content filtering, parental controls, and safe browsing for kids ages 3-12.",
     type: "website",
     url: "https://komalkids.com",
     siteName: "KOMAL",
@@ -99,8 +99,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KOMAL - Child Internet Safety App | Parental Control for Kids",
-    description: "Protect your children online with AI-powered content filtering and parental controls. Safe screen time for ages 3-12.",
+    title: "KOMAL - Child Internet Safety App | Safe AI",
+    description: "AI-powered child internet safety with content filtering, parental controls, and safe browsing for kids ages 3-12.",
     images: ["https://komalkids.com/heroimage.png"],
     creator: "@komalkids",
   },

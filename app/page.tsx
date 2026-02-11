@@ -423,7 +423,7 @@ export default function Home() {
                 />
                 <Image
                   src="/heroimage.png"
-                  alt="Komal Digital Buddy"
+                  alt="KOMAL child internet safety app - AI digital guardian for kids"
                   width={1200}
                   height={1200}
                   className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] h-auto relative z-10"
@@ -952,6 +952,35 @@ export default function Home() {
               <FaqAccordion items={faqs} defaultOpen={0} />
             </ScrollReveal>
           </div>
+        </div>
+      </section>
+
+      {/* Keep Learning - SEO Conclusion Section */}
+      <section className="keep-learning py-12 md:py-16 bg-white">
+        <div className="container max-w-[900px] px-8 mx-auto text-center">
+          <ScrollReveal>
+            <h2 className="text-[24px] sm:text-[28px] md:text-[32px] font-sans font-bold mb-4 text-primary tracking-tight">
+              Keep Learning About Child Internet Safety
+            </h2>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="text-base md:text-lg text-text-dim leading-relaxed mb-8 max-w-[700px] mx-auto">
+              Understanding online safety for children is an ongoing journey. From parental controls and content filtering to AI-powered safe browsing, staying informed helps you protect your kids while encouraging healthy digital habits.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button asChild variant="outline" size="lg" className="rounded-full px-6 py-3 h-auto border-primary text-primary hover:bg-primary/5">
+                <Link href="/blog">Read Our Blog</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full px-6 py-3 h-auto border-primary text-primary hover:bg-primary/5">
+                <Link href="/content-safety">Content Safety Guide</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full px-6 py-3 h-auto border-primary text-primary hover:bg-primary/5">
+                <Link href="/safety-trust">Safety &amp; Trust</Link>
+              </Button>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 

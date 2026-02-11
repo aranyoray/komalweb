@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Meet KOMAL | AI Digital Guardian for Child Safety",
-  description: "Meet KOMAL - the AI-powered digital guardian designed for children ages 3-12. Learn how our behavioral AI understands your child's emotions and adapts to their learning style while keeping them safe online.",
+  description: "Meet KOMAL - the AI digital guardian for children ages 3-12. Behavioral AI that understands emotions and adapts to each child's learning style.",
   keywords: "digital guardian for kids, AI child companion, child safety AI, kids learning companion, behavioral AI children, emotional AI for kids, adaptive learning child, safe AI for children",
   openGraph: {
     title: "Meet KOMAL | Your Child's AI Digital Guardian",
