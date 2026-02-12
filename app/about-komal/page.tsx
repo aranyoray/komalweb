@@ -168,17 +168,30 @@ export default function AboutKomalPage() {
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Joy Cai</h3>
-                  <p className="text-sm text-text-dim mb-3">Growth & Partnership</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian
-                    platform that provides nutritional counseling backed by health insurance. Previously, she was
-                    Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep
-                    experience in fundraising, operations, and growth.
-                  </p>
-                  <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> BA Economics, UPenn | Founder, Solis Health | Ex-Chief of Staff, Flagler Health
-                  </p>
+                  <div className="flex items-start gap-5">
+                    <div className="shrink-0">
+                      <Image
+                        src="/joy-cai.png"
+                        alt="Joy Cai"
+                        width={96}
+                        height={96}
+                        className="rounded-full object-cover w-20 h-20 md:w-24 md:h-24"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2 text-text">Joy Cai</h3>
+                      <p className="text-sm text-text-dim mb-3">Growth & Partnership</p>
+                      <p className="text-text-dim leading-relaxed">
+                        Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian
+                        platform that provides nutritional counseling backed by health insurance. Previously, she was
+                        Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep
+                        experience in fundraising, operations, and growth.
+                      </p>
+                      <p className="text-sm text-text-dim mt-2">
+                        <strong>Credentials:</strong> BA Economics, UPenn | Founder, Solis Health | Ex-Chief of Staff, Flagler Health
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
