@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import ScrollReveal from "./ScrollReveal";
 
 interface ButterflyState {
@@ -94,6 +95,7 @@ function Butterfly({ state }: { state: ButterflyState }) {
 }
 
 export default function Footer() {
+  const pathname = usePathname();
   const [butterflies, setButterflies] = useState<ButterflyState[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
@@ -234,6 +236,9 @@ export default function Footer() {
       window.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
+
+  // Hide footer on dashboard page
+  if (pathname === "/dashboard") return null;
 
   return (
     <footer className="footer py-12 border-t border-border bg-surface relative overflow-hidden" id="contact" ref={containerRef}>

@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ClientScripts from "@/components/ClientScripts";
 import IntroLoader from "@/components/IntroLoader";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 import TopBanner from "@/components/TopBanner";
 
@@ -143,14 +144,14 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
-        {/* <ClerkProvider> */}
-        <IntroLoader />
-        <TopBanner />
-        <Navbar />
-        {children}
-        <Footer />
-        <ClientScripts />
-        {/* </ClerkProvider> */}
+        <AuthProvider>
+          <IntroLoader />
+          <TopBanner />
+          <Navbar />
+          {children}
+          <Footer />
+          <ClientScripts />
+        </AuthProvider>
       </body>
     </html>
   );

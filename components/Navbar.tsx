@@ -68,6 +68,9 @@ export default function Navbar() {
     []
   );
 
+  // Hide navbar on dashboard page (after all hooks to respect Rules of Hooks)
+  if (pathname === "/dashboard") return null;
+
   const resolveHref = (item: (typeof navItems)[number]) => {
     if (item.href.type === "route") return item.href.value;
     return pathname === "/" ? item.href.value : `/${item.href.value}`;
@@ -181,8 +184,20 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Desktop CTA Button - Right */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
+        {/* Desktop CTA Buttons - Right */}
+        <div className="hidden md:flex items-center gap-2 shrink-0">
+          <Link
+            href="/sign-in"
+            className={`h-9 px-4 rounded-full font-medium text-sm flex items-center gap-1.5 border border-primary/20 hover:bg-primary/5 ${isScrolled ? "text-primary" : "text-primary"}`}
+            style={{
+              transitionProperty: "background-color, color",
+              transitionDuration: "400ms",
+              transitionTimingFunction: smoothEase,
+            }}
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Sign In
+          </Link>
           <Button
             asChild
             className={`h-9 px-5 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
@@ -238,12 +253,11 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* Auth Links for Mobile */}
-            {/* <SignedOut> */}
-            {/* <Link
+            {/* Sign In Link for Mobile */}
+            <Link
               href="/sign-in"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 border-b border-gray-100 flex items-center gap-2"
+              className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 flex items-center gap-2"
               style={{
                 transitionProperty: "background-color, opacity, transform",
                 transitionDuration: "400ms",
@@ -256,42 +270,6 @@ export default function Navbar() {
               <LogIn className="w-4 h-4" />
               Sign In
             </Link>
-            <Link
-              href="/sign-up"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="px-6 py-4 bg-primary text-white font-medium text-base hover:bg-primary/90 flex items-center gap-2"
-              style={{
-                transitionProperty: "background-color, opacity, transform",
-                transitionDuration: "400ms",
-                transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                transitionDelay: isMobileMenuOpen ? `${(navItems.length + 1) * 50}ms` : "0ms",
-                opacity: isMobileMenuOpen ? 1 : 0,
-                transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
-              }}
-            >
-              <ArrowUpRight className="w-4 h-4" />
-              Get Started
-            </Link> */}
-            {/* </SignedOut> */}
-
-            {/* <SignedIn>
-              <Link
-                href="/dashboard"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="px-6 py-4 bg-primary text-white font-medium text-base hover:bg-primary/90 flex items-center gap-2"
-                style={{
-                  transitionProperty: "background-color, opacity, transform",
-                  transitionDuration: "400ms",
-                  transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                  transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
-                  opacity: isMobileMenuOpen ? 1 : 0,
-                  transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
-                }}
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </Link>
-            </SignedIn> */}
           </div>
         </div>
       </div>
