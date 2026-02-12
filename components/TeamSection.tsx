@@ -15,55 +15,29 @@ interface TeamMember {
 // Core Team Members
 const coreTeam: TeamMember[] = [
     {
-        name: "Aranyo Ray",
-        role: "Co-Founder & CEO",
-        credentials: ["Wu Tsai Scholar, Yale University", "Ex-Graymatics, Commenda"],
-        image: "/aranyowhitebg.png",
-        description: "Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. A Wu Tsai Scholar at Yale investigating implicit bias in multicultural learning, he won 1st Place from the APA at ISEF for his culturally relevant game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads overall execution and expansion.",
-        tagline: "Building the future of child development",
-    },
-    // {
-    //     name: "Jvalaj Pandey",
-    //     role: "Co-Founder & CTO",
-    //     credentials: ["Ex-Delta Air Lines", "Final Year Undergrad in CS @ USF", "Green & Gold Scholar"],
-    //     image: "/komaljvalaj.png",
-    //     description: "Jvalaj previously built Grid, which garnered a 400+ user waitlist. He brings technical expertise from internships at Delta and Nucor Steel, leading the platform's core implementation. He is a Green & Gold Scholar at USF.",
-    //     tagline: "Engineering solutions that matter",
-    // },
-    // {
-    //     name: "Yudhajit Ain",
-    //     role: "Research Lead",
-    //     credentials: ["PhD Candidate, Internal Attention Lab, UCalgary", "IISER BS-MS Neuroscience"],
-    //     image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
-    //     description: "Yudhajit is a PhD Candidate in computational psychology at the Internal Attention Lab, UCalgary, where he has developed novel algorithms for attention tracking. He is first-author on 6+ papers, including research on ADHD in the Journal of Attention Disorders and mindfulness in Psychol. Aging. A Gold Medallist from the IISER BS-MS Neuroscience program.",
-    //     tagline: "Decoding attention, one algorithm at a time",
-    // },
-    {
-        name: "Jvalaj Pandey",
-        role: "Co-Founder & CTO",
-        credentials: ["Ex-Delta Air Lines, Nucor", "BS CS @ USF (Honors)", "Full Stack Engineer"],
-        image: "/komaljvalaj.png",
-        description: "Jvalaj is a Full Stack Engineer and Designer specializing in high-performance web interfaces and AI-driven design. With experience at Delta Air Lines and Nucor Steel, he leads Komal's technical implementation. He previously built AI tools like GRID and VS Chat, combining artistic vision with scalable engineering to build the future of child safety.",
-        tagline: "Engineering solutions that matter",
-    },
-
-    // {
-    //     name: "Dale Lee",
-    //     role: "GTM Lead",
-    //     credentials: ["US and Korea Markets"],
-    //     image: "/l.png",
-    //     description: "Dale leads Komal's go-to-market strategy for the US and Korea markets. He brings extensive expertise in cross-cultural business development and global market expansion to help Komal reach international audiences.",
-    //     tagline: "Bridging cultures, opening markets",
-    // },
-    {
         name: "Saarthak Kumar",
-        role: "Policy Lead",
+        role: "Co-Founder & CEO",
         credentials: ["MPA, Columbia & LSE", "Ex-UN Advisor"],
         image: "/sarthakwhitebg.png",
-        description: "Saarthak holds MPAs from Columbia and LSE in economic policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India at the UN, bringing expertise in international policy and development economics.",
-        tagline: "Policy expertise for global impact",
+        description: "Saarthak holds MPAs from Columbia and LSE in economic policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India at the UN, bringing expertise in international policy and development economics. At Komal, he leads overall strategy and execution.",
+        tagline: "Leading strategy for global impact",
     },
-
+    {
+        name: "Aranyo Ray",
+        role: "Co-Founder & CTO",
+        credentials: ["Wu Tsai Scholar, Yale University", "Ex-Graymatics, Commenda"],
+        image: "/aranyowhitebg.png",
+        description: "Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. A Wu Tsai Scholar at Yale investigating implicit bias in multicultural learning, he won 1st Place from the APA at ISEF for his culturally relevant game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads technology and product development.",
+        tagline: "Building the future of child development",
+    },
+    {
+        name: "Joy Cai",
+        role: "Growth & Partnership",
+        credentials: ["BA Economics, UPenn", "Founder, Solis Health", "Ex-Chief of Staff, Flagler Health"],
+        image: "/joy_cai-edit.png",
+        description: "Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian platform that provides nutritional counseling backed by health insurance. Previously, she was Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep experience in fundraising, operations, and growth.",
+        tagline: "Driving growth and strategic partnerships",
+    },
 ];
 
 // Advisory Board

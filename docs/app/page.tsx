@@ -189,8 +189,13 @@ export default function Home() {
             founders: [
               {
                 "@type": "Person",
+                name: "Saarthak Kumar",
+                jobTitle: "Co-Founder & CEO"
+              },
+              {
+                "@type": "Person",
                 name: "Aranyo Ray",
-                jobTitle: "CEO"
+                jobTitle: "Co-Founder & CTO"
               }
             ],
             contactPoint: {
