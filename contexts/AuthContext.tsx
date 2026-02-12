@@ -8,6 +8,9 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  OAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -24,6 +27,8 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
   logout: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
 }
@@ -90,6 +95,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserData(userDocData);
   };
 
+  const signInWithGoogle = async () => {
+    if (!auth || !db) throw new Error('Firebase not initialized');
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
+
+    // Create user doc if it doesn't exist
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (!userDoc.exists()) {
+      const userDocData: UserData = {
+        name: firebaseUser.displayName || 'User',
+        email: firebaseUser.email || '',
+        createdAt: new Date().toISOString(),
+      };
+      await setDoc(userDocRef, userDocData);
+      setUserData(userDocData);
+    }
+  };
+
+  const signInWithApple = async () => {
+    if (!auth || !db) throw new Error('Firebase not initialized');
+    const provider = new OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
+
+    // Create user doc if it doesn't exist
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (!userDoc.exists()) {
+      const userDocData: UserData = {
+        name: firebaseUser.displayName || 'User',
+        email: firebaseUser.email || '',
+        createdAt: new Date().toISOString(),
+      };
+      await setDoc(userDocRef, userDocData);
+      setUserData(userDocData);
+    }
+  };
+
   const logout = async () => {
     if (!auth) throw new Error('Firebase auth not initialized');
     await signOut(auth);
@@ -110,6 +157,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signIn,
     signUp,
+    signInWithGoogle,
+    signInWithApple,
     logout,
     getIdToken,
   };
