@@ -10,6 +10,7 @@ import IntroLoader from "@/components/IntroLoader";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 import TopBanner from "@/components/TopBanner";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 // Removed Inter configuration
 
@@ -144,6 +145,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
+        <GoogleAnalytics />
         <AuthProvider>
           <IntroLoader />
           <TopBanner />
