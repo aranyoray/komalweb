@@ -13,6 +13,7 @@ import TopBanner from "@/components/TopBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import LocationTracker from "@/components/LocationTracker";
 
+
 // Removed Inter configuration
 
 const jsonLd = {

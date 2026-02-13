@@ -2,14 +2,12 @@
 
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
 
 export default function LocationTracker() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (loading || !db) return;
+    if (loading) return;
 
     const alreadyLogged = sessionStorage.getItem('location_logged');
     if (alreadyLogged) return;
@@ -22,28 +20,33 @@ export default function LocationTracker() {
         let city = 'unknown';
 
         try {
-          const geoRes = await fetch('https://ipwho.is/');
-          const geoData = await geoRes.json();
-          if (geoData.success !== false) {
-            ip = geoData.ip || 'unknown';
-            country = geoData.country || 'unknown';
-            state = geoData.region || 'unknown';
-            city = geoData.city || 'unknown';
+          const res = await fetch('https://ipwho.is/');
+          const data = await res.json();
+          if (data.success !== false) {
+            ip = data.ip || 'unknown';
+            country = data.country || 'unknown';
+            state = data.region || 'unknown';
+            city = data.city || 'unknown';
           }
         } catch {
-          // Geo lookup blocked/failed — continue with defaults
+          // Geo lookup blocked by ad blocker — continue with defaults
         }
 
-        await addDoc(collection(db!, 'location'), {
-          ip,
-          country,
-          state,
-          city,
-          uid: user?.uid || null,
-          timestamp: new Date().toISOString(),
+        const res = await fetch('/api/log-location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: user?.uid || null,
+            ip,
+            country,
+            state,
+            city,
+          }),
         });
 
-        sessionStorage.setItem('location_logged', '1');
+        if (res.ok) {
+          sessionStorage.setItem('location_logged', '1');
+        }
       } catch (error) {
         console.error('Location logging failed:', error);
       }
