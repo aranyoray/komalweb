@@ -101,7 +101,7 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`z-[100] h-[72px] flex items-center left-1/2 -translate-x-1/2 px-6 ${isScrolled
+        className={`z-[100] h-[72px] flex items-center left-1/2 -translate-x-1/2 px-6 overflow-visible ${isScrolled
           ? "fixed top-6 rounded-full border border-black/5 backdrop-blur-xl bg-white/60 shadow-lg"
           : "fixed top-[72px] rounded-full border border-transparent bg-transparent"
           }`}
@@ -111,7 +111,7 @@ export default function Navbar() {
           transitionDuration: "500ms",
           transitionTimingFunction: smoothEase,
           willChange: "top, background-color",
-          contain: "layout style paint",
+          contain: "layout style",
         } as React.CSSProperties}
       >
         {/* Logo Section - Left */}
@@ -244,7 +244,7 @@ export default function Navbar() {
               </button>
 
               {profileDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-primary/10 py-2 z-[200]">
+                <div className="absolute right-0 top-full mt-3 w-52 bg-white rounded-2xl shadow-2xl border border-gray-200 py-2 z-[200]">
                   <Link
                     href="/dashboard"
                     onClick={() => setProfileDropdownOpen(false)}
