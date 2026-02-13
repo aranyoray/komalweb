@@ -19,10 +19,17 @@ import Stripe from 'stripe';
 import stripeClient, { getWebhookSecret } from '@/lib/stripe';
 import { db } from '@/lib/firebase-admin';
 
-// Map Stripe Price IDs to plan names
-function getPlanFromPriceId(priceId: string): 'grow' | 'thrive' | 'partner' | 'ambassador' | 'free' {
-  const priceMap: Record<string, 'grow' | 'thrive' | 'partner' | 'ambassador'> = {};
+// Resolve plan from subscription metadata (primary) or price ID (fallback)
+function getPlanFromSubscription(subscription: Stripe.Subscription): 'grow' | 'thrive' | 'partner' | 'ambassador' | 'free' {
+  // Primary: use metadata set during checkout
+  const metaPlan = subscription.metadata?.plan;
+  if (metaPlan && ['grow', 'thrive', 'partner', 'ambassador'].includes(metaPlan)) {
+    return metaPlan as 'grow' | 'thrive' | 'partner' | 'ambassador';
+  }
 
+  // Fallback: map Stripe Price ID to plan name (for legacy pre-created prices)
+  const priceId = subscription.items.data[0]?.price?.id || '';
+  const priceMap: Record<string, 'grow' | 'thrive' | 'partner' | 'ambassador'> = {};
   if (process.env.STRIPE_PRICE_GROW) priceMap[process.env.STRIPE_PRICE_GROW] = 'grow';
   if (process.env.STRIPE_PRICE_THRIVE) priceMap[process.env.STRIPE_PRICE_THRIVE] = 'thrive';
   if (process.env.STRIPE_PRICE_PARTNER) priceMap[process.env.STRIPE_PRICE_PARTNER] = 'partner';
@@ -133,7 +140,7 @@ export async function POST(request: NextRequest) {
 const PLAN_VALIDITY_DAYS: Record<string, number> = {
   ambassador: 30,
   grow: 30,
-  thrive: 30,
+  thrive: 180,
   partner: 30,
 };
 
@@ -155,14 +162,12 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   }
 
   const priceId = subscription.items.data[0]?.price?.id || '';
-  const plan = getPlanFromPriceId(priceId);
-  const planNames: Record<string, string> = {
-    grow: 'Grow',
-    thrive: 'Thrive',
-    partner: 'Partner',
-    ambassador: 'Ambassador Community',
-    free: 'Free',
+  const plan = getPlanFromSubscription(subscription);
+  const fallbackNames: Record<string, string> = {
+    grow: 'Grow', thrive: 'Thrive', partner: 'Partner',
+    ambassador: 'Ambassador Community', free: 'Free',
   };
+  const planName = subscription.metadata?.planName || fallbackNames[plan] || plan;
 
   const periodEnd = subscription.items.data[0]?.current_period_end;
 
@@ -171,7 +176,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 
   const updateData: Record<string, unknown> = {
     plan,
-    planName: planNames[plan],
+    planName,
     subscriptionId: subscription.id,
     subscriptionStatus: subscription.status,
     subscriptionPriceId: priceId,
@@ -192,7 +197,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     uid: userId,
     type: 'subscription_created',
     plan,
-    planName: planNames[plan],
+    planName,
     subscriptionId: subscription.id,
     subscriptionStatus: subscription.status,
     subscriptionPriceId: priceId,
@@ -220,14 +225,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   const priceId = subscription.items.data[0]?.price?.id || '';
-  const plan = getPlanFromPriceId(priceId);
-  const planNames: Record<string, string> = {
-    grow: 'Grow',
-    thrive: 'Thrive',
-    partner: 'Partner',
-    ambassador: 'Ambassador Community',
-    free: 'Free',
+  const plan = getPlanFromSubscription(subscription);
+  const fallbackNames: Record<string, string> = {
+    grow: 'Grow', thrive: 'Thrive', partner: 'Partner',
+    ambassador: 'Ambassador Community', free: 'Free',
   };
+  const planName = subscription.metadata?.planName || fallbackNames[plan] || plan;
 
   const periodEnd = subscription.items.data[0]?.current_period_end;
 
@@ -236,7 +239,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   const updateData: Record<string, unknown> = {
     plan,
-    planName: planNames[plan],
+    planName,
     subscriptionStatus: subscription.status,
     subscriptionPriceId: priceId,
     subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
@@ -259,7 +262,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     uid: userId,
     type: 'subscription_updated',
     plan,
-    planName: planNames[plan],
+    planName,
     subscriptionId: subscription.id,
     subscriptionStatus: subscription.cancel_at_period_end ? 'canceling' : subscription.status,
     subscriptionPriceId: priceId,
@@ -368,8 +371,92 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 // =============================================================================
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  const plan = session.metadata?.plan;
+
+  // Handle subscription checkout completions (grow/thrive) — save detailed payment info
+  if (session.mode === 'subscription' && plan && ['grow', 'thrive'].includes(plan)) {
+    console.log(`Subscription checkout completed for ${plan}: ${session.id}`);
+
+    const customerId = typeof session.customer === 'string'
+      ? session.customer
+      : (session.customer as Stripe.Customer)?.id;
+
+    if (!customerId) return;
+
+    const userId = await findUserByStripeCustomer(customerId, session.metadata || undefined);
+    if (!userId) {
+      console.error(`No user found for subscription checkout, customer ${customerId}`);
+      return;
+    }
+
+    // Retrieve subscription for detailed info
+    const subscriptionId = typeof session.subscription === 'string'
+      ? session.subscription
+      : (session.subscription as Stripe.Subscription)?.id;
+
+    let subscriptionDetails: Record<string, unknown> = {};
+    if (subscriptionId) {
+      try {
+        const sub = await stripeClient.subscriptions.retrieve(subscriptionId, {
+          expand: ['latest_invoice.payment_intent'],
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const invoice = sub.latest_invoice as any;
+        const paymentIntent = invoice?.payment_intent;
+        const charge = paymentIntent?.latest_charge;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const chargeObj = typeof charge === 'object' && charge !== null ? charge as any : null;
+        const card = chargeObj?.payment_method_details?.card;
+
+        subscriptionDetails = {
+          paymentIntentId: paymentIntent?.id || null,
+          amountPaid: paymentIntent?.amount || session.amount_total,
+          currency: paymentIntent?.currency || session.currency,
+          paymentMethod: paymentIntent?.payment_method || null,
+          paymentStatus: paymentIntent?.status || null,
+          receiptUrl: chargeObj?.receipt_url || null,
+          cardBrand: card?.brand || null,
+          cardLast4: card?.last4 || null,
+        };
+      } catch (e) {
+        console.error('Error retrieving subscription details:', e);
+      }
+    }
+
+    const now = new Date();
+    const validityDays = PLAN_VALIDITY_DAYS[plan] || 30;
+    const planNames: Record<string, string> = {
+      grow: 'Grow', thrive: 'Thrive', partner: 'Partner',
+    };
+
+    // Update user doc with full transaction info
+    await db.collection('users').doc(userId).update({
+      checkoutSessionId: session.id,
+      ...subscriptionDetails,
+    });
+
+    // Write detailed record to /pay collection
+    await db.collection('pay').add({
+      uid: userId,
+      type: 'subscription_checkout_completed',
+      plan,
+      planName: planNames[plan] || plan,
+      checkoutSessionId: session.id,
+      subscriptionId: subscriptionId || null,
+      stripeCustomerId: customerId,
+      paymentTimestamp: now.toISOString(),
+      planValidity: `${validityDays} days`,
+      ...subscriptionDetails,
+      createdAt: now.toISOString(),
+    });
+
+    console.log(`Saved subscription checkout details for user ${userId}, plan: ${plan}`);
+    return;
+  }
+
   // Only handle one-time payments for ambassador plan
-  if (session.mode !== 'payment' || session.metadata?.plan !== 'ambassador') {
+  if (session.mode !== 'payment' || plan !== 'ambassador') {
     return;
   }
 

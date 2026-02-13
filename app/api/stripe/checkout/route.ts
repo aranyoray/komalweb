@@ -19,20 +19,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const { priceId: planKey, couponCode } = await request.json();
+    const body = await request.json();
+    const planKey = body.plan || body.priceId; // priceId kept for ambassador page compat
+    const couponCode = body.couponCode;
+
     if (!planKey) {
-      return NextResponse.json({ error: 'priceId is required' }, { status: 400 });
+      return NextResponse.json({ error: 'plan is required' }, { status: 400 });
     }
-
-    // Resolve plan key to actual Stripe Price ID from environment
-    const priceEnvMap: Record<string, string | undefined> = {
-      grow: process.env.STRIPE_PRICE_GROW,
-      thrive: process.env.STRIPE_PRICE_THRIVE,
-      partner: process.env.STRIPE_PRICE_PARTNER,
-      ambassador: process.env.STRIPE_PRICE_AMBASSADOR,
-    };
-
-    const priceId = priceEnvMap[planKey];
 
     const userId = decoded.uid;
     const userRecord = await getAuth().getUser(userId);
@@ -63,7 +56,6 @@ export async function POST(request: NextRequest) {
     if (planKey === 'ambassador') {
       const ambassadorAmount = Math.round(parseFloat(process.env.STRIPE_PRICE_AMBASSADOR || '19.99') * 100);
 
-      // Build session params for one-time payment
       const sessionParams: Record<string, unknown> = {
         customer: stripeCustomerId,
         mode: 'payment',
@@ -86,10 +78,8 @@ export async function POST(request: NextRequest) {
         },
       };
 
-      // Apply coupon code if provided
       if (couponCode && typeof couponCode === 'string' && couponCode.trim()) {
         try {
-          // Look up the promotion code by its user-facing code
           const promoCodes = await stripeClient.promotionCodes.list({
             code: couponCode.trim(),
             active: true,
@@ -105,7 +95,6 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
         }
       } else {
-        // Allow entering promo codes on Stripe Checkout page
         sessionParams.allow_promotion_codes = true;
       }
 
@@ -113,20 +102,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ url: session.url });
     }
 
-    // Regular subscription plans (grow/thrive/partner)
-    if (!priceId) {
+    // ---------------------------------------------------------------
+    // Subscription plans (grow / thrive) — price_data from client
+    // ---------------------------------------------------------------
+    const { amount, currency, billingMonths, planName } = body;
+
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
+      return NextResponse.json({ error: 'A valid amount is required' }, { status: 400 });
+    }
+    if (!currency || typeof currency !== 'string') {
+      return NextResponse.json({ error: 'currency is required' }, { status: 400 });
+    }
+
+    const validPlans = ['grow', 'thrive'];
+    if (!validPlans.includes(planKey)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
+    const intervalCount = billingMonths || 1;
+    const displayName = planName || planKey;
+
     const session = await stripeClient.checkout.sessions.create({
       customer: stripeCustomerId,
-      mode: 'subscription',
-      line_items: [{ price: priceId, quantity: 1 }],
+      mode: 'subscription' as const,
+      line_items: [{
+        price_data: {
+          currency: currency.toLowerCase(),
+          product_data: {
+            name: `KOMAL ${displayName} Plan`,
+          },
+          unit_amount: amount,
+          recurring: {
+            interval: 'month' as const,
+            interval_count: intervalCount,
+          },
+        },
+        quantity: 1,
+      }],
       success_url: `${baseUrl}/dashboard?payment=success`,
       cancel_url: `${baseUrl}/pricing`,
-      metadata: { firebaseUid: userId, plan: planKey },
+      metadata: { firebaseUid: userId, plan: planKey, planName: displayName },
       subscription_data: {
-        metadata: { firebaseUid: userId, plan: planKey },
+        metadata: { firebaseUid: userId, plan: planKey, planName: displayName },
       },
     });
 

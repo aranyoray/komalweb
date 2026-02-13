@@ -47,6 +47,7 @@ interface BillingData {
     amount: number;
     currency: string;
     interval: string;
+    intervalCount: number;
   } | null;
   invoices: {
     id: string;
@@ -201,6 +202,26 @@ export default function BillingPage() {
 
   const isAmbassador = billingData?.plan === "ambassador" || userData?.plan === "ambassador";
 
+  const currentPlan = billingData?.plan || userData?.plan || "free";
+
+  const getPlanDescription = () => {
+    switch (currentPlan) {
+      case "grow":
+        return "Monthly subscription — billed every month";
+      case "thrive":
+        return "6-month subscription — billed every 6 months";
+      case "ambassador":
+        return "Lifetime membership — no recurring charges";
+      default:
+        return "Free plan — upgrade anytime";
+    }
+  };
+
+  const formatInterval = (interval: string, intervalCount: number) => {
+    if (intervalCount === 1) return `per ${interval}`;
+    return `every ${intervalCount} ${interval}s`;
+  };
+
   if (authLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-purple-50/30 to-white">
@@ -285,9 +306,7 @@ export default function BillingPage() {
                                 )
                               : getStatusBadge("active")}
                         </div>
-                        {isAmbassador && (
-                          <p className="text-xs text-text-dim mt-1">Lifetime membership — no recurring charges</p>
-                        )}
+                        <p className="text-xs text-text-dim mt-1">{getPlanDescription()}</p>
                       </div>
                       {billingData?.subscription && (
                         <div className="text-right">
@@ -298,7 +317,7 @@ export default function BillingPage() {
                             )}
                           </p>
                           <p className="text-xs text-text-dim">
-                            per {billingData.subscription.interval}
+                            {formatInterval(billingData.subscription.interval, billingData.subscription.intervalCount)}
                           </p>
                         </div>
                       )}
@@ -338,12 +357,18 @@ export default function BillingPage() {
                         </div>
                       )}
 
-                      {isAmbassador && (
-                        <div className="bg-primary/5 rounded-xl p-4">
-                          <p className="text-xs text-text-dim mb-1">Plan Type</p>
-                          <p className="text-lg font-bold text-primary">Lifetime</p>
-                        </div>
-                      )}
+                      <div className="bg-primary/5 rounded-xl p-4">
+                        <p className="text-xs text-text-dim mb-1">Billing Cycle</p>
+                        <p className="text-lg font-bold text-primary">
+                          {isAmbassador
+                            ? "Lifetime"
+                            : currentPlan === "thrive"
+                              ? "Every 6 months"
+                              : currentPlan === "grow"
+                                ? "Monthly"
+                                : "—"}
+                        </p>
+                      </div>
 
                       {billingData?.subscription && (
                         <>

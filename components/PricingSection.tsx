@@ -11,12 +11,16 @@ type Plan = {
   name: string;
   priceINR: number;      // Base price in INR (for India)
   priceUSD: number;      // Base price in USD (for rest of world)
+  originalPriceINR?: number;  // Original price before discount
+  originalPriceUSD?: number;  // Original price before discount
+  billingMonths?: number;     // Recurring interval in months (1 = monthly, 6 = semi-annual)
   periodMonthlyLabel: string;
   tagline: string;
   featured?: boolean;
+  discount?: number;     // Discount percentage (e.g. 10 for 10%)
+  contactSales?: boolean; // Show "Contact Sales" mailto instead of Stripe
   cta: string;
   features: string[];
-  stripePriceEnv?: string; // env var name for Stripe price ID
 };
 
 type GeoData = {
@@ -220,12 +224,56 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
     }
   };
 
-  // Render price with proper formatting
-  const renderPrice = (priceStr: string) => {
-    return <span>{priceStr}</span>;
+  // Format original (pre-discount) price
+  const formatOriginalPrice = (plan: Plan): string | null => {
+    if (!plan.originalPriceUSD && !plan.originalPriceINR) return null;
+    if (geoData.isIndia) {
+      return plan.originalPriceINR ? `₹${plan.originalPriceINR}` : null;
+    }
+    if (!plan.originalPriceUSD) return null;
+    const convertedPrice = plan.originalPriceUSD * geoData.exchangeRate;
+    let roundedPrice: number;
+    if (geoData.exchangeRate > 100) {
+      roundedPrice = geoData.exchangeRate > 1000
+        ? Math.round(convertedPrice / 100) * 100
+        : Math.round(convertedPrice / 10) * 10;
+    } else {
+      roundedPrice = Math.round(convertedPrice);
+    }
+    return `${geoData.currencySymbol}${roundedPrice.toLocaleString()}`;
+  };
+
+  // Zero-decimal currencies (Stripe doesn't multiply by 100 for these)
+  const ZERO_DECIMAL_CURRENCIES = new Set([
+    'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA',
+    'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+  ]);
+
+  // Compute the charge amount in the user's local currency (whole number, display-level)
+  const getChargeAmount = (plan: Plan): number => {
+    if (geoData.isIndia) return plan.priceINR;
+    const converted = plan.priceUSD * geoData.exchangeRate;
+    if (geoData.exchangeRate > 100) {
+      return geoData.exchangeRate > 1000
+        ? Math.round(converted / 100) * 100
+        : Math.round(converted / 10) * 10;
+    }
+    return Math.round(converted);
+  };
+
+  // Convert display amount to Stripe smallest-unit amount
+  const toStripeAmount = (displayAmount: number, currency: string): number => {
+    if (ZERO_DECIMAL_CURRENCIES.has(currency.toUpperCase())) return displayAmount;
+    return displayAmount * 100;
   };
 
   const handlePlanClick = async (plan: Plan) => {
+    // Contact Sales plans → email
+    if (plan.contactSales) {
+      window.location.href = 'mailto:play@komalkids.com';
+      return;
+    }
+
     const planKey = PLAN_PRICE_MAP[plan.name];
 
     // Essentials (free) plan → sign up
@@ -240,6 +288,10 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
       return;
     }
 
+    const displayAmount = getChargeAmount(plan);
+    const currency = geoData.currencyCode.toLowerCase();
+    const amount = toStripeAmount(displayAmount, currency);
+
     setCheckoutLoading(plan.name);
     try {
       const token = await getIdToken();
@@ -249,7 +301,13 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ priceId: planKey }),
+        body: JSON.stringify({
+          plan: planKey,
+          amount,
+          currency,
+          billingMonths: plan.billingMonths || 1,
+          planName: plan.name,
+        }),
       });
 
       const data = await res.json();
@@ -304,22 +362,53 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
               </div>
             )}
 
+            {/* Discount Badge */}
+            {plan.discount && (
+              <div className="absolute -top-3 right-4 z-10">
+                <span className="inline-flex items-center gap-1 bg-green-500 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                  </svg>
+                  {plan.discount}% OFF
+                </span>
+              </div>
+            )}
+
             {/* Plan Name */}
             <h3 className="text-lg font-bold text-primary mb-2">{plan.name}</h3>
 
             {/* Price */}
             <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-3xl font-bold tracking-tight text-primary">
-                {isLoading ? (
-                  <span className="animate-pulse bg-gray-200 rounded w-16 h-8 inline-block" />
-                ) : (
-                  renderPrice(formatPrice(plan))
-                )}
-              </span>
-              <span className="text-xs text-text-dim">
-                {plan.periodMonthlyLabel}
-              </span>
+              {plan.contactSales ? (
+                <span className="text-3xl font-bold tracking-tight text-primary">Custom</span>
+              ) : (
+                <>
+                  <span className="text-3xl font-bold tracking-tight text-primary">
+                    {isLoading ? (
+                      <span className="animate-pulse bg-gray-200 rounded w-16 h-8 inline-block" />
+                    ) : (
+                      formatPrice(plan)
+                    )}
+                  </span>
+                  <span className="text-xs text-text-dim">
+                    {plan.periodMonthlyLabel}
+                  </span>
+                </>
+              )}
             </div>
+
+            {/* Original price strikethrough */}
+            {!isLoading && plan.discount && formatOriginalPrice(plan) && (
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-sm text-text-dim line-through">
+                  {formatOriginalPrice(plan)}
+                </span>
+                <span className="text-xs font-medium text-green-600">
+                  Save {plan.discount}%
+                </span>
+              </div>
+            )}
 
             {/* Tagline */}
             <p className="text-sm text-text-dim mb-4">{plan.tagline}</p>

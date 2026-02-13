@@ -40,7 +40,7 @@ export default function PricingPage() {
             name: "Thrive",
             priceINR: 299,
             priceUSD: 15,
-            periodMonthlyLabel: "per child / month",
+            periodMonthlyLabel: "per month",
             tagline: "For advanced insights",
             cta: "Contact Sales",
             features: [

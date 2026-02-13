@@ -106,6 +106,7 @@ export async function GET(request: NextRequest) {
             amount: subscriptionItem?.price?.unit_amount,
             currency: subscriptionItem?.price?.currency,
             interval: subscriptionItem?.price?.recurring?.interval,
+            intervalCount: subscriptionItem?.price?.recurring?.interval_count || 1,
           }
         : null,
       invoices: invoices.data.map((inv) => ({
