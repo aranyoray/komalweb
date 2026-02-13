@@ -35,7 +35,7 @@ if (privateKey) {
     }
   }
   // Replace literal \n sequences with actual newlines
-  privateKey = privateKey.replace(/\\n/g, '\n');
+  privateKey = privateKey!.replace(/\\n/g, '\n');
 
   console.log('[firebase-admin] After processing:', {
     startsWithBegin: privateKey?.startsWith('-----'),
