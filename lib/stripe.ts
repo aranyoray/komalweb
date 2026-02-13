@@ -197,7 +197,7 @@ export const getWebhookSecret = (): string => {
  * Used for constructing return URLs and success URLs
  */
 export const getBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_BASE_URL || 'http://komalkids.com';
 };
 
 /**
