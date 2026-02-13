@@ -179,6 +179,9 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json();
         setSavedReports(data.reports || []);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        console.error("Failed to fetch reports:", response.status, data?.reason || data?.error);
       }
     } catch (error) {
       console.error("Failed to fetch reports:", error);
@@ -199,7 +202,7 @@ export default function DashboardPage() {
       const token = await getIdToken();
       if (!token) return;
 
-      await fetch("/api/reports", {
+      const res = await fetch("/api/reports", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -207,6 +210,11 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({ report: scanResult }),
       });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error("Failed to save report:", res.status, data?.reason || data?.error);
+      }
 
       // Refresh sidebar history
       fetchReports();

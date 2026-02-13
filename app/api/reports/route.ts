@@ -17,26 +17,33 @@ interface SavedReport {
   fullReport: Record<string, unknown>;
 }
 
+type AuthResult =
+  | { success: true; user: { uid: string; email: string; name: string } }
+  | { success: false; reason: string };
+
 // Helper to verify Firebase ID token and extract user info
-async function verifyAuthToken(request: NextRequest): Promise<{ uid: string; email: string; name: string } | null> {
+async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
   const authHeader = request.headers.get('Authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.error('[reports] Auth failed: Missing or malformed Authorization header');
-    return null;
+    const reason = 'Missing or malformed Authorization header';
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
   }
 
   const token = authHeader.split('Bearer ')[1];
 
   if (!token || token.length < 10) {
-    console.error('[reports] Auth failed: Token is empty or too short');
-    return null;
+    const reason = 'Token is empty or too short';
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
   }
 
   // Check if Firebase Admin SDK is initialized
   if (!db) {
-    console.error('[reports] Auth failed: Firebase Admin SDK not initialized. Check FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY env vars.');
-    return null;
+    const reason = 'Firebase Admin SDK not initialized - check FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY env vars in Vercel';
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
   }
 
   try {
@@ -44,24 +51,30 @@ async function verifyAuthToken(request: NextRequest): Promise<{ uid: string; ema
     // Fetch full user record for display name
     const userRecord = await getAuth().getUser(decodedToken.uid);
     return {
-      uid: decodedToken.uid,
-      email: userRecord.email || decodedToken.email || '',
-      name: userRecord.displayName || decodedToken.name || '',
+      success: true,
+      user: {
+        uid: decodedToken.uid,
+        email: userRecord.email || decodedToken.email || '',
+        name: userRecord.displayName || decodedToken.name || '',
+      },
     };
   } catch (error: any) {
-    console.error('[reports] Auth failed: verifyIdToken threw error:', error?.code || error?.message || error);
-    return null;
+    const reason = `verifyIdToken error: ${error?.code || error?.message || 'unknown'}`;
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
   }
 }
 
 // GET - Fetch all reports for the authenticated user
 export async function GET(request: NextRequest) {
   try {
-    const userInfo = await verifyAuthToken(request);
+    const auth = await verifyAuthToken(request);
 
-    if (!userInfo) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!auth.success) {
+      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
     }
+
+    const userInfo = auth.user;
 
     // Query report-history collection for this user
     const reportsSnapshot = await db
@@ -88,11 +101,13 @@ export async function GET(request: NextRequest) {
 // POST - Save a new report for the authenticated user
 export async function POST(request: NextRequest) {
   try {
-    const userInfo = await verifyAuthToken(request);
+    const auth = await verifyAuthToken(request);
 
-    if (!userInfo) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!auth.success) {
+      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
     }
+
+    const userInfo = auth.user;
 
     const body = await request.json();
     const { report } = body;
@@ -135,11 +150,13 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete a specific report
 export async function DELETE(request: NextRequest) {
   try {
-    const userInfo = await verifyAuthToken(request);
+    const auth = await verifyAuthToken(request);
 
-    if (!userInfo) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!auth.success) {
+      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
     }
+
+    const userInfo = auth.user;
 
     const { searchParams } = new URL(request.url);
     const reportId = searchParams.get('id');
