@@ -22,10 +22,22 @@ async function verifyAuthToken(request: NextRequest): Promise<{ uid: string; ema
   const authHeader = request.headers.get('Authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.error('[reports] Auth failed: Missing or malformed Authorization header');
     return null;
   }
 
   const token = authHeader.split('Bearer ')[1];
+
+  if (!token || token.length < 10) {
+    console.error('[reports] Auth failed: Token is empty or too short');
+    return null;
+  }
+
+  // Check if Firebase Admin SDK is initialized
+  if (!db) {
+    console.error('[reports] Auth failed: Firebase Admin SDK not initialized. Check FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY env vars.');
+    return null;
+  }
 
   try {
     const decodedToken = await getAuth().verifyIdToken(token);
@@ -36,8 +48,8 @@ async function verifyAuthToken(request: NextRequest): Promise<{ uid: string; ema
       email: userRecord.email || decodedToken.email || '',
       name: userRecord.displayName || decodedToken.name || '',
     };
-  } catch (error) {
-    console.error('Error verifying auth token:', error);
+  } catch (error: any) {
+    console.error('[reports] Auth failed: verifyIdToken threw error:', error?.code || error?.message || error);
     return null;
   }
 }

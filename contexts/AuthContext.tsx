@@ -65,6 +65,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setLoading(false);
+
+      // Log visitor location once per session
+      try {
+        if (typeof window !== 'undefined' && !sessionStorage.getItem('location_logged')) {
+          sessionStorage.setItem('location_logged', '1');
+          fetch('/api/log-location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: firebaseUser?.uid || null }),
+          });
+        }
+      } catch {
+        // Silent fail — location logging is non-critical
+      }
     });
 
     return () => unsubscribe();
