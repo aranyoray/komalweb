@@ -48,13 +48,19 @@ async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
 
   // Log token format for debugging
   const tokenParts = token.split('.');
+  // Decode JWT payload to check audience/issuer
+  let tokenPayload: any = {};
+  try {
+    tokenPayload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+  } catch { /* ignore */ }
+
   console.log('[reports] Token debug:', {
     tokenLength: token.length,
     jwtParts: tokenParts.length,
-    firstChars: token.substring(0, 20),
-    lastChars: token.substring(token.length - 10),
-    dbInitialized: !!db,
-    appsCount: require('firebase-admin/app').getApps().length,
+    tokenAud: tokenPayload.aud,
+    tokenIss: tokenPayload.iss,
+    serverProjectId: process.env.FIREBASE_PROJECT_ID,
+    projectIdMatch: tokenPayload.aud === process.env.FIREBASE_PROJECT_ID,
   });
 
   try {
