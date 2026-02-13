@@ -25,16 +25,16 @@ export default function AboutKomalPage() {
             "founders": [
               {
                 "@type": "Person",
-                "name": "Aranyo Ray",
+                "name": "Saarthak Kumar",
                 "jobTitle": "Co-Founder & CEO",
-                "alumniOf": "Yale University",
-                "award": "1st Place, APA at ISEF"
+                "alumniOf": "Columbia University, London School of Economics"
               },
               {
                 "@type": "Person",
-                "name": "Jvalaj Pandey",
+                "name": "Aranyo Ray",
                 "jobTitle": "Co-Founder & CTO",
-                "alumniOf": "University of South Florida"
+                "alumniOf": "Yale University",
+                "award": "1st Place, APA at ISEF"
               }
             ],
             "sameAs": [
@@ -138,46 +138,60 @@ export default function AboutKomalPage() {
               <h2 className="text-3xl font-bold mb-6 text-text">Founding Team</h2>
               <div className="space-y-8">
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Aranyo Ray</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Saarthak Kumar</h3>
                   <p className="text-sm text-text-dim mb-3">Co-Founder & CEO</p>
                   <p className="text-text-dim leading-relaxed">
-                    Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. 
-                    A Wu Tsai Scholar at Yale University investigating implicit bias in multicultural learning, he won 
-                    1st Place from the American Psychological Association (APA) at ISEF for his culturally relevant 
-                    game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads 
-                    overall execution and expansion.
+                    Saarthak holds MPAs from Columbia University and the London School of Economics in economic
+                    policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India
+                    at the United Nations, bringing expertise in international policy and development economics.
+                    At Komal, he leads overall strategy and execution.
                   </p>
                   <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> Wu Tsai Scholar, Yale University | Ex-Graymatics, Commenda | 
+                    <strong>Credentials:</strong> MPA, Columbia & LSE | Ex-UN Advisor
+                  </p>
+                </div>
+
+                <div className="bg-surface/50 p-6 rounded-lg border border-border">
+                  <h3 className="text-xl font-semibold mb-2 text-text">Aranyo Ray</h3>
+                  <p className="text-sm text-text-dim mb-3">Co-Founder & CTO</p>
+                  <p className="text-text-dim leading-relaxed">
+                    Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda.
+                    A Wu Tsai Scholar at Yale University investigating implicit bias in multicultural learning, he won
+                    1st Place from the American Psychological Association (APA) at ISEF for his culturally relevant
+                    game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads
+                    technology and product development.
+                  </p>
+                  <p className="text-sm text-text-dim mt-2">
+                    <strong>Credentials:</strong> Wu Tsai Scholar, Yale University | Ex-Graymatics, Commenda |
                     Published in Harvard's Journal of Emerging Investigators
                   </p>
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Jvalaj Pandey</h3>
-                  <p className="text-sm text-text-dim mb-3">Co-Founder & CTO</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Jvalaj is a Full Stack Engineer and Designer specializing in high-performance web interfaces and 
-                    AI-driven design. With experience at Delta Air Lines and Nucor Steel, he leads Komal's technical 
-                    implementation. He previously built AI tools like GRID and VS Chat, combining artistic vision 
-                    with scalable engineering to build the future of child safety.
-                  </p>
-                  <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> Ex-Delta Air Lines, Nucor | BS CS @ USF (Honors) | Full Stack Engineer
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Saarthak Kumar</h3>
-                  <p className="text-sm text-text-dim mb-3">Policy Lead</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Saarthak holds MPAs from Columbia University and the London School of Economics in economic 
-                    policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India 
-                    at the United Nations, bringing expertise in international policy and development economics.
-                  </p>
-                  <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> MPA, Columbia & LSE | Ex-UN Advisor
-                  </p>
+                  <div className="flex items-start gap-5">
+                    <div className="shrink-0">
+                      <Image
+                        src="/joy-cai.png"
+                        alt="Joy Cai"
+                        width={96}
+                        height={96}
+                        className="rounded-full object-cover w-20 h-20 md:w-24 md:h-24"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2 text-text">Joy Cai</h3>
+                      <p className="text-sm text-text-dim mb-3">Growth & Partnership</p>
+                      <p className="text-text-dim leading-relaxed">
+                        Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian
+                        platform that provides nutritional counseling backed by health insurance. Previously, she was
+                        Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep
+                        experience in fundraising, operations, and growth.
+                      </p>
+                      <p className="text-sm text-text-dim mt-2">
+                        <strong>Credentials:</strong> BA Economics, UPenn | Founder, Solis Health | Ex-Chief of Staff, Flagler Health
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
