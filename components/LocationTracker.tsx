@@ -34,7 +34,7 @@ export default function LocationTracker() {
           // Geo lookup blocked/failed — continue with defaults
         }
 
-        await addDoc(collection(db, 'location'), {
+        await addDoc(collection(db!, 'location'), {
           ip,
           country,
           state,
