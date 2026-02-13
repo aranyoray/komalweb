@@ -14,22 +14,34 @@ export default function LocationTracker() {
 
     const logLocation = async () => {
       try {
-        // Single call: ipwho.is returns IP + geo data together
-        const geoRes = await fetch('https://ipwho.is/');
-        const geoData = await geoRes.json();
+        // Try to get geo data; if blocked by ad blocker, still log with uid
+        let ip = 'unknown';
+        let country = 'unknown';
+        let state = 'unknown';
+        let city = 'unknown';
 
-        await fetch('/api/log-location', {
+        try {
+          const geoRes = await fetch('https://ipwho.is/');
+          const geoData = await geoRes.json();
+          if (geoData.success !== false) {
+            ip = geoData.ip || 'unknown';
+            country = geoData.country || 'unknown';
+            state = geoData.region || 'unknown';
+            city = geoData.city || 'unknown';
+          }
+        } catch {
+          // Geo lookup blocked/failed — continue with defaults
+        }
+
+        const res = await fetch('/api/log-location', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            uid: user?.uid || null,
-            ip: geoData.ip || 'unknown',
-            country: geoData.country || 'unknown',
-            state: geoData.region || 'unknown',
-            city: geoData.city || 'unknown',
-          }),
+          body: JSON.stringify({ uid: user?.uid || null, ip, country, state, city }),
         });
-        sessionStorage.setItem('location_logged', '1');
+
+        if (res.ok) {
+          sessionStorage.setItem('location_logged', '1');
+        }
       } catch (error) {
         console.error('Location logging failed:', error);
       }
