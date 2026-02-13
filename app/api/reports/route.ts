@@ -46,22 +46,20 @@ async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
     return { success: false, reason };
   }
 
-  // Log token format for debugging
-  const tokenParts = token.split('.');
   // Decode JWT payload to check audience/issuer
+  const tokenParts = token.split('.');
   let tokenPayload: any = {};
   try {
     tokenPayload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
   } catch { /* ignore */ }
 
-  console.log('[reports] Token debug:', {
-    tokenLength: token.length,
+  const debug = {
     jwtParts: tokenParts.length,
     tokenAud: tokenPayload.aud,
     tokenIss: tokenPayload.iss,
     serverProjectId: process.env.FIREBASE_PROJECT_ID,
     projectIdMatch: tokenPayload.aud === process.env.FIREBASE_PROJECT_ID,
-  });
+  };
 
   try {
     const decodedToken = await getAuth().verifyIdToken(token);
@@ -76,9 +74,9 @@ async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
       },
     };
   } catch (error: any) {
-    const reason = `verifyIdToken error: ${error?.code || error?.message || 'unknown'} - ${error?.stack?.split('\n')[1]?.trim() || ''}`;
-    console.error('[reports] Auth failed:', reason);
-    return { success: false, reason };
+    const reason = `verifyIdToken error: ${error?.code || error?.message || 'unknown'}`;
+    console.error('[reports] Auth failed:', reason, debug);
+    return { success: false, reason, ...debug } as any;
   }
 }
 

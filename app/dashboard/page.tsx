@@ -181,7 +181,7 @@ export default function DashboardPage() {
         setSavedReports(data.reports || []);
       } else {
         const data = await response.json().catch(() => ({}));
-        console.error("Failed to fetch reports:", response.status, data?.reason || data?.error);
+        console.error("Failed to fetch reports:", response.status, data);
       }
     } catch (error) {
       console.error("Failed to fetch reports:", error);
