@@ -11,6 +11,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 import TopBanner from "@/components/TopBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import LocationTracker from "@/components/LocationTracker";
 
 // Removed Inter configuration
 
@@ -147,6 +148,7 @@ export default function RootLayout({
       <body className="antialiased font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
         <GoogleAnalytics />
         <AuthProvider>
+          <LocationTracker />
           <IntroLoader />
           <TopBanner />
           <Navbar />
