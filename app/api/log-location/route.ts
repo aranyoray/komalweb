@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 
-interface GeoData {
-  ip: string;
-  country: string;
-  regionName: string; // state
-  city: string;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -18,23 +11,22 @@ export async function POST(request: NextRequest) {
     if (!ip) {
       const forwarded = request.headers.get('x-forwarded-for');
       ip = forwarded ? forwarded.split(',')[0].trim() : request.headers.get('x-real-ip') || 'unknown';
-      // Strip IPv6-mapped IPv4 prefix
       ip = ip.replace(/^::ffff:/, '');
     }
 
-    // Fetch geolocation data from ip-api.com (free, no key needed)
+    // Fetch geolocation from ipwho.is (free, HTTPS, no key needed)
     let country = 'unknown';
     let state = 'unknown';
     let city = 'unknown';
 
     try {
-      const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,query`);
+      const geoRes = await fetch(`https://ipwho.is/${ip}`);
       if (geoRes.ok) {
-        const geoData: GeoData = await geoRes.json();
-        if ((geoData as GeoData & { status: string }).status === 'success') {
-          country = geoData.country;
-          state = geoData.regionName;
-          city = geoData.city;
+        const geoData = await geoRes.json();
+        if (geoData.success !== false) {
+          country = geoData.country || 'unknown';
+          state = geoData.region || 'unknown';
+          city = geoData.city || 'unknown';
         }
       }
     } catch (geoError) {
