@@ -46,6 +46,17 @@ async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
     return { success: false, reason };
   }
 
+  // Log token format for debugging
+  const tokenParts = token.split('.');
+  console.log('[reports] Token debug:', {
+    tokenLength: token.length,
+    jwtParts: tokenParts.length,
+    firstChars: token.substring(0, 20),
+    lastChars: token.substring(token.length - 10),
+    dbInitialized: !!db,
+    appsCount: require('firebase-admin/app').getApps().length,
+  });
+
   try {
     const decodedToken = await getAuth().verifyIdToken(token);
     // Fetch full user record for display name
@@ -59,7 +70,7 @@ async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
       },
     };
   } catch (error: any) {
-    const reason = `verifyIdToken error: ${error?.code || error?.message || 'unknown'}`;
+    const reason = `verifyIdToken error: ${error?.code || error?.message || 'unknown'} - ${error?.stack?.split('\n')[1]?.trim() || ''}`;
     console.error('[reports] Auth failed:', reason);
     return { success: false, reason };
   }
