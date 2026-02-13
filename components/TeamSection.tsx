@@ -34,7 +34,7 @@ const coreTeam: TeamMember[] = [
         name: "Joy Cai",
         role: "Growth & Partnership",
         credentials: ["BA Economics, UPenn", "Founder, Solis Health", "Ex-Chief of Staff, Flagler Health"],
-        image: "/joy_cai-edit.png",
+        image: "/joy-cai.png",
         description: "Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian platform that provides nutritional counseling backed by health insurance. Previously, she was Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep experience in fundraising, operations, and growth.",
         tagline: "Driving growth and strategic partnerships",
     },
