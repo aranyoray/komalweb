@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Plan = {
   name: string;
@@ -14,6 +16,7 @@ type Plan = {
   featured?: boolean;
   cta: string;
   features: string[];
+  stripePriceEnv?: string; // env var name for Stripe price ID
 };
 
 type GeoData = {
@@ -106,7 +109,16 @@ const FALLBACK_RATES: Record<string, number> = {
   NPR: 133,
 };
 
+// Map plan names to Stripe price env var keys
+const PLAN_PRICE_MAP: Record<string, string> = {
+  Grow: 'grow',
+  Thrive: 'thrive',
+  Partner: 'partner',
+};
+
 export default function PricingSection({ plans }: { plans: Plan[] }) {
+  const router = useRouter();
+  const { user, getIdToken } = useAuth();
   const [geoData, setGeoData] = useState<GeoData>({
     isIndia: false,
     currencyCode: "USD",
@@ -114,6 +126,7 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
     exchangeRate: 1,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const detectLocation = async () => {
@@ -212,6 +225,46 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
     return <span>{priceStr}</span>;
   };
 
+  const handlePlanClick = async (plan: Plan) => {
+    const planKey = PLAN_PRICE_MAP[plan.name];
+
+    // Essentials (free) plan → sign up
+    if (!planKey) {
+      router.push('/sign-up');
+      return;
+    }
+
+    // Paid plans require auth
+    if (!user) {
+      router.push(`/sign-in?redirect=/pricing`);
+      return;
+    }
+
+    setCheckoutLoading(plan.name);
+    try {
+      const token = await getIdToken();
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ priceId: planKey }),
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error('No checkout URL returned:', data);
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Loading state with skeleton */}
@@ -283,14 +336,18 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
 
             {/* CTA Button */}
             <Button
-              asChild
+              onClick={() => handlePlanClick(plan)}
+              disabled={checkoutLoading === plan.name}
               className={`w-full rounded-xl text-sm py-2.5 ${plan.featured
                 ? "bg-primary text-white hover:bg-primary/90"
                 : "bg-gray-100 text-primary hover:bg-gray-200"
                 }`}
               size="default"
             >
-              <a href="#">{plan.cta}</a>
+              {checkoutLoading === plan.name ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : null}
+              {plan.cta}
             </Button>
           </div>
         ))}

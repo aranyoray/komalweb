@@ -32,7 +32,7 @@ export default function SignUpPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user && !success) {
-      router.push("/dashboard");
+      router.push("/onboarding");
     }
   }, [user, success, router]);
 
@@ -79,7 +79,7 @@ export default function SignUpPage() {
 
       // Redirect after showing success animation
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/onboarding");
       }, 2000);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred";
@@ -109,7 +109,7 @@ export default function SignUpPage() {
       }
       setSuccess(true);
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/onboarding");
       }, 2000);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred";

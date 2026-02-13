@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
+import { FieldValue } from 'firebase-admin/firestore';
 // import { spawn } from 'child_process';
 import * as cheerio from 'cheerio';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
@@ -2870,14 +2873,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL or keyword is required' }, { status: 400 });
     }
 
+    // Check usage limits for authenticated users
+    let userId: string | null = null;
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ') && db) {
+      const token = authHeader.split('Bearer ')[1];
+      try {
+        const decoded = await getAuth().verifyIdToken(token);
+        userId = decoded.uid;
+
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          const plan = userData?.plan || 'free';
+          const reportsUsed = userData?.reportsUsed || 0;
+
+          if (plan === 'free' && reportsUsed >= 5) {
+            return NextResponse.json(
+              { error: 'FREE_LIMIT_REACHED' },
+              { status: 403 }
+            );
+          }
+        }
+      } catch (authError) {
+        // Auth verification failed - continue without usage tracking
+        console.log('[scan-url] Auth verification failed, proceeding without usage tracking');
+      }
+    }
+
     const input = url.trim();
 
+    let result;
     // Check if input is a valid URL or a keyword
     if (isValidUrl(input)) {
       // It's a valid URL - analyze it
       try {
-        const result = await analyzeUrlOptimized(input);
-        return NextResponse.json(result);
+        result = await analyzeUrlOptimized(input);
       } catch (error) {
         // If URL analysis fails completely, return error
         console.error('URL analysis failed:', error);
@@ -2892,8 +2923,7 @@ export async function POST(request: NextRequest) {
       // Not a valid URL - treat as keyword search
       console.log(`📝 [KOMAL] Input "${input}" is not a URL, treating as keyword search`);
       try {
-        const result = await analyzeKeywordOptimized(input);
-        return NextResponse.json(result);
+        result = await analyzeKeywordOptimized(input);
       } catch (error) {
         // Keyword analysis should rarely fail since it uses direct pattern matching
         console.error('Keyword analysis failed:', error);
@@ -2902,6 +2932,19 @@ export async function POST(request: NextRequest) {
         }, { status: 500 });
       }
     }
+
+    // Increment reportsUsed for authenticated users after successful scan
+    if (userId && db) {
+      try {
+        await db.collection('users').doc(userId).update({
+          reportsUsed: FieldValue.increment(1),
+        });
+      } catch (incError) {
+        console.error('[scan-url] Failed to increment reportsUsed:', incError);
+      }
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error in scan endpoint:', error);
     return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });

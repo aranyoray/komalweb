@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useRef, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import confetti from "canvas-confetti";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -35,6 +35,10 @@ import {
   PanelLeftClose,
   PanelLeft,
   Sparkles,
+  LogOut,
+  CreditCard,
+  HelpCircle,
+  ChevronDown,
 } from "lucide-react";
 import { generateSafetyReportPDF } from "@/lib/generatePDF";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -127,8 +131,20 @@ interface SavedReport {
 }
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-purple-50/30 to-white">
+        <div className="w-8 h-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const router = useRouter();
-  const { user, userData, loading: authLoading, logout, getIdToken } = useAuth();
+  const { user, userData, loading: authLoading, logout, getIdToken, refreshUserData } = useAuth();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -137,6 +153,10 @@ export default function DashboardPage() {
   const [loadingReports, setLoadingReports] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const searchParams = useSearchParams();
 
   // Modal states
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -157,12 +177,76 @@ export default function DashboardPage() {
   const safeKeywords =
     result?.contentAnalysis.textAnalysis.safeKeywordsFound ?? [];
 
-  // Redirect to sign-in if not authenticated
+  // Redirect to sign-in if not authenticated, or to onboarding if not completed
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/sign-in");
+    } else if (!authLoading && user && userData && userData.onboardingCompleted !== true) {
+      router.push("/onboarding");
     }
-  }, [authLoading, user, router]);
+  }, [authLoading, user, userData, router]);
+
+  // Detect payment success and show celebration
+  useEffect(() => {
+    if (!user) return; // Wait for auth to be ready before verifying payment
+    if (searchParams.get('payment') === 'success') {
+      const sessionId = searchParams.get('session_id');
+
+      const verifyAndCelebrate = async () => {
+        // Verify payment server-side to ensure Firestore is updated
+        if (sessionId) {
+          try {
+            const token = await getIdToken();
+            if (token) {
+              await fetch('/api/stripe/verify-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ sessionId }),
+              });
+            }
+          } catch (err) {
+            console.error('Payment verification error:', err);
+          }
+        }
+
+        await refreshUserData();
+        setShowCelebration(true);
+
+        // Fire confetti
+        const duration = 3000;
+        const end = Date.now() + duration;
+        const frame = () => {
+          confetti({
+            particleCount: 3,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#6B4E71', '#9b59b6', '#e74c3c', '#f39c12', '#2ecc71'],
+          });
+          confetti({
+            particleCount: 3,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#6B4E71', '#9b59b6', '#e74c3c', '#f39c12', '#2ecc71'],
+          });
+          if (Date.now() < end) requestAnimationFrame(frame);
+        };
+        frame();
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => setShowCelebration(false), 5000);
+
+        // Remove query params
+        router.replace('/dashboard', { scroll: false });
+      };
+
+      verifyAndCelebrate();
+    }
+  }, [user, searchParams, refreshUserData, router, getIdToken]);
 
   // Fetch saved reports on load
   const fetchReports = useCallback(async () => {
@@ -295,6 +379,12 @@ export default function DashboardPage() {
       return;
     }
 
+    // Client-side early exit for free limit
+    if (userData?.plan === 'free' && (userData?.reportsUsed ?? 0) >= 5) {
+      setShowLimitModal(true);
+      return;
+    }
+
     setLoading(true);
     setError("");
     setResult(null);
@@ -324,19 +414,33 @@ export default function DashboardPage() {
         input = "https://" + input;
       }
 
+      const token = await getIdToken();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch("/api/scan-url", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({ url: input }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.error === 'FREE_LIMIT_REACHED') {
+          setShowLimitModal(true);
+          setLoading(false);
+          return;
+        }
         throw new Error(data.error || "Failed to analyze");
       }
+
+      // Refresh user data to get updated reportsUsed count
+      refreshUserData();
 
       setResult(data);
 
@@ -774,6 +878,84 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Celebration Modal */}
+      {showCelebration && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowCelebration(false)}
+        >
+          <div
+            className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl max-w-md w-full p-6 md:p-8 relative animate-in fade-in zoom-in duration-200 ring-1 ring-primary/5 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">🎉</div>
+            <h3 className="text-2xl font-bold text-primary mb-2">
+              Welcome to {userData?.planName || 'your new plan'}!
+            </h3>
+            <p className="text-sm text-text-dim mb-4">
+              Your subscription is now active. Enjoy unlimited reports!
+            </p>
+            {userData?.subscriptionEndDate && (
+              <p className="text-xs text-text-dim mb-6">
+                Renews on {new Date(userData.subscriptionEndDate).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </p>
+            )}
+            <Button
+              onClick={() => setShowCelebration(false)}
+              className="btn-primary-premium text-white px-8 py-3 h-auto rounded-full border-0"
+            >
+              Start Analyzing
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Free Limit Reached Modal */}
+      {showLimitModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl max-w-md w-full p-6 md:p-8 relative animate-in fade-in zoom-in duration-200 ring-1 ring-primary/5">
+            <button
+              onClick={() => setShowLimitModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <AlertTriangle className="w-7 h-7 text-amber-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-primary">
+                Free Limit Reached
+              </h3>
+              <p className="text-sm text-text-dim mt-2">
+                You&apos;ve used all 5 free reports. Upgrade to continue analyzing websites and keep your children safe.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => router.push('/pricing')}
+                className="w-full btn-primary-premium text-white py-3.5 h-auto rounded-full border-0"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                View Plans
+              </Button>
+              <button
+                onClick={() => setShowLimitModal(false)}
+                className="w-full text-sm text-text-dim hover:text-primary transition-colors py-2"
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Reports Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" onClick={() => setMobileMenuOpen(false)}>
@@ -883,7 +1065,7 @@ export default function DashboardPage() {
         >
           <div className="flex-1 overflow-y-auto pt-6">
             {/* User Info */}
-            <div className="p-4 border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+            <div className="p-4 border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent relative">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-violet-200 rounded-full flex items-center justify-center text-primary font-bold text-sm">
                   {(userData?.name || user?.email || "U").charAt(0).toUpperCase()}
@@ -892,16 +1074,58 @@ export default function DashboardPage() {
                   <p className="text-sm font-semibold text-primary truncate">
                     {userData?.name || user?.email || "User"}
                   </p>
-                  <p className="text-xs text-text-dim">Safety Dashboard</p>
+                  <p className="text-xs text-text-dim">
+                    {userData?.planName || 'Free'} Plan
+                  </p>
                 </div>
                 <button
-                  onClick={logout}
-                  className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors group"
-                  title="Sign out"
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary/20 transition-colors"
                 >
-                  <LogOut className="w-4 h-4 text-primary group-hover:text-red-500" />
+                  <ChevronDown className={`w-4 h-4 text-primary transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
               </div>
+
+              {/* Profile Dropdown */}
+              {profileDropdownOpen && (
+                <div className="absolute left-4 right-4 top-full mt-1 bg-white rounded-2xl shadow-xl border border-primary/10 py-2 z-50">
+                  <Link
+                    href="/billing"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                  >
+                    <CreditCard className="w-4 h-4 text-primary/60" />
+                    Billing
+                  </Link>
+                  <Link
+                    href="/help"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4 text-primary/60" />
+                    Help
+                  </Link>
+                  <Link
+                    href="/privacy"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                  >
+                    <Shield className="w-4 h-4 text-primary/60" />
+                    Privacy
+                  </Link>
+                  <div className="border-t border-gray-100 my-1" />
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      logout();
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* New Analysis Button */}
@@ -1013,13 +1237,53 @@ export default function DashboardPage() {
                   <span className="text-lg font-bold text-primary">KOMAL</span>
                 </Link>
               </div>
-              <button
-                onClick={logout}
-                className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center hover:bg-red-50 transition-colors"
-                title="Sign out"
-              >
-                <LogOut className="w-4 h-4 text-primary" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary/20 transition-colors"
+                >
+                  <ChevronDown className={`w-4 h-4 text-primary transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-primary/10 py-2 z-50">
+                    <Link
+                      href="/billing"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                    >
+                      <CreditCard className="w-4 h-4 text-primary/60" />
+                      Billing
+                    </Link>
+                    <Link
+                      href="/help"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                    >
+                      <HelpCircle className="w-4 h-4 text-primary/60" />
+                      Help
+                    </Link>
+                    <Link
+                      href="/privacy"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                    >
+                      <Shield className="w-4 h-4 text-primary/60" />
+                      Privacy
+                    </Link>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        logout();
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
 

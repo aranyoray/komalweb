@@ -2,34 +2,13 @@
  * Stripe Subscription Webhooks Handler
  * =====================================
  *
- * This endpoint handles standard (V1) webhook events for subscriptions.
- * These events notify your application when:
- * - Subscriptions are created, updated, or cancelled
- * - Invoices are paid or fail
- * - Payment methods are added or removed
+ * Handles standard webhook events for subscriptions with Firestore writes.
  *
- * ENDPOINT:
- * - POST /api/stripe/webhooks/subscriptions - Receive subscription events
- *
- * IMPORTANT: These are NOT thin events. They use the standard webhook
- * format with full event data included in the payload.
- *
- * SETUP INSTRUCTIONS:
- * 1. Go to Stripe Dashboard > Developers > Webhooks
- * 2. Click "+ Add endpoint"
- * 3. Set the endpoint URL to: https://your-domain.com/api/stripe/webhooks/subscriptions
- * 4. Select the following events:
- *    - customer.subscription.created
- *    - customer.subscription.updated
- *    - customer.subscription.deleted
- *    - invoice.paid
- *    - invoice.payment_failed
- *    - payment_method.attached
- *    - payment_method.detached
- *    - customer.updated
- *    - customer.tax_id.created/updated/deleted
- *    - billing_portal.session.created
- * 5. Copy the signing secret to STRIPE_WEBHOOK_SECRET
+ * SETUP:
+ * 1. Stripe Dashboard > Developers > Webhooks > Add endpoint
+ * 2. URL: https://your-domain.com/api/stripe/webhooks/subscriptions
+ * 3. Events: customer.subscription.created/updated/deleted, invoice.paid/payment_failed
+ * 4. Copy signing secret to STRIPE_WEBHOOK_SECRET
  *
  * LOCAL TESTING:
  * stripe listen --forward-to http://localhost:3001/api/stripe/webhooks/subscriptions
@@ -38,54 +17,83 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import stripeClient, { getWebhookSecret } from '@/lib/stripe';
+import { db } from '@/lib/firebase-admin';
 
-// =============================================================================
-// POST - Handle Subscription Webhook Events
-// =============================================================================
+// Map Stripe Price IDs to plan names
+function getPlanFromPriceId(priceId: string): 'grow' | 'thrive' | 'partner' | 'ambassador' | 'free' {
+  const priceMap: Record<string, 'grow' | 'thrive' | 'partner' | 'ambassador'> = {};
+
+  if (process.env.STRIPE_PRICE_GROW) priceMap[process.env.STRIPE_PRICE_GROW] = 'grow';
+  if (process.env.STRIPE_PRICE_THRIVE) priceMap[process.env.STRIPE_PRICE_THRIVE] = 'thrive';
+  if (process.env.STRIPE_PRICE_PARTNER) priceMap[process.env.STRIPE_PRICE_PARTNER] = 'partner';
+  if (process.env.STRIPE_PRICE_AMBASSADOR) priceMap[process.env.STRIPE_PRICE_AMBASSADOR] = 'ambassador';
+
+  return priceMap[priceId] || 'grow';
+}
+
+// Find Firestore user doc by stripeCustomerId or by subscription metadata
+async function findUserByStripeCustomer(customerId: string, metadata?: Stripe.Metadata): Promise<string | null> {
+  // First check metadata for firebaseUid
+  if (metadata?.firebaseUid) {
+    return metadata.firebaseUid;
+  }
+
+  // Query Firestore by stripeCustomerId
+  const snapshot = await db
+    .collection('users')
+    .where('stripeCustomerId', '==', customerId)
+    .limit(1)
+    .get();
+
+  if (!snapshot.empty) {
+    return snapshot.docs[0].id;
+  }
+
+  // Fallback: look up customer email in Stripe, find matching user
+  try {
+    const customer = await stripeClient.customers.retrieve(customerId);
+    if (customer && !('deleted' in customer && customer.deleted) && customer.email) {
+      const emailSnapshot = await db
+        .collection('users')
+        .where('email', '==', customer.email)
+        .limit(1)
+        .get();
+
+      if (!emailSnapshot.empty) {
+        // Also store the stripeCustomerId for future lookups
+        await emailSnapshot.docs[0].ref.update({ stripeCustomerId: customerId });
+        return emailSnapshot.docs[0].id;
+      }
+    }
+  } catch (e) {
+    console.error('Error looking up customer:', e);
+  }
+
+  return null;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the raw body for signature verification
     const body = await request.text();
-
-    // Get the Stripe signature header
     const signature = request.headers.get('stripe-signature');
 
     if (!signature) {
-      console.error('Missing stripe-signature header');
-      return NextResponse.json(
-        { error: 'Missing stripe-signature header' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 });
     }
 
-    // Get the webhook secret
     const webhookSecret = getWebhookSecret();
 
-    /**
-     * Verify the webhook signature and construct the event
-     *
-     * This ensures the webhook was sent by Stripe and hasn't been tampered with.
-     */
     let event: Stripe.Event;
     try {
       event = stripeClient.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
     console.log(`Received event: ${event.type} (${event.id})`);
 
-    // Handle different event types
     switch (event.type) {
-      // =======================================================================
-      // Subscription Events
-      // =======================================================================
-
       case 'customer.subscription.created':
         await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
         break;
@@ -98,10 +106,6 @@ export async function POST(request: NextRequest) {
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
 
-      // =======================================================================
-      // Invoice Events
-      // =======================================================================
-
       case 'invoice.paid':
         await handleInvoicePaid(event.data.object as Stripe.Invoice);
         break;
@@ -110,61 +114,18 @@ export async function POST(request: NextRequest) {
         await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
 
-      // =======================================================================
-      // Payment Method Events
-      // =======================================================================
-
-      case 'payment_method.attached':
-        await handlePaymentMethodAttached(event.data.object as Stripe.PaymentMethod);
-        break;
-
-      case 'payment_method.detached':
-        await handlePaymentMethodDetached(event.data.object as Stripe.PaymentMethod);
-        break;
-
-      // =======================================================================
-      // Customer Events
-      // =======================================================================
-
-      case 'customer.updated':
-        await handleCustomerUpdated(event.data.object as Stripe.Customer);
-        break;
-
-      // =======================================================================
-      // Tax ID Events
-      // =======================================================================
-
-      case 'customer.tax_id.created':
-      case 'customer.tax_id.updated':
-      case 'customer.tax_id.deleted':
-        await handleTaxIdEvent(event.type, event.data.object as Stripe.TaxId);
-        break;
-
-      // =======================================================================
-      // Billing Portal Events
-      // =======================================================================
-
-      case 'billing_portal.session.created':
-        await handleBillingPortalSessionCreated(event.data.object as Stripe.BillingPortal.Session);
-        break;
-
-      case 'billing_portal.configuration.created':
-      case 'billing_portal.configuration.updated':
-        console.log(`Billing portal configuration event: ${event.type}`);
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
         break;
 
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    // Return 200 to acknowledge receipt
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Webhook error:', error);
-    return NextResponse.json(
-      { error: 'Webhook handler error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Webhook handler error' }, { status: 500 });
   }
 }
 
@@ -172,370 +133,224 @@ export async function POST(request: NextRequest) {
 // Subscription Event Handlers
 // =============================================================================
 
-/**
- * Handle subscription created event
- *
- * Triggered when a new subscription is created.
- * This could be from:
- * - Checkout session completion
- * - API subscription creation
- * - Customer portal upgrade
- */
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   console.log(`Subscription created: ${subscription.id}`);
 
-  /**
-   * IMPORTANT: For V2 accounts, get the account ID from customer_account
-   * instead of customer
-   *
-   * const accountId = subscription.customer_account;
-   */
-  const accountId = (subscription as unknown as { customer_account?: string }).customer_account;
-  const priceId = subscription.items.data[0]?.price?.id;
-  const status = subscription.status;
+  const customerId = typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer.id;
 
-  console.log(`Account: ${accountId}, Price: ${priceId}, Status: ${status}`);
+  const userId = await findUserByStripeCustomer(customerId, subscription.metadata);
+  if (!userId) {
+    console.error(`No user found for customer ${customerId}`);
+    return;
+  }
 
-  /**
-   * TODO: Update your database with the subscription status
-   *
-   * Example:
-   * await db.collection('users').doc(userId).update({
-   *   subscriptionId: subscription.id,
-   *   subscriptionStatus: status,
-   *   subscriptionPriceId: priceId,
-   *   subscriptionStartDate: new Date(subscription.start_date * 1000),
-   *   subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-   * });
-   */
+  const priceId = subscription.items.data[0]?.price?.id || '';
+  const plan = getPlanFromPriceId(priceId);
+  const planNames: Record<string, string> = {
+    grow: 'Grow',
+    thrive: 'Thrive',
+    partner: 'Partner',
+    ambassador: 'Ambassador Community',
+    free: 'Free',
+  };
+
+  const periodEnd = subscription.items.data[0]?.current_period_end;
+
+  const updateData: Record<string, unknown> = {
+    plan,
+    planName: planNames[plan],
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+    subscriptionPriceId: priceId,
+    subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    stripeCustomerId: customerId,
+  };
+
+  if (plan === 'ambassador') {
+    updateData.role = 'ambassador';
+  }
+
+  await db.collection('users').doc(userId).update(updateData);
+
+  console.log(`Updated user ${userId} with plan: ${plan}`);
 }
 
-/**
- * Handle subscription updated event
- *
- * This is triggered for many subscription changes:
- * - Plan upgrades/downgrades
- * - Quantity changes
- * - Cancellation scheduled
- * - Trial ended
- * - Paused/resumed
- */
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   console.log(`Subscription updated: ${subscription.id}`);
 
-  const accountId = (subscription as unknown as { customer_account?: string }).customer_account;
-  const status = subscription.status;
-  const cancelAtPeriodEnd = subscription.cancel_at_period_end;
-  const priceId = subscription.items.data[0]?.price?.id;
-  const quantity = subscription.items.data[0]?.quantity;
+  const customerId = typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer.id;
 
-  console.log(`Account: ${accountId}, Status: ${status}, Cancel at period end: ${cancelAtPeriodEnd}`);
-
-  // Check for plan changes
-  const previousAttributes = (subscription as unknown as { previous_attributes?: Record<string, unknown> }).previous_attributes;
-  if (previousAttributes?.items) {
-    console.log('Plan change detected');
-    // Handle upgrade/downgrade logic
+  const userId = await findUserByStripeCustomer(customerId, subscription.metadata);
+  if (!userId) {
+    console.error(`No user found for customer ${customerId}`);
+    return;
   }
 
-  // Check for cancellation scheduling
-  if (cancelAtPeriodEnd) {
-    console.log('Subscription will cancel at period end');
-    /**
-     * TODO: Update database and optionally notify user
-     *
-     * await db.collection('users').doc(userId).update({
-     *   subscriptionCancelling: true,
-     *   subscriptionEndsAt: new Date(subscription.current_period_end * 1000),
-     * });
-     */
+  const priceId = subscription.items.data[0]?.price?.id || '';
+  const plan = getPlanFromPriceId(priceId);
+  const planNames: Record<string, string> = {
+    grow: 'Grow',
+    thrive: 'Thrive',
+    partner: 'Partner',
+    ambassador: 'Ambassador Community',
+    free: 'Free',
+  };
+
+  const periodEnd = subscription.items.data[0]?.current_period_end;
+
+  const updateData: Record<string, unknown> = {
+    plan,
+    planName: planNames[plan],
+    subscriptionStatus: subscription.status,
+    subscriptionPriceId: priceId,
+    subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+  };
+
+  if (plan === 'ambassador') {
+    updateData.role = 'ambassador';
   }
 
-  // Check for reactivation (user un-cancelled)
-  if (previousAttributes && 'cancel_at_period_end' in previousAttributes && !cancelAtPeriodEnd) {
-    console.log('Subscription reactivated');
-    /**
-     * TODO: Update database
-     *
-     * await db.collection('users').doc(userId).update({
-     *   subscriptionCancelling: false,
-     *   subscriptionEndsAt: null,
-     * });
-     */
+  if (subscription.cancel_at_period_end) {
+    updateData.subscriptionStatus = 'canceling';
   }
 
-  // Check for paused collections
-  const pauseCollection = subscription.pause_collection;
-  if (pauseCollection) {
-    console.log(`Subscription collection paused, resumes at: ${pauseCollection.resumes_at}`);
-  }
-
-  /**
-   * TODO: Update database with current status
-   *
-   * await db.collection('users').doc(userId).update({
-   *   subscriptionStatus: status,
-   *   subscriptionPriceId: priceId,
-   *   subscriptionQuantity: quantity,
-   *   subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-   * });
-   */
+  await db.collection('users').doc(userId).update(updateData);
+  console.log(`Updated subscription for user ${userId}`);
 }
 
-/**
- * Handle subscription deleted event
- *
- * Triggered when a subscription is cancelled.
- * This could be:
- * - Immediate cancellation
- * - End of period cancellation
- * - Cancelled due to payment failure
- */
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   console.log(`Subscription deleted: ${subscription.id}`);
 
-  const accountId = (subscription as unknown as { customer_account?: string }).customer_account;
+  const customerId = typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer.id;
 
-  console.log(`Account: ${accountId}`);
+  const userId = await findUserByStripeCustomer(customerId, subscription.metadata);
+  if (!userId) {
+    console.error(`No user found for customer ${customerId}`);
+    return;
+  }
 
-  /**
-   * TODO: Revoke access and update database
-   *
-   * This is where you should:
-   * 1. Revoke access to premium features
-   * 2. Update the user's subscription status in your database
-   * 3. Optionally send a "sorry to see you go" email
-   *
-   * await db.collection('users').doc(userId).update({
-   *   subscriptionId: null,
-   *   subscriptionStatus: 'cancelled',
-   *   subscriptionPriceId: null,
-   *   premiumAccess: false,
-   * });
-   *
-   * await sendEmail({
-   *   to: userEmail,
-   *   template: 'subscription_cancelled',
-   * });
-   */
+  await db.collection('users').doc(userId).update({
+    plan: 'free',
+    planName: 'Free',
+    subscriptionId: null,
+    subscriptionStatus: 'canceled',
+    subscriptionPriceId: null,
+    subscriptionEndDate: null,
+    reportsUsed: 0,
+  });
+
+  console.log(`Revoked access for user ${userId}`);
 }
 
-// =============================================================================
-// Invoice Event Handlers
-// =============================================================================
-
-/**
- * Handle invoice paid event
- *
- * Triggered when an invoice is successfully paid.
- * This confirms that the subscription payment went through.
- */
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   console.log(`Invoice paid: ${invoice.id}`);
 
-  // Cast invoice to access properties that may vary in SDK type definitions
-  const invoiceData = invoice as unknown as {
-    customer_account?: string;
-    amount_paid: number;
-    subscription?: string;
-    currency: string;
-  };
+  const customerId = typeof invoice.customer === 'string'
+    ? invoice.customer
+    : (invoice.customer as Stripe.Customer)?.id;
 
-  const accountId = invoiceData.customer_account;
-  const amountPaid = invoiceData.amount_paid;
-  const subscriptionId = invoiceData.subscription;
+  if (!customerId) return;
 
-  console.log(`Account: ${accountId}, Amount: ${amountPaid}, Subscription: ${subscriptionId}`);
+  const userId = await findUserByStripeCustomer(customerId);
+  if (!userId) return;
 
-  /**
-   * TODO: Record the payment in your database
-   *
-   * await db.collection('payments').add({
-   *   invoiceId: invoice.id,
-   *   accountId: accountId,
-   *   amount: amountPaid,
-   *   currency: invoiceData.currency,
-   *   paidAt: new Date(),
-   *   subscriptionId: subscriptionId,
-   * });
-   *
-   * // Ensure access is granted
-   * await db.collection('users').doc(userId).update({
-   *   premiumAccess: true,
-   *   lastPaymentDate: new Date(),
-   * });
-   */
+  await db.collection('users').doc(userId).update({
+    subscriptionStatus: 'active',
+  });
 }
 
-/**
- * Handle invoice payment failed event
- *
- * Triggered when a payment attempt fails.
- * Stripe will retry automatically based on your settings.
- */
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.log(`Invoice payment failed: ${invoice.id}`);
 
-  // Cast invoice to access properties that may vary in SDK type definitions
-  const invoiceData = invoice as unknown as {
-    customer_account?: string;
-    attempt_count?: number;
-    next_payment_attempt?: number | null;
-    amount_due: number;
-  };
+  const customerId = typeof invoice.customer === 'string'
+    ? invoice.customer
+    : (invoice.customer as Stripe.Customer)?.id;
 
-  const accountId = invoiceData.customer_account;
-  const attemptCount = invoiceData.attempt_count;
-  const nextAttempt = invoiceData.next_payment_attempt;
+  if (!customerId) return;
 
-  console.log(`Account: ${accountId}, Attempt: ${attemptCount}, Next attempt: ${nextAttempt}`);
+  const userId = await findUserByStripeCustomer(customerId);
+  if (!userId) return;
 
-  /**
-   * TODO: Notify the user about the failed payment
-   *
-   * await sendEmail({
-   *   to: userEmail,
-   *   template: 'payment_failed',
-   *   data: {
-   *     amount: invoiceData.amount_due,
-   *     nextAttempt: nextAttempt ? new Date(nextAttempt * 1000) : null,
-   *   },
-   * });
-   *
-   * // Optionally restrict access after multiple failures
-   * if (attemptCount && attemptCount >= 3) {
-   *   await db.collection('users').doc(userId).update({
-   *     paymentFailed: true,
-   *   });
-   * }
-   */
+  await db.collection('users').doc(userId).update({
+    subscriptionStatus: 'past_due',
+  });
 }
 
 // =============================================================================
-// Payment Method Event Handlers
+// One-Time Payment Handler (Ambassador)
 // =============================================================================
 
-/**
- * Handle payment method attached event
- *
- * Triggered when a customer adds a new payment method.
- */
-async function handlePaymentMethodAttached(paymentMethod: Stripe.PaymentMethod) {
-  console.log(`Payment method attached: ${paymentMethod.id}`);
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  // Only handle one-time payments for ambassador plan
+  if (session.mode !== 'payment' || session.metadata?.plan !== 'ambassador') {
+    return;
+  }
 
-  const customerId = paymentMethod.customer;
-  const type = paymentMethod.type;
+  console.log(`Ambassador checkout completed: ${session.id}`);
 
-  console.log(`Customer: ${customerId}, Type: ${type}`);
+  const customerId = typeof session.customer === 'string'
+    ? session.customer
+    : (session.customer as Stripe.Customer)?.id;
 
-  /**
-   * TODO: Update database if needed
-   *
-   * This is informational - you might want to log this for
-   * audit purposes or update a "has payment method" flag.
-   */
-}
+  if (!customerId) return;
 
-/**
- * Handle payment method detached event
- *
- * Triggered when a customer removes a payment method.
- */
-async function handlePaymentMethodDetached(paymentMethod: Stripe.PaymentMethod) {
-  console.log(`Payment method detached: ${paymentMethod.id}`);
+  const userId = await findUserByStripeCustomer(customerId, session.metadata || undefined);
+  if (!userId) {
+    console.error(`No user found for ambassador checkout, customer ${customerId}`);
+    return;
+  }
 
-  /**
-   * TODO: Update database if needed
-   *
-   * You might want to check if the customer still has valid
-   * payment methods for their subscriptions.
-   */
-}
+  // Retrieve payment intent for detailed payment info
+  const paymentIntentId = typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : (session.payment_intent as Stripe.PaymentIntent)?.id;
 
-// =============================================================================
-// Customer Event Handlers
-// =============================================================================
+  let paymentDetails: Record<string, unknown> = {};
+  if (paymentIntentId) {
+    try {
+      const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId, {
+        expand: ['latest_charge'],
+      });
 
-/**
- * Handle customer updated event
- *
- * Triggered when customer information is updated.
- * Check for changes to default payment method.
- */
-async function handleCustomerUpdated(customer: Stripe.Customer) {
-  console.log(`Customer updated: ${customer.id}`);
+      const charge = paymentIntent.latest_charge;
+      const chargeObj = typeof charge === 'object' && charge !== null ? charge : null;
 
-  const defaultPaymentMethod = customer.invoice_settings?.default_payment_method;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const chargeData = chargeObj as any;
+      const card = chargeData?.payment_method_details?.card;
 
-  console.log(`Default payment method: ${defaultPaymentMethod}`);
+      paymentDetails = {
+        paymentIntentId: paymentIntent.id,
+        amountPaid: paymentIntent.amount,
+        currency: paymentIntent.currency,
+        paymentMethod: paymentIntent.payment_method,
+        paymentStatus: paymentIntent.status,
+        receiptUrl: chargeData?.receipt_url || null,
+        cardBrand: card?.brand || null,
+        cardLast4: card?.last4 || null,
+      };
+    } catch (e) {
+      console.error('Error retrieving payment intent details:', e);
+    }
+  }
 
-  /**
-   * TODO: Update billing information in your database
-   *
-   * IMPORTANT: Only treat this as billing information changes.
-   * Do not use the customer email as a login credential.
-   *
-   * await db.collection('users').doc(userId).update({
-   *   billingEmail: customer.email,
-   *   defaultPaymentMethodId: defaultPaymentMethod,
-   * });
-   */
-}
+  await db.collection('users').doc(userId).update({
+    plan: 'ambassador',
+    planName: 'Ambassador Community',
+    role: 'ambassador',
+    ambassadorPaymentId: paymentIntentId || session.payment_intent,
+    ambassadorPaidAt: new Date().toISOString(),
+    ambassadorCheckoutSessionId: session.id,
+    subscriptionStatus: 'active',
+    stripeCustomerId: customerId,
+    ...paymentDetails,
+  });
 
-// =============================================================================
-// Tax ID Event Handlers
-// =============================================================================
-
-/**
- * Handle tax ID events
- *
- * Triggered when customers manage their tax IDs.
- * Stripe validates certain tax ID types.
- */
-async function handleTaxIdEvent(eventType: string, taxId: Stripe.TaxId) {
-  console.log(`Tax ID event: ${eventType}, ID: ${taxId.id}`);
-
-  const type = taxId.type;
-  const value = taxId.value;
-  const verificationStatus = taxId.verification?.status;
-
-  console.log(`Type: ${type}, Value: ${value}, Verification: ${verificationStatus}`);
-
-  /**
-   * TODO: Update tax information in your database
-   *
-   * await db.collection('users').doc(userId).update({
-   *   taxId: value,
-   *   taxIdType: type,
-   *   taxIdVerified: verificationStatus === 'verified',
-   * });
-   */
-}
-
-// =============================================================================
-// Billing Portal Event Handlers
-// =============================================================================
-
-/**
- * Handle billing portal session created event
- *
- * Triggered when a customer opens the billing portal.
- * Useful for analytics/auditing.
- */
-async function handleBillingPortalSessionCreated(session: Stripe.BillingPortal.Session) {
-  console.log(`Billing portal session created: ${session.id}`);
-
-  const customerId = session.customer;
-
-  console.log(`Customer: ${customerId}`);
-
-  /**
-   * TODO: Log for analytics/auditing
-   *
-   * await db.collection('audit_logs').add({
-   *   event: 'billing_portal_accessed',
-   *   customerId: customerId,
-   *   timestamp: new Date(),
-   * });
-   */
+  console.log(`Activated ambassador plan for user ${userId}`);
 }

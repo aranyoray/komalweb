@@ -19,6 +19,27 @@ interface UserData {
   name: string;
   email: string;
   createdAt: string;
+  reportsUsed: number;
+  plan: 'free' | 'grow' | 'thrive' | 'partner' | 'ambassador';
+  stripeCustomerId?: string;
+  subscriptionId?: string;
+  subscriptionStatus?: string;
+  subscriptionPriceId?: string;
+  subscriptionEndDate?: string;
+  planName?: string;
+  onboardingCompleted?: boolean;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  phoneCountryCode?: string;
+  country?: string;
+  referralCode?: string;
+  role?: string;
+  onboardingStatus?: 'pending' | 'completed';
+  photoURL?: string;
+  linkedIn?: string;
+  instagram?: string;
+  twitter?: string;
 }
 
 interface AuthContextType {
@@ -31,6 +52,7 @@ interface AuthContextType {
   signInWithApple: () => Promise<void>;
   logout: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,7 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (userDoc.exists()) {
-            setUserData(userDoc.data() as UserData);
+            const data = userDoc.data();
+            setUserData({
+              reportsUsed: 0,
+              plan: 'free',
+              ...data,
+            } as UserData);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
@@ -89,6 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name,
       email,
       createdAt: new Date().toISOString(),
+      reportsUsed: 0,
+      plan: 'free',
+      onboardingCompleted: false,
+      onboardingStatus: 'pending',
     };
 
     await setDoc(doc(db, 'users', firebaseUser.uid), userDocData);
@@ -109,6 +140,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: firebaseUser.displayName || 'User',
         email: firebaseUser.email || '',
         createdAt: new Date().toISOString(),
+        reportsUsed: 0,
+        plan: 'free',
+        onboardingCompleted: false,
+        onboardingStatus: 'pending',
       };
       await setDoc(userDocRef, userDocData);
       setUserData(userDocData);
@@ -131,6 +166,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: firebaseUser.displayName || 'User',
         email: firebaseUser.email || '',
         createdAt: new Date().toISOString(),
+        reportsUsed: 0,
+        plan: 'free',
+        onboardingCompleted: false,
+        onboardingStatus: 'pending',
       };
       await setDoc(userDocRef, userDocData);
       setUserData(userDocData);
@@ -151,6 +190,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   };
 
+  const refreshUserData = async () => {
+    if (!user || !db) return;
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        setUserData({
+          reportsUsed: 0,
+          plan: 'free',
+          ...data,
+        } as UserData);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     userData,
@@ -161,6 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithApple,
     logout,
     getIdToken,
+    refreshUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
