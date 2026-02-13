@@ -129,6 +129,14 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Plan validity in days — used for expiry date calculation
+const PLAN_VALIDITY_DAYS: Record<string, number> = {
+  ambassador: 30,
+  grow: 30,
+  thrive: 30,
+  partner: 30,
+};
+
 // =============================================================================
 // Subscription Event Handlers
 // =============================================================================
@@ -158,6 +166,9 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 
   const periodEnd = subscription.items.data[0]?.current_period_end;
 
+  const now = new Date();
+  const validityDays = PLAN_VALIDITY_DAYS[plan] || 30;
+
   const updateData: Record<string, unknown> = {
     plan,
     planName: planNames[plan],
@@ -166,6 +177,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     subscriptionPriceId: priceId,
     subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
     stripeCustomerId: customerId,
+    paymentTimestamp: now.toISOString(),
+    planValidity: `${validityDays} days`,
   };
 
   if (plan === 'ambassador') {
@@ -173,6 +186,22 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   }
 
   await db.collection('users').doc(userId).update(updateData);
+
+  // Write to /pay collection
+  await db.collection('pay').add({
+    uid: userId,
+    type: 'subscription_created',
+    plan,
+    planName: planNames[plan],
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+    subscriptionPriceId: priceId,
+    subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    stripeCustomerId: customerId,
+    paymentTimestamp: now.toISOString(),
+    planValidity: `${validityDays} days`,
+    createdAt: now.toISOString(),
+  });
 
   console.log(`Updated user ${userId} with plan: ${plan}`);
 }
@@ -202,12 +231,17 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   const periodEnd = subscription.items.data[0]?.current_period_end;
 
+  const now = new Date();
+  const validityDays = PLAN_VALIDITY_DAYS[plan] || 30;
+
   const updateData: Record<string, unknown> = {
     plan,
     planName: planNames[plan],
     subscriptionStatus: subscription.status,
     subscriptionPriceId: priceId,
     subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    paymentTimestamp: now.toISOString(),
+    planValidity: `${validityDays} days`,
   };
 
   if (plan === 'ambassador') {
@@ -219,6 +253,22 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   await db.collection('users').doc(userId).update(updateData);
+
+  // Write to /pay collection
+  await db.collection('pay').add({
+    uid: userId,
+    type: 'subscription_updated',
+    plan,
+    planName: planNames[plan],
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.cancel_at_period_end ? 'canceling' : subscription.status,
+    subscriptionPriceId: priceId,
+    subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+    paymentTimestamp: now.toISOString(),
+    planValidity: `${validityDays} days`,
+    createdAt: now.toISOString(),
+  });
+
   console.log(`Updated subscription for user ${userId}`);
 }
 
@@ -245,6 +295,15 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     reportsUsed: 0,
   });
 
+  // Write to /pay collection
+  await db.collection('pay').add({
+    uid: userId,
+    type: 'subscription_deleted',
+    subscriptionId: subscription.id,
+    stripeCustomerId: customerId,
+    createdAt: new Date().toISOString(),
+  });
+
   console.log(`Revoked access for user ${userId}`);
 }
 
@@ -263,6 +322,17 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   await db.collection('users').doc(userId).update({
     subscriptionStatus: 'active',
   });
+
+  // Write to /pay collection
+  await db.collection('pay').add({
+    uid: userId,
+    type: 'invoice_paid',
+    invoiceId: invoice.id,
+    amountPaid: invoice.amount_paid,
+    currency: invoice.currency,
+    stripeCustomerId: customerId,
+    createdAt: new Date().toISOString(),
+  });
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
@@ -279,6 +349,17 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 
   await db.collection('users').doc(userId).update({
     subscriptionStatus: 'past_due',
+  });
+
+  // Write to /pay collection
+  await db.collection('pay').add({
+    uid: userId,
+    type: 'invoice_payment_failed',
+    invoiceId: invoice.id,
+    amountDue: invoice.amount_due,
+    currency: invoice.currency,
+    stripeCustomerId: customerId,
+    createdAt: new Date().toISOString(),
   });
 }
 
@@ -340,16 +421,38 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
   }
 
+  const now = new Date();
+  const validityDays = PLAN_VALIDITY_DAYS.ambassador;
+  const expiryDate = new Date(now.getTime() + validityDays * 24 * 60 * 60 * 1000);
+
   await db.collection('users').doc(userId).update({
     plan: 'ambassador',
     planName: 'Ambassador Community',
     role: 'ambassador',
     ambassadorPaymentId: paymentIntentId || session.payment_intent,
-    ambassadorPaidAt: new Date().toISOString(),
+    ambassadorPaidAt: now.toISOString(),
     ambassadorCheckoutSessionId: session.id,
     subscriptionStatus: 'active',
+    subscriptionEndDate: expiryDate.toISOString(),
+    paymentTimestamp: now.toISOString(),
+    planValidity: `${validityDays} days`,
     stripeCustomerId: customerId,
     ...paymentDetails,
+  });
+
+  // Write to /pay collection
+  await db.collection('pay').add({
+    uid: userId,
+    type: 'ambassador_payment',
+    plan: 'ambassador',
+    planName: 'Ambassador Community',
+    checkoutSessionId: session.id,
+    stripeCustomerId: customerId,
+    subscriptionEndDate: expiryDate.toISOString(),
+    paymentTimestamp: now.toISOString(),
+    planValidity: `${validityDays} days`,
+    ...paymentDetails,
+    createdAt: now.toISOString(),
   });
 
   console.log(`Activated ambassador plan for user ${userId}`);

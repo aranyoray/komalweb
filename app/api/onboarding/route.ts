@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const { firstName, lastName, phone, phoneCountryCode, country, referralCode, photoURL, linkedIn, instagram, twitter } = await request.json();
+    const { firstName, lastName, phone, phoneCountryCode, country, referralCode, photoURL, linkedIn, instagram, twitter, city, grade, bio } = await request.json();
 
     if (!firstName?.trim() || !lastName?.trim()) {
       return NextResponse.json({ error: 'First name and last name are required' }, { status: 400 });
@@ -25,6 +25,14 @@ export async function POST(request: NextRequest) {
 
     if (!country?.trim()) {
       return NextResponse.json({ error: 'Country is required' }, { status: 400 });
+    }
+
+    if (!city?.trim()) {
+      return NextResponse.json({ error: 'City is required' }, { status: 400 });
+    }
+
+    if (!grade?.trim()) {
+      return NextResponse.json({ error: 'Grade is required' }, { status: 400 });
     }
 
     const userId = decoded.uid;
@@ -40,6 +48,9 @@ export async function POST(request: NextRequest) {
       linkedIn: linkedIn?.trim() || '',
       instagram: instagram?.trim() || '',
       twitter: twitter?.trim() || '',
+      city: city.trim(),
+      grade: grade.trim(),
+      bio: bio?.trim() || '',
       onboardingCompleted: true,
       onboardingStatus: 'completed',
     });

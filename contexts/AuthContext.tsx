@@ -40,6 +40,9 @@ interface UserData {
   linkedIn?: string;
   instagram?: string;
   twitter?: string;
+  city?: string;
+  grade?: string;
+  bio?: string;
 }
 
 interface AuthContextType {

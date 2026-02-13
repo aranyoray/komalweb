@@ -30,6 +30,11 @@ export default function OnboardingPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // New profile fields
+  const [city, setCity] = useState("");
+  const [grade, setGrade] = useState("");
+  const [bio, setBio] = useState("");
+
   // Social media
   const [linkedIn, setLinkedIn] = useState("");
   const [instagram, setInstagram] = useState("");
@@ -230,6 +235,14 @@ export default function OnboardingPage() {
       setError("Please select your country of residence.");
       return;
     }
+    if (!city.trim()) {
+      setError("Please enter your city.");
+      return;
+    }
+    if (!grade.trim()) {
+      setError("Please enter your grade.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -259,6 +272,9 @@ export default function OnboardingPage() {
           linkedIn: linkedIn.trim(),
           instagram: instagram.trim(),
           twitter: twitter.trim(),
+          city: city.trim(),
+          grade: grade.trim(),
+          bio: bio.trim(),
         }),
       });
 
@@ -594,6 +610,67 @@ export default function OnboardingPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* City */}
+              <div>
+                <label className="block text-sm font-semibold text-text-main mb-2">
+                  City <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Your city"
+                    className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white/60 transition-all text-sm"
+                    disabled={submitting}
+                  />
+                </div>
+              </div>
+
+              {/* Grade */}
+              <div>
+                <label className="block text-sm font-semibold text-text-main mb-2">
+                  Grade <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={grade}
+                    onChange={(e) => setGrade(e.target.value)}
+                    placeholder="e.g. 10th Grade, University Freshman"
+                    className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white/60 transition-all text-sm"
+                    disabled={submitting}
+                  />
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-sm font-semibold text-text-main mb-2">
+                  Bio <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value.slice(0, 200))}
+                  placeholder="Tell us a little about yourself..."
+                  rows={2}
+                  maxLength={200}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white/60 transition-all text-sm resize-none"
+                  disabled={submitting}
+                />
+                {bio && (
+                  <p className="text-xs text-text-dim mt-1 ml-1">
+                    {bio.length}/200 characters
+                  </p>
+                )}
               </div>
 
               {/* Social Media Section */}

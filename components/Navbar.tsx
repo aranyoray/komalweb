@@ -3,18 +3,31 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Menu, X, LayoutDashboard, LogIn } from "lucide-react";
-/// import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowUpRight, Menu, X, LayoutDashboard, LogIn, CreditCard, HelpCircle, Shield, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 import { Button } from "@/components/ui/button";
 
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { user, userData, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
-  // Transition state no longer strictly needed for layout stability but useful for painting
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   // Scroll-based: flat at top, pill on scroll
   useEffect(() => {
@@ -52,9 +65,10 @@ export default function Navbar() {
     };
   }, [isScrolled]);
 
-  // Close mobile menu on route change
+  // Close menus on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setProfileDropdownOpen(false);
   }, [pathname]);
 
   const navItems = useMemo(
@@ -63,6 +77,7 @@ export default function Navbar() {
       { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
       { label: "Safety", href: { type: "route", value: "/content-safety" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
+      { label: "Ambassadors", href: { type: "route", value: "/ambassadors" } as const },
       { label: "Pricing", href: { type: "route", value: "/pricing" } as const },
     ],
     []
@@ -144,23 +159,44 @@ export default function Navbar() {
 
         {/* Mobile: CTA Button + Hamburger Menu */}
         <div className="ml-auto flex items-center gap-2 md:hidden">
-          <Button
-            asChild
-            className={`h-9 px-4 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
-              ? "bg-primary text-white hover:bg-primary/90"
-              : "bg-primary text-white hover:bg-primary/90"
-              }`}
-            style={{
-              transitionProperty: "background-color, color",
-              transitionDuration: "400ms",
-              transitionTimingFunction: smoothEase,
-            }}
-          >
-            <Link href="mailto:play@komalkids.com">
-              Get Started
-              <ArrowUpRight className="w-4 h-4" />
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20 overflow-hidden"
+            >
+              {userData?.photoURL ? (
+                <Image
+                  src={userData.photoURL}
+                  alt="Profile"
+                  width={36}
+                  height={36}
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <span className="text-xs font-semibold text-primary">
+                  {userData?.firstName?.[0] || userData?.name?.[0] || user.email?.[0]?.toUpperCase() || "U"}
+                </span>
+              )}
             </Link>
-          </Button>
+          ) : (
+            <Button
+              asChild
+              className={`h-9 px-4 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
+                ? "bg-primary text-white hover:bg-primary/90"
+                : "bg-primary text-white hover:bg-primary/90"
+                }`}
+              style={{
+                transitionProperty: "background-color, color",
+                transitionDuration: "400ms",
+                transitionTimingFunction: smoothEase,
+              }}
+            >
+              <Link href="mailto:play@komalkids.com">
+                Get Started
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          )}
 
           {/* Hamburger Menu Button */}
           <button
@@ -186,35 +222,108 @@ export default function Navbar() {
 
         {/* Desktop CTA Buttons - Right */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
-          <Link
-            href="/sign-in"
-            className={`h-9 px-4 rounded-full font-medium text-sm flex items-center gap-1.5 border border-primary/20 hover:bg-primary/5 ${isScrolled ? "text-primary" : "text-primary"}`}
-            style={{
-              transitionProperty: "background-color, color",
-              transitionDuration: "400ms",
-              transitionTimingFunction: smoothEase,
-            }}
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            Sign In
-          </Link>
-          <Button
-            asChild
-            className={`h-9 px-5 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
-              ? "bg-primary text-white hover:bg-primary/90"
-              : "bg-primary text-white hover:bg-primary/90"
-              }`}
-            style={{
-              transitionProperty: "background-color, color",
-              transitionDuration: "400ms",
-              transitionTimingFunction: smoothEase,
-            }}
-          >
-            <Link href="mailto:play@komalkids.com">
-              Start for free
-              <ArrowUpRight className="w-4 h-4" />
-            </Link>
-          </Button>
+          {user ? (
+            <div className="relative" ref={profileDropdownRef}>
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors ring-2 ring-primary/20 overflow-hidden"
+              >
+                {userData?.photoURL ? (
+                  <Image
+                    src={userData.photoURL}
+                    alt="Profile"
+                    width={40}
+                    height={40}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <span className="text-sm font-semibold text-primary">
+                    {userData?.firstName?.[0] || userData?.name?.[0] || user.email?.[0]?.toUpperCase() || "U"}
+                  </span>
+                )}
+              </button>
+
+              {profileDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-primary/10 py-2 z-[200]">
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4 text-primary/60" />
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/billing"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                  >
+                    <CreditCard className="w-4 h-4 text-primary/60" />
+                    Billing
+                  </Link>
+                  <Link
+                    href="/help"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4 text-primary/60" />
+                    Help
+                  </Link>
+                  <Link
+                    href="/privacy"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 transition-colors"
+                  >
+                    <Shield className="w-4 h-4 text-primary/60" />
+                    Privacy
+                  </Link>
+                  <div className="border-t border-gray-100 my-1" />
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      logout();
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className={`h-9 px-4 rounded-full font-medium text-sm flex items-center gap-1.5 border border-primary/20 hover:bg-primary/5 ${isScrolled ? "text-primary" : "text-primary"}`}
+                style={{
+                  transitionProperty: "background-color, color",
+                  transitionDuration: "400ms",
+                  transitionTimingFunction: smoothEase,
+                }}
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Sign In
+              </Link>
+              <Button
+                asChild
+                className={`h-9 px-5 rounded-full border-0 font-medium text-sm flex items-center gap-1.5 ${isScrolled
+                  ? "bg-primary text-white hover:bg-primary/90"
+                  : "bg-primary text-white hover:bg-primary/90"
+                  }`}
+                style={{
+                  transitionProperty: "background-color, color",
+                  transitionDuration: "400ms",
+                  transitionTimingFunction: smoothEase,
+                }}
+              >
+                <Link href="mailto:play@komalkids.com">
+                  Start for free
+                  <ArrowUpRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
       </nav>
 
@@ -253,23 +362,93 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* Sign In Link for Mobile */}
-            <Link
-              href="/sign-in"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 flex items-center gap-2"
-              style={{
-                transitionProperty: "background-color, opacity, transform",
-                transitionDuration: "400ms",
-                transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
-                opacity: isMobileMenuOpen ? 1 : 0,
-                transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
-              }}
-            >
-              <LogIn className="w-4 h-4" />
-              Sign In
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 flex items-center gap-2 border-b border-gray-100"
+                  style={{
+                    transitionProperty: "background-color, opacity, transform",
+                    transitionDuration: "400ms",
+                    transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                    transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
+                    opacity: isMobileMenuOpen ? 1 : 0,
+                    transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                  }}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
+                <Link
+                  href="/billing"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 flex items-center gap-2 border-b border-gray-100"
+                  style={{
+                    transitionProperty: "background-color, opacity, transform",
+                    transitionDuration: "400ms",
+                    transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                    transitionDelay: isMobileMenuOpen ? `${(navItems.length + 1) * 50}ms` : "0ms",
+                    opacity: isMobileMenuOpen ? 1 : 0,
+                    transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                  }}
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Billing
+                </Link>
+                <Link
+                  href="/help"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 flex items-center gap-2 border-b border-gray-100"
+                  style={{
+                    transitionProperty: "background-color, opacity, transform",
+                    transitionDuration: "400ms",
+                    transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                    transitionDelay: isMobileMenuOpen ? `${(navItems.length + 2) * 50}ms` : "0ms",
+                    opacity: isMobileMenuOpen ? 1 : 0,
+                    transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                  }}
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  Help
+                </Link>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="px-6 py-4 text-red-600 font-medium text-base hover:bg-red-50 flex items-center gap-2 w-full text-left"
+                  style={{
+                    transitionProperty: "background-color, opacity, transform",
+                    transitionDuration: "400ms",
+                    transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                    transitionDelay: isMobileMenuOpen ? `${(navItems.length + 3) * 50}ms` : "0ms",
+                    opacity: isMobileMenuOpen ? 1 : 0,
+                    transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                  }}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/sign-in"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-6 py-4 text-primary font-medium text-base hover:bg-primary/5 flex items-center gap-2"
+                style={{
+                  transitionProperty: "background-color, opacity, transform",
+                  transitionDuration: "400ms",
+                  transitionTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  transitionDelay: isMobileMenuOpen ? `${navItems.length * 50}ms` : "0ms",
+                  opacity: isMobileMenuOpen ? 1 : 0,
+                  transform: isMobileMenuOpen ? "translateX(0)" : "translateX(-8px)",
+                }}
+              >
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>

@@ -3,6 +3,13 @@ import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import stripeClient from '@/lib/stripe';
 
+const PLAN_VALIDITY_DAYS: Record<string, number> = {
+  ambassador: 30,
+  grow: 30,
+  thrive: 30,
+  partner: 30,
+};
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('Authorization');
@@ -76,16 +83,38 @@ export async function POST(request: NextRequest) {
           };
         }
 
+        const now = new Date();
+        const validityDays = PLAN_VALIDITY_DAYS.ambassador;
+        const expiryDate = new Date(now.getTime() + validityDays * 24 * 60 * 60 * 1000);
+
         await db.collection('users').doc(userId).update({
           plan: 'ambassador',
           planName: 'Ambassador Community',
           role: 'ambassador',
           ambassadorPaymentId: paymentIntentId || session.payment_intent,
-          ambassadorPaidAt: new Date().toISOString(),
+          ambassadorPaidAt: now.toISOString(),
           ambassadorCheckoutSessionId: sessionId,
           subscriptionStatus: 'active',
+          subscriptionEndDate: expiryDate.toISOString(),
+          paymentTimestamp: now.toISOString(),
+          planValidity: `${validityDays} days`,
           stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
           ...paymentDetails,
+        });
+
+        // Write to /pay collection
+        await db.collection('pay').add({
+          uid: userId,
+          type: 'ambassador_payment',
+          plan: 'ambassador',
+          planName: 'Ambassador Community',
+          checkoutSessionId: sessionId,
+          stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
+          subscriptionEndDate: expiryDate.toISOString(),
+          paymentTimestamp: now.toISOString(),
+          planValidity: `${validityDays} days`,
+          ...paymentDetails,
+          createdAt: now.toISOString(),
         });
       }
 
@@ -114,6 +143,9 @@ export async function POST(request: NextRequest) {
 
       const periodEnd = subscription.items.data[0]?.current_period_end;
 
+      const now = new Date();
+      const validityDays = PLAN_VALIDITY_DAYS[resolvedPlan] || 30;
+
       await db.collection('users').doc(userId).update({
         plan: resolvedPlan,
         planName: planNames[resolvedPlan] || resolvedPlan,
@@ -121,6 +153,23 @@ export async function POST(request: NextRequest) {
         subscriptionStatus: subscription.status,
         subscriptionPriceId: priceId,
         subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+        paymentTimestamp: now.toISOString(),
+        planValidity: `${validityDays} days`,
+      });
+
+      // Write to /pay collection
+      await db.collection('pay').add({
+        uid: userId,
+        type: 'subscription_verified',
+        plan: resolvedPlan,
+        planName: planNames[resolvedPlan] || resolvedPlan,
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        subscriptionPriceId: priceId,
+        subscriptionEndDate: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+        paymentTimestamp: now.toISOString(),
+        planValidity: `${validityDays} days`,
+        createdAt: now.toISOString(),
       });
 
       return NextResponse.json({ success: true, plan: resolvedPlan });
