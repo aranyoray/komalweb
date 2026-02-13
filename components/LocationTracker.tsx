@@ -2,19 +2,20 @@
 
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function LocationTracker() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || !db) return;
 
     const alreadyLogged = sessionStorage.getItem('location_logged');
     if (alreadyLogged) return;
 
     const logLocation = async () => {
       try {
-        // Try to get geo data; if blocked by ad blocker, still log with uid
         let ip = 'unknown';
         let country = 'unknown';
         let state = 'unknown';
@@ -33,15 +34,16 @@ export default function LocationTracker() {
           // Geo lookup blocked/failed — continue with defaults
         }
 
-        const res = await fetch('/api/log-location', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid: user?.uid || null, ip, country, state, city }),
+        await addDoc(collection(db, 'location'), {
+          ip,
+          country,
+          state,
+          city,
+          uid: user?.uid || null,
+          timestamp: new Date().toISOString(),
         });
 
-        if (res.ok) {
-          sessionStorage.setItem('location_logged', '1');
-        }
+        sessionStorage.setItem('location_logged', '1');
       } catch (error) {
         console.error('Location logging failed:', error);
       }
