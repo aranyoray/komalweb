@@ -9,20 +9,25 @@ export default function LocationTracker() {
   useEffect(() => {
     if (loading) return;
 
-    // Avoid duplicate logging in the same session
     const alreadyLogged = sessionStorage.getItem('location_logged');
     if (alreadyLogged) return;
 
     const logLocation = async () => {
       try {
-        // Fetch real public IP from client side
-        const ipRes = await fetch('https://api.ipify.org?format=json');
-        const { ip } = await ipRes.json();
+        // Single call: ipwho.is returns IP + geo data together
+        const geoRes = await fetch('https://ipwho.is/');
+        const geoData = await geoRes.json();
 
         await fetch('/api/log-location', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid: user?.uid || null, ip }),
+          body: JSON.stringify({
+            uid: user?.uid || null,
+            ip: geoData.ip || 'unknown',
+            country: geoData.country || 'unknown',
+            state: geoData.region || 'unknown',
+            city: geoData.city || 'unknown',
+          }),
         });
         sessionStorage.setItem('location_logged', '1');
       } catch (error) {
