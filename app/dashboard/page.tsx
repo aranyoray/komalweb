@@ -182,7 +182,7 @@ function DashboardContent() {
     if (!authLoading && !user) {
       router.push("/sign-in");
     } else if (!authLoading && user && userData && userData.role === "fin-auth") {
-      router.push("/user-analytic");
+      router.push("/linda-xu-dashboard");
     } else if (!authLoading && user && userData && userData.onboardingCompleted !== true) {
       router.push("/onboarding");
     }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Loader2,
@@ -35,9 +34,8 @@ interface UsersResponse {
   total: number;
 }
 
-export default function UserAnalyticPage() {
-  const router = useRouter();
-  const { user, userData, loading: authLoading, getIdToken } = useAuth();
+export default function LindaXuDashboardPage() {
+  const { user, loading: authLoading, getIdToken } = useAuth();
 
   const [data, setData] = useState<UsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,24 +44,15 @@ export default function UserAnalyticPage() {
   const [filter, setFilter] = useState("all");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auth guard — redirect non-fin-admin users
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push("/sign-in");
-      return;
-    }
-    if (userData && userData.role !== "fin-auth") {
-      router.push("/dashboard");
-    }
-  }, [authLoading, user, userData, router]);
-
   const fetchUsers = useCallback(
     async (p: number, s: string, f: string) => {
       setLoading(true);
       try {
         const token = await getIdToken();
-        if (!token) return;
+        if (!token) {
+          setLoading(false);
+          return;
+        }
 
         const params = new URLSearchParams({
           page: String(p),
@@ -75,11 +64,6 @@ export default function UserAnalyticPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (res.status === 403) {
-          router.push("/dashboard");
-          return;
-        }
-
         if (res.ok) {
           setData(await res.json());
         }
@@ -89,16 +73,18 @@ export default function UserAnalyticPage() {
         setLoading(false);
       }
     },
-    [getIdToken, router]
+    [getIdToken]
   );
 
-  // Fetch when page or filter changes (immediate)
+  // Fetch when auth resolves or page/filter changes
   useEffect(() => {
-    if (!authLoading && user && userData?.role === "fin-auth") {
+    if (!authLoading && user) {
       fetchUsers(page, search, filter);
+    } else if (!authLoading && !user) {
+      setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filter, authLoading, user, userData]);
+  }, [page, filter, authLoading, user]);
 
   // Debounced search
   const handleSearch = (value: string) => {
@@ -190,14 +176,6 @@ export default function UserAnalyticPage() {
     return range;
   };
 
-  if (authLoading || !user || (userData && userData.role !== "fin-auth")) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-purple-50/30 to-white">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   const startItem = data ? (data.page - 1) * 10 + 1 : 0;
   const endItem = data ? Math.min(data.page * 10, data.total) : 0;
 
@@ -221,9 +199,9 @@ export default function UserAnalyticPage() {
                   <span>Admin Panel</span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-2 tracking-tight">
-                  User{" "}
+                  Ms Linda Xu{" "}
                   <span className="relative inline-block">
-                    <span className="relative z-10">Analytics</span>
+                    <span className="relative z-10">Dashboard</span>
                     <span
                       className="absolute left-0 right-0 bottom-[0.1em] h-[0.3em] rounded-full -z-0"
                       style={{
