@@ -7,7 +7,20 @@ let firestoreDb: Firestore | null = null;
 // Only initialize if environment variables are available
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+// Handle private key: Vercel may store it with literal \n, escaped \\n, or JSON-encoded
+let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+if (privateKey) {
+  // If the key is JSON-encoded (wrapped in quotes), parse it
+  if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+    try {
+      privateKey = JSON.parse(privateKey);
+    } catch {
+      // fallback to manual replace
+    }
+  }
+  // Replace literal \n sequences with actual newlines
+  privateKey = privateKey.replace(/\\n/g, '\n');
+}
 
 if (projectId && clientEmail && privateKey && !getApps().length) {
   app = initializeApp({
