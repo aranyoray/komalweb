@@ -15,16 +15,8 @@ interface TeamMember {
 // Core Team Members
 const coreTeam: TeamMember[] = [
     {
-        name: "Saarthak Kumar",
-        role: "Co-Founder & CEO",
-        credentials: ["MPA, Columbia & LSE", "Ex-UN Advisor"],
-        image: "/sarthakwhitebg.png",
-        description: "Saarthak holds MPAs from Columbia and LSE in economic policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India at the UN, bringing expertise in international policy and development economics. At Komal, he leads overall strategy and execution.",
-        tagline: "Leading strategy for global impact",
-    },
-    {
         name: "Aranyo Ray",
-        role: "Co-Founder & CTO",
+        role: "",
         credentials: ["Wu Tsai Scholar, Yale University", "Ex-Graymatics, Commenda"],
         image: "/aranyowhitebg.png",
         description: "Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. A Wu Tsai Scholar at Yale investigating implicit bias in multicultural learning, he won 1st Place from the APA at ISEF for his culturally relevant game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads technology and product development.",
@@ -32,11 +24,19 @@ const coreTeam: TeamMember[] = [
     },
     {
         name: "Joy Cai",
-        role: "Growth & Partnership",
+        role: "",
         credentials: ["BA Economics, UPenn", "Founder, Solis Health", "Ex-Chief of Staff, Flagler Health"],
         image: "/joy-cai.png",
         description: "Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian platform that provides nutritional counseling backed by health insurance. Previously, she was Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep experience in fundraising, operations, and growth.",
         tagline: "Driving growth and strategic partnerships",
+    },
+    {
+        name: "Saarthak Kumar",
+        role: "",
+        credentials: ["MPA (Economics, Data Analytics), Columbia & LSE", "Ex-UN Advisor"],
+        image: "/sarthakwhitebg.png",
+        description: "Saarthak holds MPAs from Columbia and LSE in economic policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India at the UN, bringing expertise in international policy and development economics. At Komal, he leads growth and partnership strategy and execution.",
+        tagline: "Leading strategy for global impact",
     },
 ];
 
@@ -52,12 +52,12 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Linda Xu",
-        role: "Regional CEO for Canada & China",
-        credentials: ["Master of Business Administration (MBA)", "Chair, Canada Sunshine Foundation", "Executive President, Canadian Women's Federation"],
+        name: "Linda Yu",
+        role: "President, Canada Sunshine Foundation",
+        credentials: ["Master of Business Administration (MBA)", "President, Canada Sunshine Foundation"],
         image: "/advisor-canada-parent-advocate-gtm.png",
-        description: "Linda is Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. A nonprofit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
-        tagline: "Regional CEO for Canada & China",
+        description: "Linda is the President of Canada Sunshine Foundation. A non-profit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
+        tagline: "President, Canada Sunshine Foundation",
     },
     {
         name: "Audrey Wisch",

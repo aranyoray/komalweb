@@ -13,10 +13,10 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Linda Xu, MBA",
-        title: "REGIONAL CEO FOR CANADA & CHINA",
-        company: "@ CANADA SUNSHINE FOUNDATION, CANADIAN WOMEN'S FEDERATION",
-        description: "Linda is Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. A nonprofit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
+        name: "Linda Yu, MBA",
+        title: "PRESIDENT",
+        company: "@ CANADA SUNSHINE FOUNDATION",
+        description: "Linda is the President of Canada Sunshine Foundation. A non-profit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
         image: "/advisor-canada-parent-advocate-gtm.png",
     },
     {
