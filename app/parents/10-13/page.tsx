@@ -253,7 +253,7 @@ export default function Parents1013Page() {
               Questions from Parents of Preteens
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 

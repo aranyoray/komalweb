@@ -382,7 +382,7 @@ export default function ForGovernmentPage() {
               Questions from Government Buyers
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 

@@ -250,7 +250,7 @@ export default function Parents610Page() {
               Questions from Parents of 6-10 Year Olds
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 

@@ -368,7 +368,7 @@ export default function ForEmployersPage() {
               Questions from HR &amp; Benefits Leaders
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 

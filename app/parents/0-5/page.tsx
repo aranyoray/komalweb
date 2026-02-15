@@ -254,7 +254,7 @@ export default function Parents05Page() {
               Common Questions from Parents of Young Children
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 

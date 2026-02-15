@@ -482,7 +482,7 @@ export default function PioneerPage() {
               Pioneer Program FAQ
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 
