@@ -345,7 +345,7 @@ export default function Footer() {
               Pioneer Program
             </Link>
             <span className="text-border">|</span>
-            <Link href="/privacypolicy" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+            <Link href="/privacy-policy" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
               Privacy Policy
             </Link>
             <span className="text-border">|</span>
