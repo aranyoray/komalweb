@@ -277,7 +277,7 @@ export default function ForClinicsPage() {
               Questions from Clinicians
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 
