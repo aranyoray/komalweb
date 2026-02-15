@@ -11,6 +11,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 import TopBanner from "@/components/TopBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import CookieConsent from "@/components/CookieConsent";
 
 
 // Removed Inter configuration
@@ -119,10 +120,11 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/manifest.json",
+  // TODO: Replace with real verification codes from Google Search Console and Bing Webmaster Tools
   verification: {
-    google: "google-site-verification-code",
+    google: "google-site-verification-code", // Get from: https://search.google.com/search-console
     other: {
-      "msvalidate.01": "bing-webmaster-verification-code",
+      "msvalidate.01": "bing-webmaster-verification-code", // Get from: https://www.bing.com/webmasters
     },
   },
 };
@@ -153,6 +155,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
+          <CookieConsent />
           <ClientScripts />
         </AuthProvider>
       </body>
