@@ -32,13 +32,13 @@ const jsonLd = {
         "https://twitter.com/komalkids",
       ],
       description:
-        "AI-powered digital guardian for child internet safety. Protect your children online with smart content filtering, parental controls, and age-appropriate browsing.",
+        "The first psychology-informed Talk-to-Play platform for children and families. We build the social, emotional, and cognitive foundations children need to thrive in a digital world.",
     },
     {
       "@type": "WebSite",
       "@id": "https://komalkids.com/#website",
       url: "https://komalkids.com",
-      name: "KOMAL - Child Internet Safety App",
+      name: "KOMAL - Psychology-Informed Talk-to-Play Platform",
       publisher: { "@id": "https://komalkids.com/#organization" },
       inLanguage: "en-US",
     },
@@ -48,7 +48,7 @@ const jsonLd = {
       applicationCategory: "EducationalApplication",
       operatingSystem: "iOS, Android",
       description:
-        "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing for kids ages 3-12.",
+        "Psychology-informed Talk-to-Play platform for children and families. Three-tier content filtering, peer-avatar guidance, and longitudinal developmental insights. Ages 0-16+.",
       offers: {
         "@type": "Offer",
         price: "0",
@@ -62,11 +62,11 @@ const jsonLd = {
 
 export const metadata: Metadata = {
   title: {
-    default: "KOMAL - Child Internet Safety App | Safe AI",
-    template: "%s | KOMAL - Child Safety App",
+    default: "KOMAL - Talk-to-Play Digital Safety for Children | Psychology-Informed",
+    template: "%s | KOMAL Kids",
   },
-  description: "KOMAL is an AI-powered child internet safety app with parental controls, content filtering, and safe browsing for kids ages 3-12. COPPA compliant.",
-  keywords: "child internet safety, parental control app, safe browsing for kids, content filtering for kids, AI child safety, online child protection, screen time management, kid-safe browser",
+  description: "KOMAL is the first psychology-informed Talk-to-Play platform for children and families. Three-tier content filtering, peer-avatar guidance, and longitudinal developmental insights. COPPA, GDPR-K compliant.",
+  keywords: "talk-to-play platform, child digital wellbeing, psychology-informed digital safety, parental controls without dark patterns, safe browsing for kids, content filtering for kids, digital buddy for children, screen time guidance by age",
   authors: [{ name: "KOMAL - ChildCog Private Limited" }],
   creator: "KOMAL",
   publisher: "ChildCog Private Limited",
@@ -85,8 +85,8 @@ export const metadata: Metadata = {
     canonical: "https://komalkids.com",
   },
   openGraph: {
-    title: "KOMAL - Child Internet Safety App | Safe AI",
-    description: "AI-powered child internet safety with content filtering, parental controls, and safe browsing for kids ages 3-12.",
+    title: "KOMAL - Talk-to-Play Digital Safety for Children",
+    description: "The first psychology-informed Talk-to-Play platform. Three-tier content filtering, peer-avatar guidance, and developmental insights for children ages 0-16+.",
     type: "website",
     url: "https://komalkids.com",
     siteName: "KOMAL",
@@ -96,14 +96,14 @@ export const metadata: Metadata = {
         url: "https://komalkids.com/heroimage.png",
         width: 1200,
         height: 1200,
-        alt: "KOMAL - Child Internet Safety App",
+        alt: "KOMAL - Talk-to-Play Digital Safety for Children",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "KOMAL - Child Internet Safety App | Safe AI",
-    description: "AI-powered child internet safety with content filtering, parental controls, and safe browsing for kids ages 3-12.",
+    title: "KOMAL - Talk-to-Play Digital Safety for Children",
+    description: "The first psychology-informed Talk-to-Play platform. Three-tier content filtering, peer-avatar guidance, and developmental insights for children ages 0-16+.",
     images: ["https://komalkids.com/heroimage.png"],
     creator: "@komalkids",
   },

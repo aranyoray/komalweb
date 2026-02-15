@@ -90,9 +90,9 @@ export default function Parents1013Page() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: "Digital Safety for Preteens (Ages 10-13) | Komal Kids",
+            name: "Digital Safety for Preteens (Ages 10-13) | Social Media Readiness | Komal Kids",
             description:
-              "Psychology-informed digital safety for preteens ages 10-13. Context-aware filtering, social media readiness insights, and self-regulation scaffolding. No surveillance, no dark patterns.",
+              "Psychology-informed digital wellbeing for preteens ages 10-13. Context-aware filtering, social media readiness insights, and self-regulation scaffolding. Trusted by families in India, the US, UK, and Singapore.",
             url: "https://komalkids.com/parents/10-13",
           }),
         }}
@@ -270,7 +270,7 @@ export default function Parents1013Page() {
               </TextShimmer>
             </h2>
             <p className="text-lg opacity-90 mb-10">
-              Trusted by families and clinicians across India, the US, UK, and Singapore. Start building digital judgment today.
+              Trusted by families and clinicians across India, the US, UK, Singapore, and the UAE. Whether your child is at a US public school, an IB school, or a CBSE institution — start building digital judgment today.
             </p>
             <Button
               asChild

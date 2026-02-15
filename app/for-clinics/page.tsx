@@ -28,6 +28,14 @@ const clinicianTypes = [
     title: "School Counselors",
     description: "Aggregate wellbeing patterns across student groups, informed by real digital engagement data rather than self-reports or teacher observations alone.",
   },
+  {
+    title: "Occupational & Speech Therapists",
+    description: "Fine motor engagement data, attention span observations, and communication pattern insights that supplement in-session assessments with between-session behavioral context.",
+  },
+  {
+    title: "Autism Centers & Specialists",
+    description: "Sensory engagement patterns, routine adherence data, and interaction preferences tracked over time. Useful context for care planning without diagnostic claims.",
+  },
 ];
 
 const features = [
@@ -111,7 +119,7 @@ export default function ForClinicsPage() {
             "@type": "WebPage",
             name: "Komal for Clinicians | Between-Session Child Development Insights",
             description:
-              "Behavioral and developmental insights for pediatricians, child psychologists, and therapists. Longitudinal engagement data, emotional regulation patterns, and parent-shared reports. Privacy-first.",
+              "Between-session behavioral and developmental insights for pediatricians, child psychologists, therapists, and autism specialists. Longitudinal engagement data, emotional regulation patterns, and parent-shared reports. Used by clinicians in India, the US, UK, and Singapore.",
             url: "https://komalkids.com/for-clinics",
           }),
         }}

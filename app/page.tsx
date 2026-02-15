@@ -65,7 +65,7 @@ export default function Home() {
     {
       question: "What is Komal?",
       answer:
-        "Komal is a hyper-personalized digital guardian for children ages 3-12 that uses real-time behavioral AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
+        "Komal is the first psychology-informed Talk-to-Play platform for children and families. It uses real-time behavioral AI to understand how your child feels and learns — not just what they click. Unlike traditional parental controls that rely on blocking or surveillance, Komal builds the social, emotional, and cognitive foundations children need to navigate the digital world safely on their own.",
     },
     {
       question: "How does Komal protect my child's privacy?",
@@ -80,7 +80,7 @@ export default function Home() {
     {
       question: "What age is Komal designed for?",
       answer:
-        "Komal is designed for children ages 3-12. The AI adapts to each child's developmental stage, learning style, and individual needs.",
+        "Komal is designed for children and families from ages 0 through 16+. The platform adapts its approach based on developmental stage: co-play for toddlers, guided exploration for elementary kids, self-regulation scaffolding for preteens, and graduated independence for teenagers. Parents in India, the US, UK, Singapore, and beyond use Komal across these age groups.",
     },
     {
       question: "How does the real-time adaptation work?",
@@ -123,13 +123,13 @@ export default function Home() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            name: "KOMAL - Child Internet Safety App",
-            alternateName: ["KOMAL Kids", "KOMAL Parental Control", "KOMAL Safe Browser"],
+            name: "KOMAL - Psychology-Informed Talk-to-Play Platform for Children",
+            alternateName: ["KOMAL Kids", "KOMAL Digital Buddy", "KOMAL Safe Browser"],
             operatingSystem: "Web, iOS, Android",
             applicationCategory: "LifestyleApplication",
-            applicationSubCategory: "Parental Control",
+            applicationSubCategory: "Child Digital Wellbeing",
             description:
-              "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing. Protects children ages 3-12 online with real-time behavioral AI. COPPA, GDPR-K compliant.",
+              "The first psychology-informed Talk-to-Play platform for children and families. Builds social, emotional, and cognitive foundations for safe digital engagement. Three-tier content filtering, peer-avatar guidance, and longitudinal developmental insights. COPPA, GDPR-K compliant.",
             screenshot: "https://komalkids.com/heroimage.png",
             featureList: [
               "Child Internet Safety",
@@ -184,7 +184,7 @@ export default function Home() {
             legalName: "ChildCog Private Limited",
             url: "https://komalkids.com",
             logo: "https://komalkids.com/komaliconnobg.png",
-            description: "KOMAL is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
+            description: "KOMAL is the first psychology-informed Talk-to-Play platform that builds the social, emotional, and cognitive foundations children need to thrive in a digital world.",
             foundingDate: "2024",
             founders: [
               {
@@ -363,7 +363,7 @@ export default function Home() {
                     <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
                   </svg>
                   <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide">
-                    Grounded in Yale Research
+                    The First Psychology-Informed Talk-to-Play Platform
                   </span>
                 </div>
               </div>
@@ -389,7 +389,7 @@ export default function Home() {
 
               {/* Tagline */}
               <p className="text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.18em] sm:tracking-[0.22em] font-medium text-primary/60 mt-5 md:mt-6 text-center lg:text-left opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.65s" }}>
-                Ethical AI that guides, not just blocks
+                We don&apos;t just block apps — we build the social, emotional, and cognitive foundations children need to thrive in a digital world
               </p>
 
               {/* CTA Buttons */}
@@ -696,11 +696,11 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="text-lg md:text-xl font-bold text-primary mb-2">
-                  100% Hands-Free
+                  Talk-to-Play
                 </h3>
                 <p className="text-sm md:text-base text-text-dim leading-relaxed text-center">
-                  Minimal clicks; just talk.<br />
-                  Behavioral infra at scale.
+                  Voice-first interaction. No clicks needed.<br />
+                  Behavioral AI at scale.
                 </p>
               </div>
             </ScrollReveal>
@@ -915,13 +915,11 @@ export default function Home() {
         </div>
         <div className="container max-w-[900px] px-8 mx-auto text-center relative z-10">
           <ScrollReveal>
-            <h2 className="text-[24px] sm:text-3xl md:text-[36px] lg:text-4xl font-sans font-bold mb-6 text-center">For Schools, Daycares, <br /> and Paediatric Practices</h2>
+            <h2 className="text-[24px] sm:text-3xl md:text-[36px] lg:text-4xl font-sans font-bold mb-6 text-center">For Schools, Clinics, <br /> and Institutions</h2>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p className="text-lg opacity-90 leading-relaxed mb-8  text-center">
-              Komal integrates seamlessly into your existing workflow. No new systems to learn—just plug into the insights
-              parents already trust. Get classroom-level analytics, SEL compliance dashboards, and early risk identification
-              without disrupting your current processes.
+              Komal provides CIPA-compliant web filtering with a social-emotional learning layer. Classroom-level dashboards, peer-avatar guidance for students, and between-session behavioral insights for clinicians. Works alongside existing filters like GoGuardian and Lightspeed, or as a standalone solution. Used in US public, charter, and private schools, as well as IB, CBSE, and ICSE institutions globally.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
@@ -965,12 +963,12 @@ export default function Home() {
         <div className="container max-w-[900px] px-8 mx-auto text-center">
           <ScrollReveal>
             <h2 className="text-[24px] sm:text-[28px] md:text-[32px] font-sans font-bold mb-4 text-primary tracking-tight">
-              Keep Learning About Child Internet Safety
+              Keep Learning About Child Digital Wellbeing
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p className="text-base md:text-lg text-text-dim leading-relaxed mb-8 max-w-[700px] mx-auto">
-              Understanding online safety for children is an ongoing journey. From parental controls and content filtering to AI-powered safe browsing, staying informed helps you protect your kids while encouraging healthy digital habits.
+              Whether you&apos;re a parent in the US navigating screen time for your toddler, an educator in India looking for CIPA-compliant web filtering, or a clinician in the UK seeking between-session insights — Komal&apos;s resources are designed to help you guide children toward healthy digital habits.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.2}>

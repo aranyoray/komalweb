@@ -90,9 +90,9 @@ export default function Parents1316Page() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: "Digital Wellbeing for Teenagers (Ages 13-16) | Komal Kids",
+            name: "Digital Wellbeing for Teenagers (Ages 13-16) | Pioneer Program | Komal Kids",
             description:
-              "Psychology-informed digital wellbeing for teenagers ages 13-16. Graduated independence, self-regulation skills, and Pioneer Program leadership opportunities. No surveillance, no dark patterns.",
+              "Psychology-informed digital wellbeing for teenagers ages 13-16. Graduated independence, self-regulation skills, and Pioneer Program leadership for college applications. No surveillance, no dark patterns.",
             url: "https://komalkids.com/parents/13-16",
           }),
         }}
@@ -277,7 +277,7 @@ export default function Parents1316Page() {
               </TextShimmer>
             </h2>
             <p className="text-lg opacity-90 mb-10">
-              Trusted by families and clinicians across India, the US, UK, Singapore, and the UAE. Build digital independence, not dependency.
+              Trusted by families and clinicians across India, the US, UK, Singapore, and the UAE. Build digital independence, not dependency. Teens can join the Pioneer Program with code SUNSHINE50 to earn leadership credentials for college applications.
             </p>
             <Button
               asChild

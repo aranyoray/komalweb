@@ -97,7 +97,7 @@ const faqs = [
   {
     question: "What is Komal and how does it work?",
     answer:
-      "Komal is a psychology-informed 'Talk-to-Play' platform that makes the internet safer for children without resorting to surveillance or blanket blocking. It uses a peer avatar (pavatar) to guide children through voice-based prompts, a three-tier content system (Block, Gate, Allow), and provides parents with weekly plain-language insight reports.",
+      "Komal is the first psychology-informed 'Talk-to-Play' platform for children and families. Rather than blocking apps or surveilling activity, Komal builds the social, emotional, and cognitive foundations your child needs to thrive in a digital world. It uses a peer avatar (pavatar) for voice-based guidance, a three-tier content system (Block, Gate, Allow), and delivers weekly plain-language developmental insight reports to parents.",
   },
   {
     question: "What ages does Komal support?",
@@ -122,7 +122,7 @@ const faqs = [
   {
     question: "What are longitudinal developmental insights?",
     answer:
-      "Komal tracks engagement patterns, attention spans, emotional regulation, and digital literacy skills over weeks and months. These longitudinal insights can surface developmental patterns 6-18 months earlier than traditional methods. These are not diagnoses — they are conversation starters for parents, educators, and clinicians.",
+      "Komal tracks engagement patterns, attention spans, emotional regulation, and digital literacy skills over weeks and months. These clinical-grade longitudinal insights can help identify developmental milestones 6-18 months earlier than traditional methods. These are not diagnoses — they are conversation starters for parents, educators, and clinicians. Families in India, the US, UK, Singapore, and the UAE use these reports to inform developmental conversations.",
   },
   {
     question: "What devices does Komal work on?",
@@ -141,9 +141,9 @@ export default function ParentsPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: "For Parents | Digital Safety by Age Group | Komal Kids",
+            name: "For Parents | Psychology-Informed Digital Safety by Age Group | Komal Kids",
             description:
-              "Psychology-informed digital safety for every age. Find age-specific guidance for your child: 0-5, 6-10, 10-13, 13-16, and 16+. No dark patterns, no surveillance. Research-backed safety.",
+              "The first Talk-to-Play platform for children. Find age-specific digital wellbeing guidance: 0-5, 6-10, 10-13, 13-16, and 16+. No dark patterns, no surveillance. Clinician-designed, research-informed safety.",
             url: "https://komalkids.com/parents",
           }),
         }}

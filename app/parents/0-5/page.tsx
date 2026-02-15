@@ -90,9 +90,9 @@ export default function Parents05Page() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: "Digital Safety for Toddlers & Preschoolers (Ages 0-5) | Komal Kids",
+            name: "Screen Time for Toddlers & Preschoolers (Ages 0-5) | Talk-to-Play | Komal Kids",
             description:
-              "Psychology-informed digital play for children ages 0-5. Guided first screen experiences, developmental pattern tracking, and co-play features. No dark patterns, no ads.",
+              "Psychology-informed digital play for children ages 0-5. The first Talk-to-Play platform for toddlers. Guided first screen experiences, developmental pattern tracking, and co-play features. No dark patterns.",
             url: "https://komalkids.com/parents/0-5",
           }),
         }}
@@ -271,7 +271,7 @@ export default function Parents05Page() {
               </TextShimmer>
             </h2>
             <p className="text-lg opacity-90 mb-10">
-              Trusted by child psychologists and parents in India, the US, and beyond. Start with a guided co-play session today.
+              Trusted by child psychologists and parents in India, the US, UK, Singapore, and the UAE. Start with a guided Talk-to-Play co-play session today.
             </p>
             <Button
               asChild

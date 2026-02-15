@@ -122,9 +122,9 @@ export default function ForSchoolsPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: "Komal for Schools | Web Filtering with SEL | CIPA Compliant Digital Safety",
+            name: "Komal for Schools | Web Filtering with SEL | CIPA Compliant | Alternative to GoGuardian",
             description:
-              "CIPA-compliant web filtering with a social-emotional learning layer. Classroom dashboards, peer-avatar guidance, and privacy-first compliance. Alternative to GoGuardian and Lightspeed with developmental insights.",
+              "CIPA-compliant web filtering with a social-emotional learning layer. Starting at $2/student/year. Classroom dashboards, peer-avatar guidance, and privacy-first compliance. Alternative to GoGuardian, Lightspeed, and Securly with developmental insights.",
             url: "https://komalkids.com/for-schools",
           }),
         }}
@@ -374,8 +374,8 @@ export default function ForSchoolsPage() {
                 body: "Komal operates at the browser level and works alongside Google Classroom, Canvas, Schoology, and any other learning management system without integration overhead.",
               },
               {
-                title: "All School Types",
-                body: "Deployed in US public schools, charter school networks, private schools, and international schools (IB, CBSE, ICSE, GCSE). Adapts to different compliance requirements and school structures.",
+                title: "All School Types, Globally",
+                body: "Deployed in US public and charter schools, private school networks, and international schools (IB, CBSE, ICSE, GCSE). Works for districts in the US (CIPA/FERPA), schools in India (DPDP), and UK institutions (GDPR-K, Age Appropriate Design Code). Adapts to different compliance requirements and school structures.",
               },
             ].map((item, index) => (
               <ScrollReveal key={item.title} delay={index * 0.1}>

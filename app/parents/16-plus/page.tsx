@@ -85,9 +85,9 @@ export default function Parents16PlusPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: "Digital Independence for Older Teens (Ages 16+) | Komal Kids",
+            name: "Digital Independence for Older Teens (Ages 16+) | Pioneer Program | Komal Kids",
             description:
-              "Help older teens transition to digital independence with self-directed wellbeing tools, Pioneer Program leadership, and evidence-based transition support for parents.",
+              "Help older teens transition to digital independence with self-directed wellbeing tools and Pioneer Program leadership for college applications. Ethical AI literacy and digital citizenship skills.",
             url: "https://komalkids.com/parents/16-plus",
           }),
         }}

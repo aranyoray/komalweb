@@ -92,7 +92,7 @@ export default function Parents610Page() {
             "@type": "WebPage",
             name: "Online Safety for Kids Ages 6-10 | Safe Browsing for Elementary School | Komal Kids",
             description:
-              "Psychology-informed digital safety for children ages 6-10. Three-tier content filtering, peer-avatar guidance, and weekly plain-language reports for parents. No surveillance, no dark patterns.",
+              "Psychology-informed Talk-to-Play digital safety for children ages 6-10. Three-tier content filtering, peer-avatar guidance, and weekly developmental reports. Used by families in the US, India, UK, and Singapore.",
             url: "https://komalkids.com/parents/6-10",
           }),
         }}
@@ -267,7 +267,7 @@ export default function Parents610Page() {
               </TextShimmer>
             </h2>
             <p className="text-lg opacity-90 mb-10">
-              Trusted by families in India, the US, UK, Singapore, and beyond. Over 90 hours of mindful interaction delivered to children.
+              Trusted by families and educators across India, the US, UK, Singapore, and the UAE. Over 90 hours of mindful Talk-to-Play interaction delivered to children worldwide.
             </p>
             <Button
               asChild

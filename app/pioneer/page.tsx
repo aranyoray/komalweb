@@ -148,7 +148,7 @@ export default function PioneerPage() {
             "@type": "WebPage",
             name: "Pioneer Program | Youth Digital Leadership & Citizenship | Komal Kids",
             description:
-              "Join the Komal Pioneer Program. Youth leadership and digital citizenship for children, teens, and parents. Mentor younger kids, earn a Digital Leadership Certificate, and build your portfolio.",
+              "Join the Komal Pioneer Program — youth leadership and digital citizenship for children, teens, and parents globally. Mentor younger kids, earn a Digital Leadership Certificate, and build a standout portfolio for college. Use code SUNSHINE50.",
             url: "https://komalkids.com/pioneer",
           }),
         }}
@@ -227,7 +227,8 @@ export default function PioneerPage() {
               <p className="text-lg text-text-dim max-w-2xl mx-auto">
                 Pioneers are youth leaders and digital role models who embody Komal&apos;s
                 mission of digital wellbeing and safety. This is Model UN meets
-                digital citizenship meets building something real.
+                digital citizenship meets building something real. Open to children,
+                teens, and parents in India, the US, UK, Singapore, UAE, and beyond.
               </p>
             </div>
           </ScrollReveal>
