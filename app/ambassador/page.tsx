@@ -13,7 +13,7 @@ import FloatingDots from "@/components/FloatingDots";
 import NoiseOverlay from "@/components/NoiseOverlay";
 import ScrollReveal from "@/components/ScrollReveal";
 
-const ambassadorPerks = [
+const pioneerPerks = [
   {
     icon: Shield,
     title: "Everything in Essentials",
@@ -183,7 +183,7 @@ export default function AmbassadorPage() {
               </h2>
 
               <div className="space-y-4">
-                {ambassadorPerks.map((perk, idx) => (
+                {pioneerPerks.map((perk, idx) => (
                   <motion.div
                     key={perk.title}
                     initial={{ opacity: 0, x: -20 }}
@@ -215,7 +215,7 @@ export default function AmbassadorPage() {
                   One-time fee
                 </p>
                 <p className="text-xs text-text-dim mt-1">
-                  Pay once, enjoy Ambassador perks forever. Charged in CAD.
+                  Pay once, enjoy Pioneer perks forever. Charged in CAD.
                 </p>
               </div>
 
