@@ -13,6 +13,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 1,
+      alternates: {
+        languages: {
+          'en-US': `${baseUrl}/geo/usa`,
+          'en-IN': `${baseUrl}/geo/india`,
+        },
+      },
     },
 
     // ── Core Product Pages ──
@@ -175,12 +181,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.7,
+      alternates: {
+        languages: {
+          'en-US': `${baseUrl}/geo/usa`,
+          'x-default': baseUrl,
+        },
+      },
     },
     {
       url: `${baseUrl}/geo/india`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.7,
+      alternates: {
+        languages: {
+          'en-IN': `${baseUrl}/geo/india`,
+          'x-default': baseUrl,
+        },
+      },
     },
 
     // ── Blog ──
@@ -251,6 +269,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.5,
+    },
+
+    // ── Help & Support ──
+    {
+      url: `${baseUrl}/help`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+
+    // ── Ambassador Program ──
+    {
+      url: `${baseUrl}/ambassador`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.6,
     },
 
     // ── Legal ──
