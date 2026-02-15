@@ -89,13 +89,13 @@ export default function AmbassadorsPage() {
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                Our Ambassadors
+                Our Pioneers
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary mb-3 tracking-tight">
-                Meet the KOMAL Ambassadors
+                Meet the KOMAL Pioneers
               </h1>
               <p className="text-base sm:text-lg text-text-dim max-w-2xl mx-auto">
-                Passionate advocates making a difference in their communities
+                Youth leaders and digital role models making a difference in their communities
               </p>
             </div>
           </ScrollReveal>
@@ -104,7 +104,7 @@ export default function AmbassadorsPage() {
           {loading && (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <p className="text-sm text-text-dim">Loading ambassadors...</p>
+              <p className="text-sm text-text-dim">Loading pioneers...</p>
             </div>
           )}
 
@@ -118,7 +118,7 @@ export default function AmbassadorsPage() {
           {/* Empty */}
           {!loading && !error && ambassadors.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-lg text-text-dim">No ambassadors yet. Check back soon!</p>
+              <p className="text-lg text-text-dim">No pioneers yet. Check back soon!</p>
             </div>
           )}
 
