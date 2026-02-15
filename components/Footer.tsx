@@ -341,6 +341,10 @@ export default function Footer() {
               Safety & Trust
             </Link>
             <span className="text-border">|</span>
+            <Link href="/pioneer" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+              Pioneer Program
+            </Link>
+            <span className="text-border">|</span>
             <Link href="/privacypolicy" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
               Privacy Policy
             </Link>

@@ -77,7 +77,7 @@ export default function Navbar() {
       { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
       { label: "Safety", href: { type: "route", value: "/content-safety" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
-      { label: "Ambassadors", href: { type: "route", value: "/ambassadors" } as const },
+      { label: "Pioneer", href: { type: "route", value: "/pioneer" } as const },
       { label: "Pricing", href: { type: "route", value: "/pricing" } as const },
     ],
     []
