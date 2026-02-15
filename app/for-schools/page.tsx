@@ -399,7 +399,7 @@ export default function ForSchoolsPage() {
               Questions from School IT Leaders
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 

@@ -260,7 +260,7 @@ export default function Parents1316Page() {
               Questions from Parents of Teenagers
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 

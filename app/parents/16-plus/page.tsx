@@ -261,7 +261,7 @@ export default function Parents16PlusPage() {
               Questions About Older Teens and Digital Independence
             </h2>
           </ScrollReveal>
-          <FaqAccordion faqs={faqs} />
+          <FaqAccordion items={faqs} />
         </div>
       </section>
 
