@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ms Linda Xu Dashboard",
+  title: "Ms Linda Yu Dashboard",
   robots: {
     index: false,
     follow: false,
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LindaXuDashboardLayout({
+export default function LindaYuDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
