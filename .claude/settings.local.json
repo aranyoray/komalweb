@@ -21,7 +21,8 @@
       "Bash(powershell:*)",
       "Bash(npx next lint:*)",
       "Bash(grep:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(wc:*)"
     ]
   }
 }

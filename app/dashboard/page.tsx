@@ -39,6 +39,12 @@ import {
   CreditCard,
   HelpCircle,
   ChevronDown,
+  Tag,
+  Brain,
+  Activity,
+  Ear,
+  LinkIcon,
+  Cloud,
 } from "lucide-react";
 import { generateSafetyReportPDF } from "@/lib/generatePDF";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -118,6 +124,42 @@ interface ScanResult {
     }[];
   };
   pythonDebug?: any;
+
+  // SafetyReport unified fields
+  overallsafetyscore?: number;
+  languageSafetyScore?: number;
+  visualSafetyScore?: number;
+  audioSafetyScore?: number;
+  ageActions?: {
+    [key: string]: {
+      action: "BLOCK" | "GATE" | "ALLOW";
+      score: number;
+      reason: string;
+      risks: string[];
+    };
+  };
+  majorCategories?: {
+    name: string;
+    probability: number;
+    subcategories: {
+      name: string;
+      probability: number;
+    }[];
+  }[];
+  contextType?: string;
+  topicTags?: string[];
+  flags?: {
+    bodyAnxiety: boolean;
+    selfHarm: boolean;
+    fraudOrScam: boolean;
+    extremism: boolean;
+  };
+  decisionSource?: {
+    [signal: string]: {
+      used: boolean;
+      confidence: number;
+    };
+  };
 }
 
 interface SavedReport {
@@ -475,6 +517,38 @@ function DashboardContent() {
             })
           )
         );
+
+        // On-device analysis signals
+        if (data.overallsafetyscore !== undefined) {
+          console.log('%c\n🧠 On-Device Analysis (SafetyReport):', 'color: #6B4E71; font-weight: bold;');
+          console.log(`  Unified Safety Score: ${data.overallsafetyscore} (0-1 scale)`);
+          console.log(`  Language Safety: ${data.languageSafetyScore} | Visual Safety: ${data.visualSafetyScore} | Audio Safety: ${data.audioSafetyScore}`);
+          console.log(`  Context Type: ${data.contextType || 'general'}`);
+          console.log(`  Topic Tags: ${data.topicTags?.join(', ') || 'none'}`);
+          if (data.decisionSource) {
+            console.log('%c  Decision Sources:', 'font-weight: bold;');
+            console.table(Object.entries(data.decisionSource).map(([signal, info]: [string, any]) => ({
+              Signal: signal.toUpperCase(),
+              Used: info.used ? 'Yes' : 'No',
+              Confidence: info.confidence,
+            })));
+          }
+          if (data.majorCategories?.length > 0) {
+            console.log('%c  Major Categories:', 'font-weight: bold;');
+            console.table(data.majorCategories.map((c: any) => ({
+              Category: c.name,
+              Probability: c.probability,
+            })));
+          }
+          if (data.ageActions) {
+            console.log('%c  Age-Band Actions:', 'font-weight: bold;');
+            console.table(Object.entries(data.ageActions).map(([band, info]: [string, any]) => ({
+              'Age Band': band,
+              Action: info.action,
+              Score: info.score,
+            })));
+          }
+        }
 
         if (data.pythonDebug) {
           console.log('%c\n🐍 Python Hybrid Debug Info:', 'color: #6B4E71; font-weight: bold;');
@@ -1583,6 +1657,171 @@ function DashboardContent() {
                       )}
                     </div>
                   </ScrollReveal>
+
+                  {/* Context & Topic Tags */}
+                  {(result.contextType || (result.topicTags && result.topicTags.length > 0)) && (
+                    <ScrollReveal delay={0.22}>
+                      <div className="bg-white/80 backdrop-blur-sm rounded-[2rem] shadow-xl border border-white/40 p-4 sm:p-6 ring-1 ring-primary/5">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                          {result.contextType && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-xs font-semibold ring-1 ring-violet-200/50">
+                              <Tag className="w-3 h-3" />
+                              {result.contextType.replace(/_/g, ' ')}
+                            </span>
+                          )}
+                          {result.topicTags?.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2.5 py-1 bg-primary/5 text-primary/80 rounded-full text-xs font-medium ring-1 ring-primary/10"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </ScrollReveal>
+                  )}
+
+                  {/* AI Signal Scores & Decision Sources */}
+                  {result.overallsafetyscore !== undefined && (
+                    <ScrollReveal delay={0.23}>
+                      <div className="bg-white/80 backdrop-blur-sm rounded-[2rem] shadow-xl border border-white/40 p-4 sm:p-6 ring-1 ring-primary/5">
+                        <h3 className="text-base sm:text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                          <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70" />
+                          AI Signal Analysis
+                        </h3>
+
+                        {/* Per-signal safety scores */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                          <div className="p-3 rounded-2xl bg-primary/5 text-center ring-1 ring-primary/10">
+                            <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Unified</div>
+                            <div className={`text-lg font-bold ${(result.overallsafetyscore ?? 0) >= 0.7 ? 'text-green-600' : (result.overallsafetyscore ?? 0) >= 0.4 ? 'text-amber-600' : 'text-red-600'}`}>
+                              {((result.overallsafetyscore ?? 0) * 100).toFixed(0)}%
+                            </div>
+                          </div>
+                          <div className="p-3 rounded-2xl bg-blue-50/80 text-center ring-1 ring-blue-200/30">
+                            <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Language</div>
+                            <div className={`text-lg font-bold ${(result.languageSafetyScore ?? 0) >= 0.7 ? 'text-green-600' : (result.languageSafetyScore ?? 0) >= 0.4 ? 'text-amber-600' : 'text-red-600'}`}>
+                              {((result.languageSafetyScore ?? 0) * 100).toFixed(0)}%
+                            </div>
+                          </div>
+                          <div className="p-3 rounded-2xl bg-purple-50/80 text-center ring-1 ring-purple-200/30">
+                            <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Visual</div>
+                            <div className={`text-lg font-bold ${(result.visualSafetyScore ?? 0) >= 0.7 ? 'text-green-600' : (result.visualSafetyScore ?? 0) >= 0.4 ? 'text-amber-600' : 'text-red-600'}`}>
+                              {((result.visualSafetyScore ?? 0) * 100).toFixed(0)}%
+                            </div>
+                          </div>
+                          <div className="p-3 rounded-2xl bg-emerald-50/80 text-center ring-1 ring-emerald-200/30">
+                            <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Audio</div>
+                            <div className={`text-lg font-bold ${(result.audioSafetyScore ?? 0) >= 0.7 ? 'text-green-600' : (result.audioSafetyScore ?? 0) >= 0.4 ? 'text-amber-600' : 'text-red-600'}`}>
+                              {((result.audioSafetyScore ?? 0) * 100).toFixed(0)}%
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Decision sources */}
+                        {result.decisionSource && (
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(result.decisionSource).map(([signal, info]) => (
+                              <span
+                                key={signal}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ring-1 ${
+                                  info.used
+                                    ? 'bg-green-50 text-green-700 ring-green-200/50'
+                                    : 'bg-gray-50 text-gray-400 ring-gray-200/50'
+                                }`}
+                              >
+                                {signal === 'nlp' && <MessageSquare className="w-3 h-3" />}
+                                {signal === 'vision' && <Eye className="w-3 h-3" />}
+                                {signal === 'audio' && <Ear className="w-3 h-3" />}
+                                {signal === 'links' && <LinkIcon className="w-3 h-3" />}
+                                {signal === 'cloud' && <Cloud className="w-3 h-3" />}
+                                {signal.toUpperCase()}
+                                {info.used && (
+                                  <span className="text-[10px] opacity-70">
+                                    {(info.confidence * 100).toFixed(0)}%
+                                  </span>
+                                )}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </ScrollReveal>
+                  )}
+
+                  {/* Major Categories */}
+                  {result.majorCategories && result.majorCategories.length > 0 && (
+                    <ScrollReveal delay={0.24}>
+                      <div className="bg-white/80 backdrop-blur-sm rounded-[2rem] shadow-xl border border-white/40 p-4 sm:p-6 ring-1 ring-primary/5">
+                        <h3 className="text-base sm:text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                          <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70" />
+                          Content Categories
+                        </h3>
+                        <div className="space-y-3">
+                          {result.majorCategories.map((cat, idx) => (
+                            <div key={idx}>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-sm font-medium text-gray-800">{cat.name}</span>
+                                <span className={`text-xs font-bold ${cat.probability >= 0.5 ? 'text-red-600' : cat.probability >= 0.2 ? 'text-amber-600' : 'text-gray-500'}`}>
+                                  {(cat.probability * 100).toFixed(0)}%
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-700 ${cat.probability >= 0.5 ? 'bg-red-400' : cat.probability >= 0.2 ? 'bg-amber-400' : 'bg-gray-300'}`}
+                                  style={{ width: `${Math.min(cat.probability * 100, 100)}%` }}
+                                />
+                              </div>
+                              {cat.subcategories.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                  {cat.subcategories.map((sub, si) => (
+                                    <span key={si} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded-full text-[10px] ring-1 ring-gray-200/50">
+                                      {sub.name} ({(sub.probability * 100).toFixed(0)}%)
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </ScrollReveal>
+                  )}
+
+                  {/* Safety Flags */}
+                  {result.flags && (result.flags.bodyAnxiety || result.flags.selfHarm || result.flags.fraudOrScam || result.flags.extremism) && (
+                    <ScrollReveal delay={0.25}>
+                      <div className="bg-red-50/80 backdrop-blur-sm rounded-[2rem] shadow-xl border border-red-100/50 p-4 sm:p-6 ring-1 ring-red-200/30">
+                        <h3 className="text-base sm:text-lg font-bold text-red-700 mb-3 flex items-center gap-2">
+                          <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5" />
+                          Safety Flags
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {result.flags.selfHarm && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-xs font-semibold ring-1 ring-red-200">
+                              Self-Harm Content
+                            </span>
+                          )}
+                          {result.flags.extremism && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-xs font-semibold ring-1 ring-red-200">
+                              Extremism
+                            </span>
+                          )}
+                          {result.flags.fraudOrScam && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold ring-1 ring-amber-200">
+                              Fraud / Scam
+                            </span>
+                          )}
+                          {result.flags.bodyAnxiety && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold ring-1 ring-amber-200">
+                              Body Anxiety
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </ScrollReveal>
+                  )}
 
                   {/* Risk Categories */}
                   {result.childSafetyAnalysis.riskCategories.length > 0 && (

@@ -63,6 +63,28 @@ interface ScanResult {
   analysisMethod?: 'live' | 'demo';
   usedSearchFallback?: boolean;
   pythonDebug?: any;
+
+  // SafetyReport unified fields
+  overallsafetyscore?: number;
+  languageSafetyScore?: number;
+  visualSafetyScore?: number;
+  audioSafetyScore?: number;
+  majorCategories?: {
+    name: string;
+    probability: number;
+    subcategories: { name: string; probability: number }[];
+  }[];
+  contextType?: string;
+  topicTags?: string[];
+  flags?: {
+    bodyAnxiety: boolean;
+    selfHarm: boolean;
+    fraudOrScam: boolean;
+    extremism: boolean;
+  };
+  decisionSource?: {
+    [signal: string]: { used: boolean; confidence: number };
+  };
 }
 
 // Colors matching the page exactly
@@ -396,6 +418,147 @@ export async function generateSafetyReportPDF(result: ScanResult): Promise<void>
 
       currentY += metaHeight + 3;
     }
+  }
+
+  // ===== SECTION 1B: Context Type & Topic Tags =====
+  if (result.contextType || (result.topicTags && result.topicTags.length > 0)) {
+    checkNewPage(14);
+    drawRoundedRect(MARGIN, currentY, CONTENT_WIDTH, 10, 3, COLORS.white, COLORS.gray200);
+
+    let tagX = MARGIN + 3;
+    doc.setFontSize(6);
+
+    if (result.contextType) {
+      const ctLabel = result.contextType.replace(/_/g, ' ').toUpperCase();
+      const ctWidth = doc.getTextWidth(ctLabel) + 6;
+      drawRoundedRect(tagX, currentY + 2.5, ctWidth, 5, 2, COLORS.purple50);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.purple600);
+      doc.text(ctLabel, tagX + 3, currentY + 5.8);
+      tagX += ctWidth + 2;
+    }
+
+    if (result.topicTags) {
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...COLORS.gray600);
+      for (const tag of result.topicTags.slice(0, 10)) {
+        const tw = doc.getTextWidth(tag) + 4;
+        if (tagX + tw > PAGE_WIDTH - MARGIN - 3) break;
+        drawRoundedRect(tagX, currentY + 2.5, tw, 5, 2, COLORS.gray50);
+        doc.text(tag, tagX + 2, currentY + 5.8);
+        tagX += tw + 2;
+      }
+    }
+
+    currentY += 13;
+  }
+
+  // ===== SECTION 1C: AI Signal Analysis =====
+  if (result.overallsafetyscore !== undefined) {
+    checkNewPage(22);
+    drawRoundedRect(MARGIN, currentY, CONTENT_WIDTH, 18, 4, COLORS.white, COLORS.gray200);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.primary);
+    doc.text('AI Signal Analysis', MARGIN + 5, currentY + 6);
+
+    // Four signal score boxes
+    const signalBoxW = (CONTENT_WIDTH - 20) / 4;
+    const signals = [
+      { label: 'Unified', value: result.overallsafetyscore ?? 0 },
+      { label: 'Language', value: result.languageSafetyScore ?? 0 },
+      { label: 'Visual', value: result.visualSafetyScore ?? 0 },
+      { label: 'Audio', value: result.audioSafetyScore ?? 0 },
+    ];
+    signals.forEach((s, i) => {
+      const sx = MARGIN + 5 + i * (signalBoxW + 2);
+      const sy = currentY + 9;
+      const scoreColor = s.value >= 0.7 ? COLORS.green600 : s.value >= 0.4 ? COLORS.amber600 : COLORS.red600;
+      const scoreBg = s.value >= 0.7 ? COLORS.green50 : s.value >= 0.4 ? COLORS.amber50 : COLORS.red50;
+      drawRoundedRect(sx, sy, signalBoxW, 7, 2, scoreBg);
+      doc.setFontSize(5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...COLORS.gray500);
+      doc.text(s.label, sx + signalBoxW / 2, sy + 2.5, { align: 'center' });
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...scoreColor);
+      doc.text(`${(s.value * 100).toFixed(0)}%`, sx + signalBoxW / 2, sy + 5.8, { align: 'center' });
+    });
+
+    currentY += 21;
+  }
+
+  // ===== SECTION 1D: Safety Flags =====
+  if (result.flags && (result.flags.bodyAnxiety || result.flags.selfHarm || result.flags.fraudOrScam || result.flags.extremism)) {
+    checkNewPage(14);
+    drawRoundedRect(MARGIN, currentY, CONTENT_WIDTH, 10, 3, COLORS.red50, COLORS.red100);
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.red700);
+    doc.text('Safety Flags:', MARGIN + 3, currentY + 5.5);
+
+    let flagX = MARGIN + 25;
+    doc.setFontSize(6);
+    const flagList: string[] = [];
+    if (result.flags.selfHarm) flagList.push('Self-Harm');
+    if (result.flags.extremism) flagList.push('Extremism');
+    if (result.flags.fraudOrScam) flagList.push('Fraud/Scam');
+    if (result.flags.bodyAnxiety) flagList.push('Body Anxiety');
+
+    for (const flag of flagList) {
+      const fw = doc.getTextWidth(flag) + 4;
+      const isRed = flag === 'Self-Harm' || flag === 'Extremism';
+      drawRoundedRect(flagX, currentY + 2.5, fw, 5, 2, isRed ? COLORS.red100 : COLORS.amber100);
+      doc.setTextColor(...(isRed ? COLORS.red700 : COLORS.amber700));
+      doc.text(flag, flagX + 2, currentY + 5.8);
+      flagX += fw + 2;
+    }
+
+    currentY += 13;
+  }
+
+  // ===== SECTION 1E: Major Content Categories =====
+  if (result.majorCategories && result.majorCategories.length > 0) {
+    const catCount = Math.min(result.majorCategories.length, 5);
+    checkNewPage(10 + catCount * 8);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.primary);
+    doc.text('Content Categories', MARGIN, currentY + 5);
+    currentY += 10;
+
+    for (const cat of result.majorCategories.slice(0, 5)) {
+      checkNewPage(8);
+      const barY = currentY;
+
+      // Category name + probability
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.gray800);
+      const catName = cat.name.length > 40 ? cat.name.substring(0, 40) + '...' : cat.name;
+      doc.text(catName, MARGIN + 3, barY + 3.5);
+
+      const probColor = cat.probability >= 0.5 ? COLORS.red600 : cat.probability >= 0.2 ? COLORS.amber600 : COLORS.gray500;
+      doc.setTextColor(...probColor);
+      doc.text(`${(cat.probability * 100).toFixed(0)}%`, PAGE_WIDTH - MARGIN - 3, barY + 3.5, { align: 'right' });
+
+      // Progress bar
+      const pBarX = MARGIN + 3;
+      const pBarW = CONTENT_WIDTH - 6;
+      drawRoundedRect(pBarX, barY + 5, pBarW, 2, 1, COLORS.gray200);
+      const fillColor = cat.probability >= 0.5 ? COLORS.red500 : cat.probability >= 0.2 ? COLORS.amber500 : COLORS.gray500;
+      if (cat.probability > 0) {
+        drawRoundedRect(pBarX, barY + 5, pBarW * Math.min(cat.probability, 1), 2, 1, fillColor);
+      }
+
+      currentY += 8;
+    }
+
+    currentY += 3;
   }
 
   // ===== SECTION 2: Safety Risks Detected =====

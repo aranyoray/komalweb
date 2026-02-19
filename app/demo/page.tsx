@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck, FileDown } from "lucide-react";
+import { Loader2, Shield, AlertTriangle, CheckCircle, XCircle, Search, Eye, MessageSquare, Mail, Calendar, X, Video, Music, ShieldAlert, ShieldCheck, FileDown, Tag, Brain, Activity, Ear, LinkIcon, Cloud } from "lucide-react";
 import { generateSafetyReportPDF } from "@/lib/generatePDF";
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingOrbs from "@/components/FloatingOrbs";
@@ -79,6 +79,42 @@ interface ScanResult {
     }[];
   };
   pythonDebug?: any;
+
+  // SafetyReport unified fields
+  overallsafetyscore?: number;
+  languageSafetyScore?: number;
+  visualSafetyScore?: number;
+  audioSafetyScore?: number;
+  ageActions?: {
+    [key: string]: {
+      action: 'BLOCK' | 'GATE' | 'ALLOW';
+      score: number;
+      reason: string;
+      risks: string[];
+    };
+  };
+  majorCategories?: {
+    name: string;
+    probability: number;
+    subcategories: {
+      name: string;
+      probability: number;
+    }[];
+  }[];
+  contextType?: string;
+  topicTags?: string[];
+  flags?: {
+    bodyAnxiety: boolean;
+    selfHarm: boolean;
+    fraudOrScam: boolean;
+    extremism: boolean;
+  };
+  decisionSource?: {
+    [signal: string]: {
+      used: boolean;
+      confidence: number;
+    };
+  };
 }
 
 export default function DemoPage() {
@@ -194,6 +230,44 @@ export default function DemoPage() {
           data.overallScore >= 75 ? 'color: #4CAF50; font-weight: bold;' :
             data.overallScore >= 50 ? 'color: #FF9800; font-weight: bold;' :
               'color: #F44336; font-weight: bold;');
+
+        // On-device analysis signals
+        if (data.overallsafetyscore !== undefined) {
+          console.log('%c\n🧠 On-Device Analysis (SafetyReport):', 'color: #6B4E71; font-weight: bold;');
+          console.log(`  Unified Safety Score: ${data.overallsafetyscore} (0-1 scale)`);
+          console.log(`  Language Safety: ${data.languageSafetyScore} | Visual Safety: ${data.visualSafetyScore} | Audio Safety: ${data.audioSafetyScore}`);
+          console.log(`  Context Type: ${data.contextType || 'general'}`);
+          console.log(`  Topic Tags: ${data.topicTags?.join(', ') || 'none'}`);
+          if (data.flags) {
+            const activeFlags = Object.entries(data.flags).filter(([, v]) => v).map(([k]) => k);
+            console.log(`  Flags: ${activeFlags.length > 0 ? activeFlags.join(', ') : 'none'}`);
+          }
+          if (data.decisionSource) {
+            console.log('%c  Decision Sources:', 'font-weight: bold;');
+            console.table(Object.entries(data.decisionSource).map(([signal, info]: [string, any]) => ({
+              Signal: signal.toUpperCase(),
+              Used: info.used ? 'Yes' : 'No',
+              Confidence: info.confidence,
+            })));
+          }
+          if (data.majorCategories?.length > 0) {
+            console.log('%c  Major Categories:', 'font-weight: bold;');
+            console.table(data.majorCategories.map((c: any) => ({
+              Category: c.name,
+              Probability: c.probability,
+              Subcategories: c.subcategories?.length || 0,
+            })));
+          }
+          if (data.ageActions) {
+            console.log('%c  Age-Band Actions:', 'font-weight: bold;');
+            console.table(Object.entries(data.ageActions).map(([band, info]: [string, any]) => ({
+              'Age Band': band,
+              Action: info.action,
+              Score: info.score,
+              Reason: info.reason || '-',
+            })));
+          }
+        }
 
         if (data.pythonDebug) {
           console.log('%c\n🐍 Python Hybrid Debug Info:', 'color: #6B4E71; font-weight: bold;');
@@ -764,6 +838,136 @@ export default function DemoPage() {
 
                 </div>
               </ScrollReveal>
+
+              {/* Context & Topic Tags */}
+              {(result.contextType || (result.topicTags && result.topicTags.length > 0)) && (
+                <ScrollReveal delay={0.25}>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {result.contextType && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-violet-50 text-violet-700 text-[10px] font-bold border border-violet-100 uppercase tracking-tight">
+                          <Tag className="w-3 h-3" />
+                          {result.contextType.replace(/_/g, ' ')}
+                        </span>
+                      )}
+                      {result.topicTags?.map((tag, idx) => (
+                        <span key={idx} className="px-2 py-0.5 bg-gray-50 text-gray-600 border border-gray-100 rounded text-[10px]">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </ScrollReveal>
+              )}
+
+              {/* AI Signal Scores & Decision Sources */}
+              {result.overallsafetyscore !== undefined && (
+                <ScrollReveal delay={0.3}>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50">
+                      <Brain className="w-4 h-4 text-primary opacity-60" />
+                      <h4 className="text-sm font-bold text-gray-900">Signal Analysis</h4>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-3 mb-4">
+                      {[
+                        { label: 'Unified', value: result.overallsafetyscore ?? 0 },
+                        { label: 'Language', value: result.languageSafetyScore ?? 0 },
+                        { label: 'Visual', value: result.visualSafetyScore ?? 0 },
+                        { label: 'Audio', value: result.audioSafetyScore ?? 0 },
+                      ].map((s, i) => (
+                        <div key={i} className="text-center">
+                          <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">{s.label}</div>
+                          <div className={`text-sm font-bold ${s.value >= 0.7 ? 'text-green-600' : s.value >= 0.4 ? 'text-amber-600' : 'text-red-600'}`}>
+                            {(s.value * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {result.decisionSource && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {Object.entries(result.decisionSource).map(([signal, info]) => (
+                          <span
+                            key={signal}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium border ${
+                              info.used
+                                ? 'bg-green-50 text-green-700 border-green-100'
+                                : 'bg-gray-50 text-gray-400 border-gray-100'
+                            }`}
+                          >
+                            {signal === 'nlp' && <MessageSquare className="w-2.5 h-2.5" />}
+                            {signal === 'vision' && <Eye className="w-2.5 h-2.5" />}
+                            {signal === 'audio' && <Ear className="w-2.5 h-2.5" />}
+                            {signal === 'links' && <LinkIcon className="w-2.5 h-2.5" />}
+                            {signal === 'cloud' && <Cloud className="w-2.5 h-2.5" />}
+                            {signal.toUpperCase()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </ScrollReveal>
+              )}
+
+              {/* Major Categories + Safety Flags */}
+              {((result.majorCategories && result.majorCategories.length > 0) || (result.flags && (result.flags.bodyAnxiety || result.flags.selfHarm || result.flags.fraudOrScam || result.flags.extremism))) && (
+              <ScrollReveal delay={0.35}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Major Categories */}
+                  {result.majorCategories && result.majorCategories.length > 0 && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50">
+                        <Activity className="w-4 h-4 text-primary opacity-60" />
+                        <h4 className="text-sm font-bold text-gray-900">Content Categories</h4>
+                      </div>
+                      <div className="space-y-3">
+                        {result.majorCategories.map((cat, idx) => (
+                          <div key={idx}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-medium text-gray-700 truncate max-w-[70%]">{cat.name}</span>
+                              <span className={`text-[10px] font-bold ${cat.probability >= 0.5 ? 'text-red-600' : cat.probability >= 0.2 ? 'text-amber-600' : 'text-gray-500'}`}>
+                                {(cat.probability * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${cat.probability >= 0.5 ? 'bg-red-400' : cat.probability >= 0.2 ? 'bg-amber-400' : 'bg-gray-300'}`}
+                                style={{ width: `${Math.min(cat.probability * 100, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Safety Flags */}
+                  {result.flags && (result.flags.bodyAnxiety || result.flags.selfHarm || result.flags.fraudOrScam || result.flags.extremism) && (
+                    <div className="bg-white rounded-xl shadow-sm border border-red-100 p-5">
+                      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-red-50">
+                        <ShieldAlert className="w-4 h-4 text-red-500 opacity-80" />
+                        <h4 className="text-sm font-bold text-red-700">Safety Flags</h4>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {result.flags.selfHarm && (
+                          <span className="px-2 py-0.5 bg-red-50 text-red-700 border border-red-100 rounded text-[10px] font-bold">Self-Harm</span>
+                        )}
+                        {result.flags.extremism && (
+                          <span className="px-2 py-0.5 bg-red-50 text-red-700 border border-red-100 rounded text-[10px] font-bold">Extremism</span>
+                        )}
+                        {result.flags.fraudOrScam && (
+                          <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[10px] font-bold">Fraud/Scam</span>
+                        )}
+                        {result.flags.bodyAnxiety && (
+                          <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[10px] font-bold">Body Anxiety</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollReveal>
+              )}
 
               {/* Technical Footer */}
               <div className="text-center pt-8 border-t border-gray-100">
