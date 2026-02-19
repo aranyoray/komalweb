@@ -92,7 +92,7 @@ export default function AboutKomalPage() {
         }}
       />
 
-      <div className="min-h-screen pt-20">
+      <div className="min-h-screen pt-36 md:pt-44">
         <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-12">
           {/* Header */}
           <ScrollReveal>

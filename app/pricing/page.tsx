@@ -77,7 +77,7 @@ export default function PricingPage() {
     ];
 
     return (
-        <main className="pt-24 pb-16 bg-white">
+        <main className="pt-36 md:pt-44 pb-16 bg-white">
             <section className="pricing py-14" id="pricing">
                 <div className="container max-w-[1240px] px-8 mx-auto">
                     <h1 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-bold mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center animate-[fadeDown_0.8s_ease_forwards]">
