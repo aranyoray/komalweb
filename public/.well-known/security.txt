@@ -1,4 +1,4 @@
-# Security Policy for KOMAL (ChildCog Private Limited)
+# Security Policy for KOMAL
 # https://komalkids.com
 
 Contact: mailto:privacy@komalkids.com

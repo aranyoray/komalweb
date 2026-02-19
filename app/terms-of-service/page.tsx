@@ -30,8 +30,7 @@ export default function TermsOfServicePage() {
             <div className="privacy-highlight">
               <p>
                 <strong>Important:</strong> These Terms of Service (&quot;Terms&quot;) govern your use of the
-                Komal application and website (collectively, the &quot;Service&quot;), operated by ChildCog
-                Private Limited (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By accessing or using our
+                Komal application and website (collectively, the &quot;Service&quot;), operated by KOMAL (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By accessing or using our
                 Service, you agree to be bound by these Terms. If you do not agree, please do not use the
                 Service.
               </p>
@@ -166,8 +165,7 @@ export default function TermsOfServicePage() {
             <h3>6.1 Our Property</h3>
             <p>
               The Service, including all content, features, functionality, software, designs, text, graphics,
-              logos, icons, images, audio, video, and the arrangement thereof, is owned by ChildCog Private
-              Limited and is protected by international copyright, trademark, patent, trade secret, and other
+              logos, icons, images, audio, video, and the arrangement thereof, is owned by KOMAL and is protected by international copyright, trademark, patent, trade secret, and other
               intellectual property laws.
             </p>
 
@@ -226,7 +224,7 @@ export default function TermsOfServicePage() {
 
             <h2>9. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by applicable law, ChildCog Private Limited, its directors,
+              To the maximum extent permitted by applicable law, KOMAL, its directors,
               employees, partners, agents, and affiliates shall not be liable for any indirect, incidental,
               special, consequential, or punitive damages, including but not limited to loss of data, profits,
               goodwill, or other intangible losses, resulting from:
@@ -244,7 +242,7 @@ export default function TermsOfServicePage() {
 
             <h2>10. Indemnification</h2>
             <p>
-              You agree to indemnify, defend, and hold harmless ChildCog Private Limited and its officers,
+              You agree to indemnify, defend, and hold harmless KOMAL and its officers,
               directors, employees, and agents from any claims, damages, obligations, losses, liabilities,
               costs, or expenses arising from:
             </p>
@@ -309,7 +307,7 @@ export default function TermsOfServicePage() {
             <h2>15. Entire Agreement</h2>
             <p>
               These Terms, together with our Privacy Policy, constitute the entire agreement between you and
-              ChildCog Private Limited regarding the use of the Service and supersede all prior agreements and
+              KOMAL regarding the use of the Service and supersede all prior agreements and
               understandings.
             </p>
 
@@ -327,7 +325,7 @@ export default function TermsOfServicePage() {
                 <a href="mailto:privacy@komalkids.com">privacy@komalkids.com</a>
               </p>
               <p>
-                <strong>Company:</strong> ChildCog Private Limited
+                <strong>Company:</strong> KOMAL
               </p>
               <p>
                 <strong>Website:</strong>{" "}

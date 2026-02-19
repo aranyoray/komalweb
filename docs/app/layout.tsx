@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   },
   description: "Protect your children online with KOMAL - the AI-powered child internet safety app. Smart content filtering, parental controls, age-appropriate browsing, and real-time protection. COPPA compliant. Safe screen time for kids ages 3-12.",
   keywords: "child internet safety, parental control app, kids safe browsing, online safety for children, content filtering for kids, digital guardian, child protection app, safe screen time, age-appropriate content, family safety app, COPPA compliant app, children privacy app, kid-safe browser, internet filter for kids, child online protection, screen time management, parental monitoring app, safe apps for kids, children digital safety, online child protection",
-  authors: [{ name: "KOMAL - ChildCog Private Limited" }],
+  authors: [{ name: "KOMAL" }],
   creator: "KOMAL",
-  publisher: "ChildCog Private Limited",
+  publisher: "KOMAL",
   robots: {
     index: true,
     follow: true,

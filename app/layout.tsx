@@ -23,7 +23,7 @@ const jsonLd = {
       "@type": "Organization",
       "@id": "https://komalkids.com/#organization",
       name: "KOMAL",
-      legalName: "ChildCog Private Limited",
+      legalName: "KOMAL",
       url: "https://komalkids.com",
       logo: {
         "@type": "ImageObject",
@@ -167,9 +167,9 @@ export const metadata: Metadata = {
     "kids app safety",
     "internet safety for children",
   ].join(", "),
-  authors: [{ name: "KOMAL - ChildCog Private Limited", url: "https://komalkids.com" }],
+  authors: [{ name: "KOMAL", url: "https://komalkids.com" }],
   creator: "KOMAL",
-  publisher: "ChildCog Private Limited",
+  publisher: "KOMAL",
   robots: {
     index: true,
     follow: true,

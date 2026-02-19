@@ -22,7 +22,9 @@
       "Bash(npx next lint:*)",
       "Bash(grep:*)",
       "Bash(git status:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "WebSearch",
+      "WebFetch(domain:cdn.jsdelivr.net)"
     ]
   }
 }

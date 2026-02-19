@@ -164,7 +164,7 @@ export default function Home() {
             },
             publisher: {
               "@type": "Organization",
-              name: "ChildCog Private Limited",
+              name: "KOMAL",
               url: "https://komalkids.com",
               logo: "https://komalkids.com/komaliconnobg.png"
             }
@@ -181,7 +181,7 @@ export default function Home() {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "KOMAL",
-            legalName: "ChildCog Private Limited",
+            legalName: "KOMAL",
             url: "https://komalkids.com",
             logo: "https://komalkids.com/komaliconnobg.png",
             description: "KOMAL is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
@@ -989,7 +989,7 @@ export default function Home() {
       <ScrollReveal>
         <div className="my-6 text-center">
           <p className="text-text-dim/60 text-[10px] leading-relaxed  mx-auto">
-            Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of Komal (ChildCog Private Limited).
+            Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of Komal.
           </p>
         </div>
       </ScrollReveal>
