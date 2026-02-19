@@ -22,7 +22,8 @@ const contentCategories = [
         items: [
             { label: "Explicit sexual content", definition: "Pornography or sexually explicit material", under10: "Block", age10_13: "Block", age13_16: "Block", age16plus: "Block" },
             { label: "Sexual education (medical, educational)", definition: "Age-appropriate content about puberty, reproduction, or health", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate/Allow", age16plus: "Allow" },
-            { label: "Indecent clothing or speech", definition: "Revealing outfits, suggestive poses, or inappropriate language", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
+            { label: "Mature content (fanfiction, roleplay)", definition: "Fan fiction, romantic stories, roleplay scenarios, or light BDSM/kink fiction", under10: "Block", age10_13: "Block", age13_16: "Block/Gate", age16plus: "Gate" },
+            { label: "Indecent clothing or speech (cyberbullying)", definition: "Revealing outfits, suggestive poses, or inappropriate language", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
             { label: "Body modification (tattoos, piercings)", definition: "Content featuring or promoting tattoos, piercings, or body art", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
             { label: "Beauty & appearance filters", definition: "Face filters, body editing apps, or unrealistic beauty standards", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
         ],
@@ -30,19 +31,18 @@ const contentCategories = [
     {
         name: "Substances & Addictive Behavior",
         items: [
-            { label: "Alcohol content", definition: "Depictions of alcohol use, drinking culture, or bar scenes", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Drugs & cigarettes", definition: "Content showing drug use, smoking, vaping, or substance abuse", under10: "Block/Gate", age10_13: "Block/Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Gambling & betting / Loot boxes", definition: "Casino games, sports betting, or randomized in-game purchases", under10: "Block/Gate", age10_13: "Block/Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Parasocial & manipulative content", definition: "Creators exploiting emotional bonds or using manipulative tactics", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Self-optimization / body anxiety", definition: "Extreme fitness, diet culture, or content promoting body insecurity", under10: "Block/Gate", age10_13: "Block/Gate", age13_16: "Block/Gate", age16plus: "Block/Gate" },
+            { label: "Alcohol content", definition: "Depictions of alcohol use, drinking culture, or bar scenes", under10: "Block", age10_13: "Gate/Allow", age13_16: "Gate", age16plus: "Allow" },
+            { label: "Gambling, betting, loot boxes, gacha", definition: "Casino games, sports betting, or randomized in-game purchases", under10: "Block/Gate", age10_13: "Block/Gate", age13_16: "Gate", age16plus: "Allow" },
+            { label: "Parasocial & manipulative content (eg: Mr Beast, creators)", definition: "Creators exploiting emotional bonds or using manipulative tactics", under10: "Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
+            { label: "Self-optimization / body-anxiety (eg: extreme fitness, steroids)", definition: "Extreme fitness, diet culture, or content promoting body insecurity", under10: "Block/Gate", age10_13: "Block/Gate", age13_16: "Block/Gate", age16plus: "Block/Gate" },
         ],
     },
     {
         name: "Financial & Commercial Content",
         items: [
-            { label: "Crypto / speculative finance", definition: "Cryptocurrency, NFTs, meme stocks, or high-risk investments", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Get-rich-quick schemes", definition: "Promises of easy money, MLMs, or unrealistic financial claims", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Influencer financial advice", definition: "Non-professional money tips from social media personalities", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
+            { label: "Speculative finance (eg: pump-and-dump)", definition: "Cryptocurrency, NFTs, meme stocks, or high-risk investments", under10: "Block", age10_13: "Block", age13_16: "Gate", age16plus: "Block/Gate" },
+            { label: "Get-rich-quick schemes", definition: "Promises of easy money, MLMs, or unrealistic financial claims", under10: "Block", age10_13: "Block/Gate", age13_16: "Block/Gate", age16plus: "Gate/Allow" },
+            { label: "Online financial advice", definition: "Non-professional money tips or unregulated financial recommendations", under10: "Block", age10_13: "Block/Gate", age13_16: "Block/Gate", age16plus: "Block/Gate" },
             { label: "Subscription / purchase pages", definition: "Paywalls, in-app purchases, or subscription prompts", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
         ],
     },
@@ -50,19 +50,21 @@ const contentCategories = [
         name: "Media & Platform-Native Risks",
         items: [
             { label: "Short-form videos (<10 sec)", definition: "Highly addictive rapid-scroll content designed for endless viewing", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Live streams", definition: "Unmoderated real-time broadcasts with unpredictable content", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Gaming content (videos, poker, rummy)", definition: "Game streams, let's plays, or skill-based gambling games", under10: "Gate", age10_13: "Gate", age13_16: "Allow", age16plus: "Allow" },
-            { label: "AI-generated content", definition: "Deepfakes, AI art, or synthetic media that may mislead", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
+            { label: "Live streams / unmoderated chats (eg: Discord, Omegle)", definition: "Unmoderated real-time broadcasts, stranger video calls, or chat platforms", under10: "Block/Gate", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
+            { label: "Gaming content (videos, poker, rummy)", definition: "Game streams, let's plays, or skill-based gambling games", under10: "Gate", age10_13: "Allow", age13_16: "Allow", age16plus: "Allow" },
+            { label: "AI-generated content", definition: "Deepfakes, AI art, or synthetic media that may mislead", under10: "Block", age10_13: "Block", age13_16: "Gate", age16plus: "Allow" },
         ],
     },
     {
         name: "Social & Cultural Topics",
         items: [
+            { label: "Sexual/mature content (LGBTQ+)", definition: "LGBTQ+ identity, pride, coming-out stories, or same-sex relationships", under10: "Block", age10_13: "Block", age13_16: "Gate", age16plus: "Gate" },
             { label: "Religion", definition: "Religious teachings, practices, or faith-based discussions", under10: "Gate", age10_13: "Allow", age13_16: "Allow", age16plus: "Allow" },
-            { label: "Immigration", definition: "Content about migration, borders, or refugee topics", under10: "Gate", age10_13: "Allow", age13_16: "Allow", age16plus: "Allow" },
+            { label: "Immigration", definition: "Content about migration, borders, or refugee topics", under10: "Gate", age10_13: "Gate", age13_16: "Allow", age16plus: "Allow" },
+            { label: "Fringe Topics (Communism)", definition: "Communist ideology, socialist propaganda, or revolutionary political content", under10: "Block", age10_13: "Gate", age13_16: "Gate", age16plus: "Allow" },
             { label: "Discrimination & hate speech", definition: "Content containing slurs, prejudice, or targeting groups", under10: "Block/Gate", age10_13: "Block/Gate", age13_16: "Gate", age16plus: "Allow" },
             { label: "Guns & weapons", definition: "Firearms, knives, or weapon-related content", under10: "Block/Gate", age10_13: "Block/Gate", age13_16: "Gate", age16plus: "Allow" },
-            { label: "Extremist orgs / propaganda", definition: "Terrorist groups, radical ideologies, or recruitment material", under10: "Block", age10_13: "Block", age13_16: "Block", age16plus: "Block" },
+            { label: "Extremist orgs / propaganda", definition: "Terrorist groups, radical ideologies, or recruitment material", under10: "Block", age10_13: "Block", age13_16: "Gate", age16plus: "Gate" },
         ],
     },
 ];
