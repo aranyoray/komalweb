@@ -90,7 +90,7 @@ export default function HowKomalWorks() {
   return (
     <>
       {/* Hero Section - Redesigned with inline pill and image */}
-      <section className="relative pt-18 md:pt-32 pb-8 px-6 md:px-16 overflow-hidden bg-white">
+      <section className="relative pt-36 md:pt-44 pb-8 px-6 md:px-16 overflow-hidden bg-white">
         {/* Floating Particles Background */}
         <div className="absolute inset-0 z-0">
           <FloatingParticles count={40} />

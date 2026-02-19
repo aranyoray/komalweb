@@ -116,7 +116,7 @@ export default function ContentSafetyPage() {
     return (
         <>
             {/* Hero Section */}
-            <section className="relative pt-20 md:pt-32 pb-12 px-6 md:px-16 overflow-hidden bg-white">
+            <section className="relative pt-36 md:pt-44 pb-12 px-6 md:px-16 overflow-hidden bg-white">
                 <div className="absolute inset-0 z-0">
                     <FloatingParticles count={40} />
                 </div>

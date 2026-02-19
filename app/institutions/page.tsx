@@ -83,7 +83,7 @@ export default function InstitutionsPage() {
       <ParticleField count={35} color="263, 50%, 40%" speed={0.2} connectDistance={80} />
 
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
+      <section className="relative min-h-[90vh] flex items-center justify-center pt-36 md:pt-44 pb-16 overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0 opacity-15">
           <FloatingOrbs count={4} />
