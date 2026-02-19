@@ -91,12 +91,12 @@ const advisors: Advisor[] = [
         tagline: "22+ years healing young minds",
     },
     {
-        name: "Shreya Jain",
-        role: "CEO",
-        credentials: ["The Stack", "MBA"],
-        image: "/shreya-jain-mba-business-gtm-advisor-india.png",
-        description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through growth.",
-        tagline: "Champion of neurodiversity initiatives",
+        name: "Soham Poddar, PhD (PMRF)",
+        role: "Technical Advisor",
+        credentials: ["PhD, IIT Kharagpur", "460+ citations"],
+        image: "/soham-poddar-phd-technical-advisor-microsoft-komal.jpg",
+        description: "NLP, social computing & green AI researcher with 460+ citations (h-index: 9) at AAAI, SIGIR, and NAACL. Soham has published on LLM efficiency and misinformation detection; prev: HPE Labs. He advises Komal on child-safe LLM architecture, on-device inference optimization, and content safety classifiers. Soham holds a PhD in Computer Science from IIT Kharagpur, where he studied the structure and dynamics of large networked systems at the Complex Networks Research Group.",
+        tagline: "Child-safe AI architecture expert",
     },
 ];
 
