@@ -26,13 +26,13 @@ export default function AboutKomalPage() {
               {
                 "@type": "Person",
                 "name": "Saarthak Kumar",
-                "jobTitle": "Co-Founder & CEO",
+                "jobTitle": "CEO",
                 "alumniOf": "Columbia University, London School of Economics"
               },
               {
                 "@type": "Person",
                 "name": "Aranyo Ray",
-                "jobTitle": "Co-Founder & CTO",
+                "jobTitle": "CTO",
                 "alumniOf": "Yale University",
                 "award": "1st Place, APA at ISEF"
               }
@@ -139,7 +139,7 @@ export default function AboutKomalPage() {
               <div className="space-y-8">
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
                   <h3 className="text-xl font-semibold mb-2 text-text">Saarthak Kumar</h3>
-                  <p className="text-sm text-text-dim mb-3">Co-Founder & CEO</p>
+                  <p className="text-sm text-text-dim mb-3">CEO</p>
                   <p className="text-text-dim leading-relaxed">
                     Saarthak holds MPAs from Columbia University and the London School of Economics in economic
                     policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India
@@ -153,7 +153,7 @@ export default function AboutKomalPage() {
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
                   <h3 className="text-xl font-semibold mb-2 text-text">Aranyo Ray</h3>
-                  <p className="text-sm text-text-dim mb-3">Co-Founder & CTO</p>
+                  <p className="text-sm text-text-dim mb-3">CTO</p>
                   <p className="text-text-dim leading-relaxed">
                     Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda.
                     A Wu Tsai Scholar at Yale University investigating implicit bias in multicultural learning, he won
@@ -203,8 +203,8 @@ export default function AboutKomalPage() {
               <h2 className="text-3xl font-bold mb-6 text-text">Advisory Board</h2>
               <div className="space-y-6">
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Linda Yu, Master of Business Administration (MBA)</h3>
-                  <p className="text-sm text-text-dim mb-3">President, Canada Sunshine Foundation</p>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Linda Yu, MBA</h3>
+                  <p className="text-sm text-text-dim mb-3">President | Canada Sunshine Foundation</p>
                   <p className="text-text-dim leading-relaxed">
                     Linda is the President of Canada Sunshine Foundation. A non-profit leader and parent advocate, she has extensive experience as a senior leader of multiple non-profit organizations. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Yu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.
                   </p>
@@ -235,7 +235,7 @@ export default function AboutKomalPage() {
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Bratati Sinha Ray</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Bratati Sinha Ray, MSc, MS</h3>
                   <p className="text-sm text-text-dim mb-3">Consultant Psychologist | Apollo Clinic | 22+ years experience</p>
                   <p className="text-text-dim leading-relaxed">
                     Bratati is a Consultant Psychologist and Psychotherapist at Apollo Clinic with 22+ years of experience 
@@ -247,12 +247,13 @@ export default function AboutKomalPage() {
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Shreya Jain, MBA</h3>
-                  <p className="text-sm text-text-dim mb-3">CEO | Founder, The Stack | Formerly at BYJU'S</p>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Soham Poddar, PhD (PMRF)</h3>
+                  <p className="text-sm text-text-dim mb-3">Technical Advisor | IIT Kharagpur | 460+ citations</p>
                   <p className="text-text-dim leading-relaxed">
-                    Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert 
-                    in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through 
-                    strategic growth.
+                    NLP, social computing &amp; green AI researcher with 460+ citations (h-index: 9) at AAAI, SIGIR, and NAACL.
+                    Soham has published on LLM efficiency and misinformation detection; prev: HPE Labs. He advises Komal on
+                    child-safe LLM architecture, on-device inference optimization, and content safety classifiers. Soham holds a
+                    PhD in Computer Science from IIT Kharagpur.
                   </p>
                 </div>
               </div>

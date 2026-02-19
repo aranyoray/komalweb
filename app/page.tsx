@@ -190,12 +190,12 @@ export default function Home() {
               {
                 "@type": "Person",
                 name: "Saarthak Kumar",
-                jobTitle: "Co-Founder & CEO"
+                jobTitle: "CEO"
               },
               {
                 "@type": "Person",
                 name: "Aranyo Ray",
-                jobTitle: "Co-Founder & CTO"
+                jobTitle: "CTO"
               }
             ],
             contactPoint: {

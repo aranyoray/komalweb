@@ -42,7 +42,7 @@ const advisors: Advisor[] = [
         image: "/soham-poddar-phd-technical-advisor-microsoft-komal.jpg",
     },
     {
-        name: "Bratati Sinha Ray",
+        name: "Bratati Sinha Ray, MSc, MS",
         title: "CONSULTANT PSYCHOLOGIST",
         company: "@ APOLLO CLINIC",
         description: "Bratati is a Consultant Psychologist at Apollo Clinic with 22+ years of experience in child psychology. A certified Trauma Healer, she specializes in clinical counseling and provides deep expertise in adolescent mental health.",

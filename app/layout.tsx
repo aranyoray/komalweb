@@ -41,8 +41,8 @@ const jsonLd = {
         "AI-powered digital guardian for child internet safety. Protect your children online with smart content filtering, parental controls, and age-appropriate browsing.",
       foundingDate: "2024",
       founders: [
-        { "@type": "Person", name: "Saarthak Kumar", jobTitle: "Co-Founder & CEO" },
-        { "@type": "Person", name: "Aranyo Ray", jobTitle: "Co-Founder & CTO" },
+        { "@type": "Person", name: "Saarthak Kumar", jobTitle: "CEO" },
+        { "@type": "Person", name: "Aranyo Ray", jobTitle: "CTO" },
       ],
       contactPoint: [
         {

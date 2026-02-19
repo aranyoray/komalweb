@@ -66,7 +66,7 @@ export default function ParentsLayout({
               },
               {
                 "@type": "Question",
-                name: "Does Komal use dark patterns like streaks or scores?",
+                name: "Does Komal use dark patterns?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: "No. Komal explicitly rejects dark patterns, infinite scrolls, streaks, manipulative scoring, and other engagement hooks. The platform is designed to protect intrinsic motivation and focus. Sessions end with natural stopping points, not cliffhangers.",

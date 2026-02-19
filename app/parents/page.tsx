@@ -110,7 +110,7 @@ const faqs = [
       "Most parental control apps are built around surveillance and restriction. Komal is built around guidance and skill-building. Instead of monitoring every click or blocking access, Komal helps children develop the judgment and self-regulation to navigate the internet safely on their own. The goal is for your child to eventually outgrow the need for external controls.",
   },
   {
-    question: "Does Komal use dark patterns like streaks or scores?",
+    question: "Does Komal use dark patterns?",
     answer:
       "No. Komal explicitly rejects dark patterns, infinite scrolls, streaks, manipulative scoring, and other engagement hooks. The platform is designed to protect intrinsic motivation and focus. Sessions end with natural stopping points, not cliffhangers.",
   },
@@ -213,20 +213,87 @@ export default function ParentsPage() {
             </div>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Horizontal Age Progression Bar */}
+          <ScrollReveal delay={0.1}>
+            <div className="mb-10">
+              {/* Age labels above the bar */}
+              <div className="hidden sm:flex w-full mb-2">
+                {ageGroups.map((group) => (
+                  <div key={group.ages} className="flex-1 text-center">
+                    <span className={`text-sm font-bold ${group.textColor}`}>
+                      Ages {group.ages}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* The progression bar */}
+              <div className="flex w-full h-3 rounded-full overflow-hidden shadow-sm">
+                {[
+                  { href: "/parents/0-5", bg: "bg-amber-400", hover: "hover:bg-amber-500" },
+                  { href: "/parents/6-10", bg: "bg-blue-400", hover: "hover:bg-blue-500" },
+                  { href: "/parents/10-13", bg: "bg-violet-400", hover: "hover:bg-violet-500" },
+                  { href: "/parents/13-16", bg: "bg-indigo-400", hover: "hover:bg-indigo-500" },
+                  { href: "/parents/16-plus", bg: "bg-slate-400", hover: "hover:bg-slate-500" },
+                ].map((seg, i) => (
+                  <Link
+                    key={i}
+                    href={seg.href}
+                    className={`flex-1 ${seg.bg} ${seg.hover} transition-colors duration-200 relative`}
+                    aria-label={`Ages ${ageGroups[i].ages} — ${ageGroups[i].label}`}
+                  />
+                ))}
+              </div>
+
+              {/* Connector lines from bar to cards (hidden on mobile) */}
+              <div className="hidden sm:flex w-full mt-0">
+                {[
+                  "bg-amber-400",
+                  "bg-blue-400",
+                  "bg-violet-400",
+                  "bg-indigo-400",
+                  "bg-slate-400",
+                ].map((color, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center">
+                    <div className={`w-0.5 h-6 ${color} opacity-40`} />
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full border-2 bg-white ${color.replace("bg-", "border-")}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Detail Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {ageGroups.map((group, index) => (
-              <ScrollReveal key={group.ages} delay={index * 0.08}>
+              <ScrollReveal key={group.ages} delay={0.15 + index * 0.06}>
                 <Link
                   href={group.href}
-                  className={`block group ${group.bgColor} rounded-2xl p-8 border ${group.borderColor} hover:shadow-lg transition-all duration-300 h-full`}
+                  className={`block group ${group.bgColor} rounded-2xl p-5 border ${group.borderColor} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full`}
                 >
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full ${group.bgColor} ${group.textColor} text-sm font-bold mb-4`}>
-                    Ages {group.ages}
+                  <div
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold mb-3 ${group.textColor}`}
+                    style={{
+                      backgroundColor:
+                        group.ages === "0-5"
+                          ? "rgb(251 191 36 / 0.2)"
+                          : group.ages === "6-10"
+                            ? "rgb(96 165 250 / 0.2)"
+                            : group.ages === "10-13"
+                              ? "rgb(167 139 250 / 0.2)"
+                              : group.ages === "13-16"
+                                ? "rgb(129 140 248 / 0.2)"
+                                : "rgb(148 163 184 / 0.2)",
+                    }}
+                  >
+                    {group.ages}
                   </div>
-                  <h3 className="text-xl font-bold text-primary mb-3 group-hover:underline">
+                  <h3 className="text-base font-bold text-primary mb-2 group-hover:underline decoration-1 underline-offset-2">
                     {group.label}
                   </h3>
-                  <p className="text-text-dim leading-relaxed text-sm">
+                  <p className="text-text-dim leading-relaxed text-xs">
                     {group.description}
                   </p>
                 </Link>
