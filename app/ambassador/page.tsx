@@ -13,7 +13,7 @@ import FloatingDots from "@/components/FloatingDots";
 import NoiseOverlay from "@/components/NoiseOverlay";
 import ScrollReveal from "@/components/ScrollReveal";
 
-const ambassadorPerks = [
+const pioneerPerks = [
   {
     icon: Shield,
     title: "Everything in Essentials",
@@ -46,7 +46,7 @@ const ambassadorPerks = [
   },
   {
     icon: Award,
-    title: "Ambassador Community Badge",
+    title: "Pioneer Community Badge",
     description: "Exclusive badge recognizing your commitment",
   },
 ];
@@ -157,7 +157,7 @@ export default function AmbassadorPage() {
                 Welcome to the KOMAL
                 <br />
                 <span className="relative inline-block">
-                  <span className="relative z-10">Ambassador Community</span>
+                  <span className="relative z-10">Pioneer Community</span>
                   <span
                     className="absolute left-0 right-0 bottom-[0.1em] h-[0.3em] rounded-full -z-0"
                     style={{
@@ -168,7 +168,7 @@ export default function AmbassadorPage() {
                 </span>
               </h1>
               <p className="text-sm sm:text-base text-text-dim max-w-[500px] mx-auto">
-                As a valued community member, you&apos;re invited to join our Ambassador program
+                As a valued community member, you&apos;re invited to join our Pioneer program
                 with exclusive perks and premium features to help keep your children safe online.
               </p>
             </div>
@@ -179,11 +179,11 @@ export default function AmbassadorPage() {
             <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/40 p-6 sm:p-8 ring-1 ring-primary/5 mb-6">
               <h2 className="text-lg sm:text-xl font-bold text-primary mb-6 flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
-                Ambassador Benefits
+                Pioneer Benefits
               </h2>
 
               <div className="space-y-4">
-                {ambassadorPerks.map((perk, idx) => (
+                {pioneerPerks.map((perk, idx) => (
                   <motion.div
                     key={perk.title}
                     initial={{ opacity: 0, x: -20 }}
@@ -215,7 +215,7 @@ export default function AmbassadorPage() {
                   One-time fee
                 </p>
                 <p className="text-xs text-text-dim mt-1">
-                  Pay once, enjoy Ambassador perks forever. Charged in CAD.
+                  Pay once, enjoy Pioneer perks forever. Charged in CAD.
                 </p>
               </div>
 
@@ -239,7 +239,7 @@ export default function AmbassadorPage() {
                   ) : (
                     <>
                       <Award className="w-5 h-5" />
-                      Join Ambassador Community
+                      Join Pioneer Community
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}

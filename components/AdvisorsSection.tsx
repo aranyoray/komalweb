@@ -13,10 +13,10 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Linda Xu, MBA",
-        title: "REGIONAL CEO FOR CANADA & CHINA",
-        company: "@ CANADA SUNSHINE FOUNDATION, CANADIAN WOMEN'S FEDERATION",
-        description: "Linda is Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. A nonprofit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
+        name: "Linda Yu, MBA",
+        title: "PRESIDENT",
+        company: "@ CANADA SUNSHINE FOUNDATION",
+        description: "Linda is the President of Canada Sunshine Foundation. A non-profit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
         image: "/advisor-canada-parent-advocate-gtm.png",
     },
     {
@@ -35,14 +35,14 @@ const advisors: Advisor[] = [
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
     },
     {
-        name: "Shreya Jain, MBA",
-        title: "CEO",
-        company: "@ THE STACK",
-        description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through strategic growth.",
-        image: "/shreya-jain-mba-business-gtm-advisor-india.png",
+        name: "Soham Poddar, PhD (PMRF)",
+        title: "TECHNICAL ADVISOR",
+        company: "@ IIT KHARAGPUR",
+        description: "NLP, social computing & green AI researcher with 460+ citations (h-index: 9) at AAAI, SIGIR, and NAACL. He advises Komal on child-safe LLM architecture, on-device inference optimization, and content safety classifiers.",
+        image: "/soham-poddar-phd-technical-advisor-microsoft-komal.jpg",
     },
     {
-        name: "Bratati Sinha Ray",
+        name: "Bratati Sinha Ray, MSc, MS",
         title: "CONSULTANT PSYCHOLOGIST",
         company: "@ APOLLO CLINIC",
         description: "Bratati is a Consultant Psychologist at Apollo Clinic with 22+ years of experience in child psychology. A certified Trauma Healer, she specializes in clinical counseling and provides deep expertise in adolescent mental health.",

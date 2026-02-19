@@ -73,11 +73,9 @@ export default function Navbar() {
 
   const navItems = useMemo(
     () => [
-      { label: "Demo", href: { type: "route", value: "/demo" } as const },
-      { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
       { label: "Safety", href: { type: "route", value: "/content-safety" } as const },
+      { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
-      { label: "Ambassadors", href: { type: "route", value: "/ambassadors" } as const },
       { label: "Pricing", href: { type: "route", value: "/pricing" } as const },
     ],
     []
@@ -117,7 +115,7 @@ export default function Navbar() {
         {/* Logo Section - Left */}
         <Link
           href="/"
-          className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap shrink-0 ${isScrolled ? "text-primary" : "text-primary"
+          className={`flex items-center gap-2 text-xl font-bold tracking-tighter hover:opacity-90 whitespace-nowrap flex-1 ${isScrolled ? "text-primary" : "text-primary"
             }`}
           style={{
             transitionProperty: "color",
@@ -138,8 +136,8 @@ export default function Navbar() {
           <span className="hidden md:inline text-3xl font-semibold">KOMAL</span>
         </Link>
 
-        {/* Desktop Navigation - Centered with flex-1 */}
-        <div className="hidden md:flex items-center justify-center gap-6 flex-1">
+        {/* Desktop Navigation - Centered */}
+        <div className="hidden md:flex items-center justify-center gap-6">
           {navItems.map((item) => (
             <Link
               key={item.label}
@@ -221,7 +219,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop CTA Buttons - Right */}
-        <div className="hidden md:flex items-center gap-2 shrink-0">
+        <div className="hidden md:flex items-center gap-2 shrink-0 flex-1 justify-end">
           {user ? (
             <div className="relative" ref={profileDropdownRef}>
               <button

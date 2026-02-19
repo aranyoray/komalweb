@@ -584,7 +584,7 @@ export default function DemoPage() {
         </div>
       )}
 
-      <section className="min-h-screen pt-20 pb-8 md:pt-24 md:pb-12 bg-[#F9F9FB] relative overflow-hidden font-sans">
+      <section className="min-h-screen pt-36 pb-8 md:pt-44 md:pb-12 bg-[#F9F9FB] relative overflow-hidden font-sans">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <FloatingOrbs count={2} />
         </div>

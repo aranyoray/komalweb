@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 interface TeamMember {
@@ -10,33 +11,45 @@ interface TeamMember {
     image: string;
     description: string;
     tagline?: string;
+    website?: string;
 }
 
-// Core Team Members
+// Core Team Members — ordered: CEO, CTO, Growth & Operations
 const coreTeam: TeamMember[] = [
     {
         name: "Saarthak Kumar",
-        role: "Co-Founder & CEO",
-        credentials: ["MPA, Columbia & LSE", "Ex-UN Advisor"],
+        role: "CEO",
+        credentials: ["MPA (STEM), Columbia University", "MPA, London School of Economics"],
         image: "/sarthakwhitebg.png",
-        description: "Saarthak holds MPAs from Columbia and LSE in economic policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India at the UN, bringing expertise in international policy and development economics. At Komal, he leads overall strategy and execution.",
+        description: "Saarthak holds an MPA (STEM) from Columbia University (Quant GPA: 3.8) and an MPA from the London School of Economics. He served as Advisor to the Permanent Mission of India at the United Nations, where he negotiated 6 multilateral resolutions and built AI-driven diplomatic tools. At the U.S. Department of Commerce, he led an AI early warning system for trade enforcement, improving monitoring efficiency by ~25%. A National Topper in Economics (Rank 5, India) with a 334/340 GRE, he brings rigorous quantitative skills and institutional credibility. At Komal, he leads distribution, partnerships, and go-to-market execution.",
         tagline: "Leading strategy for global impact",
+        website: "https://www.saarthakkumar.com",
     },
     {
         name: "Aranyo Ray",
-        role: "Co-Founder & CTO",
-        credentials: ["Wu Tsai Scholar, Yale University", "Ex-Graymatics, Commenda"],
+        role: "CTO",
+        credentials: ["Yale University", "Wu Tsai Institute Research Fellow"],
         image: "/aranyowhitebg.png",
-        description: "Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. A Wu Tsai Scholar at Yale investigating implicit bias in multicultural learning, he won 1st Place from the APA at ISEF for his culturally relevant game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads technology and product development.",
+        description: "Aranyo holds a degree from Yale University, where he was a Wu Tsai Institute Research Fellow studying attitude formation and implicit bias using novel eye-tracking methods. He won 1st Place from the American Psychological Association at ISEF for a culturally relevant autism risk-assessment app used across 5 special schools, and is published in Harvard's Journal of Emerging Investigators. He has built and shipped products at SaaS startups including Graymatics (won US SBIR Phase I Grant, Bangalore Metro pilot with ~700K daily riders) and Commenda. At Komal, he leads technology, product development, and AI architecture.",
         tagline: "Building the future of child development",
+        website: "https://aranyoing.com",
     },
     {
         name: "Joy Cai",
-        role: "Growth & Partnership",
-        credentials: ["BA Economics, UPenn", "Founder, Solis Health", "Ex-Chief of Staff, Flagler Health"],
+        role: "Growth & Operations",
+        credentials: ["BA Economics, University of Pennsylvania", "Founder, Solis Health"],
         image: "/joy-cai.png",
-        description: "Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian platform that provides nutritional counseling backed by health insurance. Previously, she was Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep experience in fundraising, operations, and growth.",
+        description: "Joy holds a B.A. in Economics from the University of Pennsylvania. She founded Solis Health, a telehealth nutrition practice scaled to 15+ medical specialties with 20+ clinic partnerships. Previously, as Chief of Staff at Flagler Health, she helped close a $4M+ seed round, enrolled 3,000+ patients in AI-powered remote therapeutic monitoring, and built clinical data pipelines. She has raised and deployed $4M+ in capital across ventures and launched 20+ partnership channels. At Komal, she leads growth, partnerships, and operations.",
         tagline: "Driving growth and strategic partnerships",
+        website: "https://joycai.vercel.app",
+    },
+    {
+        name: "Yudhajit Ain, MSc",
+        role: "Research Engineer",
+        credentials: ["PhD Candidate, Internal Attention Lab, UCalgary", "IISER BS-MS Neuroscience"],
+        image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
+        description: "Yudhajit is a PhD Candidate in computational psychology at the Internal Attention Lab, UCalgary, where he has developed novel algorithms for attention tracking. He is first-author on 6+ papers, including research on ADHD in the Journal of Attention Disorders and mindfulness in Psychol. Aging. A Gold Medallist from the IISER BS-MS Neuroscience program.",
+        tagline: "Decoding attention, one algorithm at a time",
     },
 ];
 
@@ -48,16 +61,17 @@ interface Advisor {
     image: string;
     description: string;
     tagline?: string;
+    website?: string;
 }
 
 const advisors: Advisor[] = [
     {
-        name: "Linda Xu",
-        role: "Regional CEO for Canada & China",
-        credentials: ["Master of Business Administration (MBA)", "Chair, Canada Sunshine Foundation", "Executive President, Canadian Women's Federation"],
+        name: "Linda Yu, MBA",
+        role: "President",
+        credentials: ["Canada Sunshine Foundation"],
         image: "/advisor-canada-parent-advocate-gtm.png",
-        description: "Linda is Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. A nonprofit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
-        tagline: "Regional CEO for Canada & China",
+        description: "Linda is the President of Canada Sunshine Foundation. A non-profit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
+        tagline: "President, Canada Sunshine Foundation",
     },
     {
         name: "Audrey Wisch",
@@ -77,7 +91,7 @@ const advisors: Advisor[] = [
         tagline: "Three decades shaping child mental health",
     },
     {
-        name: "Bratati Sinha Ray",
+        name: "Bratati Sinha Ray, MSc, MS",
         role: "Consultant Psychologist",
         credentials: ["22+ years experience", "Apollo Clinic"],
         image: "/balaji.png",
@@ -85,12 +99,12 @@ const advisors: Advisor[] = [
         tagline: "22+ years healing young minds",
     },
     {
-        name: "Shreya Jain",
-        role: "CEO",
-        credentials: ["The Stack", "MBA"],
-        image: "/shreya-jain-mba-business-gtm-advisor-india.png",
-        description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through growth.",
-        tagline: "Champion of neurodiversity initiatives",
+        name: "Soham Poddar, PhD (PMRF)",
+        role: "Technical Advisor",
+        credentials: ["PhD, IIT Kharagpur", "460+ citations"],
+        image: "/soham-poddar-phd-technical-advisor-microsoft-komal.jpg",
+        description: "NLP, social computing & green AI researcher with 460+ citations (h-index: 9) at AAAI, SIGIR, and NAACL. Soham has published on LLM efficiency and misinformation detection; prev: HPE Labs. He advises Komal on child-safe LLM architecture, on-device inference optimization, and content safety classifiers. Soham holds a PhD in Computer Science from IIT Kharagpur, where he studied the structure and dynamics of large networked systems at the Complex Networks Research Group.",
+        tagline: "Child-safe AI architecture expert",
     },
 ];
 
@@ -124,17 +138,45 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
     const [isExpanded, setIsExpanded] = useState(false);
 
     // Determine object position
-    const objectPos = member.name.includes('Shreya')
+    const objectPos = member.name.includes('Linda')
         ? 'center top'
-        : member.name.includes('Linda')
-            ? 'center top'
-            : member.name.includes('Brian')
+        : member.name.includes('Brian')
+            ? 'center 5%'
+            : member.name.includes('Om')
                 ? 'center 5%'
-                : member.name.includes('Om')
+                : member.name.includes('Bratati')
                     ? 'center 5%'
-                    : member.name.includes('Bratati')
-                        ? 'center 5%'
-                        : 'center 10%';
+                    : 'center 10%';
+
+    const memberWebsite = 'website' in member ? member.website : undefined;
+
+    const imageElement = (
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner bg-white p-1 md:p-2">
+            <Image
+                src={member.image}
+                alt={member.name}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                style={{
+                    objectPosition: objectPos,
+                }}
+            />
+            {/* Halftone overlay effect in Violet */}
+            <div
+                className="absolute inset-0 opacity-20 mix-blend-soft-light"
+                style={{
+                    backgroundImage: 'radial-gradient(circle, #8b5cf6 1.2px, transparent 1.2px)',
+                    backgroundSize: '4px 4px',
+                }}
+            />
+        </div>
+    );
+
+    const nameElement = (
+        <h3 className="text-sm sm:text-lg md:text-2xl font-bold text-primary tracking-tight text-center leading-tight">
+            {member.name}
+        </h3>
+    );
 
     return (
         <div
@@ -148,26 +190,14 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
                         <DecorativeElements index={index} />
                     </div>
 
-                    {/* Image with halftone/dotted effect */}
-                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner bg-white p-1 md:p-2">
-                        <Image
-                            src={member.image}
-                            alt={member.name}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            style={{
-                                objectPosition: objectPos,
-                            }}
-                        />
-                        {/* Halftone overlay effect in Violet */}
-                        <div
-                            className="absolute inset-0 opacity-20 mix-blend-soft-light"
-                            style={{
-                                backgroundImage: 'radial-gradient(circle, #8b5cf6 1.2px, transparent 1.2px)',
-                                backgroundSize: '4px 4px',
-                            }}
-                        />
-                    </div>
+                    {/* Image - wrapped in invisible link for SEO if website exists */}
+                    {memberWebsite ? (
+                        <a href={memberWebsite} target="_blank" rel="noopener noreferrer" className="block text-inherit no-underline">
+                            {imageElement}
+                        </a>
+                    ) : (
+                        imageElement
+                    )}
 
                     {/* Tagline badge (Speech bubble style) - Hidden on smallest screens to save space/clutter */}
                     {member.tagline && (
@@ -179,10 +209,14 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
                     )}
                 </div>
 
-                {/* Name under image - Centered for uniformity */}
-                <h3 className="text-sm sm:text-lg md:text-2xl font-bold text-primary tracking-tight text-center leading-tight">
-                    {member.name}
-                </h3>
+                {/* Name under image - wrapped in invisible link for SEO if website exists */}
+                {memberWebsite ? (
+                    <a href={memberWebsite} target="_blank" rel="noopener noreferrer" className="text-inherit no-underline" style={{ color: 'inherit', textDecoration: 'none' }}>
+                        {nameElement}
+                    </a>
+                ) : (
+                    nameElement
+                )}
             </div>
 
             {/* Role, Credentials & Description Column */}
@@ -216,7 +250,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
 
 export default function TeamSection() {
     return (
-        <section className="team-section pt-16 md:pt-24 pb-12 md:pb-24 bg-white" id="team">
+        <section className="team-section pt-8 md:pt-12 pb-12 md:pb-24 bg-white" id="team">
             <div className="container max-w-[1200px] px-4 md:px-8 mx-auto">
                 {/* Core Team */}
                 <h2 className="section-title font-sans text-2xl md:text-4xl font-bold mb-8 md:mb-12 leading-[1.1] tracking-[-0.02em] text-primary text-center">
@@ -239,7 +273,7 @@ export default function TeamSection() {
                     {/* Horizontal Row Layout for each advisor */}
                     <div className="space-y-3">
                         {advisors.map((advisor, index) => (
-                            <TeamMemberCard key={index} member={advisor} index={index + 3} />
+                            <TeamMemberCard key={index} member={advisor} index={index + 4} />
                         ))}
                     </div>
                 </div>

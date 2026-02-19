@@ -34,7 +34,7 @@ interface UsersResponse {
   total: number;
 }
 
-export default function LindaXuDashboardPage() {
+export default function LindaYuDashboardPage() {
   const { user, loading: authLoading, getIdToken } = useAuth();
 
   const [data, setData] = useState<UsersResponse | null>(null);
@@ -199,7 +199,7 @@ export default function LindaXuDashboardPage() {
                   <span>Admin Panel</span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-2 tracking-tight">
-                  Ms Linda Xu{" "}
+                  Ms Linda Yu{" "}
                   <span className="relative inline-block">
                     <span className="relative z-10">Dashboard</span>
                     <span

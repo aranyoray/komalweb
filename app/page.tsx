@@ -11,9 +11,9 @@ import AdvisorsSection from "@/components/AdvisorsSection";
 import FaqAccordion from "@/components/FaqAccordion";
 import PartnersCarousel from "@/components/PartnersCarousel";
 import HeroImageGallery from "@/components/HeroImageGallery";
-import { BrainIcon, ActivityIcon, ChartIcon, ShieldIcon, LockIcon, ZapIcon } from "@/components/Icons";
+import { BrainIcon, ChartIcon, ShieldIcon, LockIcon, ZapIcon } from "@/components/Icons";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, UsersIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Aurora from "@/components/Aurora";
 import FloatingButterflies from "@/components/FloatingButterflies";
 import FloatingDots from "@/components/FloatingDots";
@@ -190,12 +190,12 @@ export default function Home() {
               {
                 "@type": "Person",
                 name: "Saarthak Kumar",
-                jobTitle: "Co-Founder & CEO"
+                jobTitle: "CEO"
               },
               {
                 "@type": "Person",
                 name: "Aranyo Ray",
-                jobTitle: "Co-Founder & CTO"
+                jobTitle: "CTO"
               }
             ],
             contactPoint: {
@@ -407,7 +407,7 @@ export default function Home() {
                   variant="outline"
                   className="bg-white text-primary border-primary border-2 hover:bg-primary/5 text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full w-full sm:w-auto transition-colors"
                 >
-                  <Link href="mailto:play@komalkids.com">Talk to Us</Link>
+                  <Link href="/demo">Demo Web Safety</Link>
                 </Button>
               </div>
             </div>
@@ -632,44 +632,33 @@ export default function Home() {
               </div>
             </ScrollReveal>
 
-            {/* Split Family & Insights (Span 3) */}
-
-            {/* Family & Insights Combined Column */}
-            <div className="md:col-span-3 md:row-span-1 flex flex-col gap-4 h-full">
-
-              {/* Family */}
-              <ScrollReveal delay={0.45} className="flex-1">
-                <div className="bg-gradient-to-br from-orange-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-5 w-full h-full flex flex-col justify-center text-left hover:shadow-[0_8px_30px_rgb(249,115,22,0.15)] transition-all duration-300 border border-orange-100/50 group relative overflow-hidden ring-1 ring-orange-200/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-                      <UsersIcon className="w-5 h-5" />
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-800">Family First</h3>
+            {/* Age 5 Auto-A Box (Span 3) */}
+            <ScrollReveal delay={0.45} className="md:col-span-3 md:row-span-1 h-full">
+              <div className="bg-gradient-to-br from-indigo-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-6 w-full h-full flex flex-col justify-center text-left hover:shadow-[0_8px_30px_rgb(99,102,241,0.15)] transition-all duration-300 border border-indigo-100/50 group relative overflow-hidden ring-1 ring-indigo-200/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
                   </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mb-1">
-                    <div className="bg-orange-400 h-full w-[98%] rounded-full relative"></div>
+                  <h3 className="text-sm font-bold text-slate-800">Age 5 Auto-A</h3>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed mb-4">Context-aware filtering that truly understands content, not just keywords.</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-wide">
+                    <span>Age 5</span>
+                    <span className="text-indigo-500">Auto-Adapts</span>
                   </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Privacy Score</span>
-                    <span className="text-[10px] text-green-600 font-black">A+</span>
+                  <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden relative shadow-inner ring-1 ring-slate-200">
+                    <div
+                      className="absolute inset-y-0 left-0 w-[45%] bg-gradient-to-r from-indigo-400 to-indigo-500 rounded-full"
+                      style={{ animation: "sliderMove 4s infinite" }}
+                    ></div>
                   </div>
                 </div>
-              </ScrollReveal>
-
-              {/* Insights */}
-              <ScrollReveal delay={0.45} className="flex-1">
-                <div className="bg-gradient-to-br from-violet-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-5 w-full h-full flex flex-row items-center gap-4 hover:shadow-[0_8px_30px_rgb(139,92,246,0.15)] transition-all duration-300 border border-violet-100/50 group relative overflow-hidden ring-1 ring-violet-200/30">
-                  <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
-                    <ActivityIcon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-800 leading-tight">Reports</h3>
-                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">Weekly activity digest.</p>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-            </div>
+              </div>
+            </ScrollReveal>
 
           </div>
         </div>
