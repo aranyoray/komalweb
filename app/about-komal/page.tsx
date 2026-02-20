@@ -39,7 +39,7 @@ export default function AboutKomalPage() {
             ],
             "sameAs": [
               "https://play.google.com/store/apps/details?id=com.komalkids.app",
-              "https://apps.apple.com/app/komal",
+              "https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754",
               "https://www.linkedin.com/company/komalkids/",
               "https://x.com/komalforkids",
               "https://www.instagram.com/komalforkids",
@@ -300,7 +300,7 @@ export default function AboutKomalPage() {
               <h2 className="text-3xl font-bold mb-6 text-text">Download Komal Kids</h2>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link
-                  href="https://apps.apple.com/app/komal"
+                  href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 bg-text text-surface px-6 py-3 rounded-xl hover:opacity-90 transition-opacity shadow-lg"

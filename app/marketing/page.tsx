@@ -26,7 +26,7 @@ export default function MarketingPage() {
         <ScrollReveal delay={0.1}>
           <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
             <Link
-              href="https://apps.apple.com/app/komal"
+              href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-text text-surface px-6 py-3 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
@@ -171,7 +171,7 @@ export default function MarketingPage() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link
-                href="https://apps.apple.com/app/komal"
+                href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-text text-surface px-8 py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg"

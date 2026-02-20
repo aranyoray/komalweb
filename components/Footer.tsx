@@ -293,7 +293,9 @@ export default function Footer() {
         <ScrollReveal delay={0.1}>
           <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
           <Link
-            href="/marketing"
+            href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-2 bg-text text-surface px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

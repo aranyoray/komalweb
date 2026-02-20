@@ -78,7 +78,7 @@ export default function IndiaGeoPage() {
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link
-                  href="https://apps.apple.com/app/komal"
+                  href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 bg-text text-surface px-8 py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
