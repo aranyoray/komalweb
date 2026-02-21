@@ -329,40 +329,6 @@ export default function Home() {
 
             {/* Left Column - Text Content */}
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left pt-6 lg:pt-0">
-              {/* Yale Badge */}
-              <div className="yale-badge-wrapper relative inline-flex mb-5 opacity-0 animate-[fadeDown_0.8s_ease_forwards]" style={{ animationDelay: "0.1s" }}>
-                <svg className="absolute inset-[-1px] w-[calc(100%+2px)] h-[calc(100%+2px)] pointer-events-none overflow-visible">
-                  <rect
-                    className="marching-border"
-                    x="0.75"
-                    y="0.75"
-                    rx="20"
-                    ry="20"
-                    fill="none"
-                    stroke="#1e3a5f"
-                    strokeWidth="1.5"
-                    strokeDasharray="5 5"
-                    strokeLinecap="round"
-                    style={{
-                      width: 'calc(100% - 1.5px)',
-                      height: 'calc(100% - 1.5px)',
-                    }}
-                  />
-                </svg>
-                <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/5">
-                  <svg
-                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary spinning-diamond"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
-                  </svg>
-                  <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide">
-                    Grounded in Yale Research
-                  </span>
-                </div>
-              </div>
-
               {/* Hero Title */}
               <h1 className="hero-title font-sans font-bold leading-[1.08] tracking-[-0.02em] text-primary">
                 <span className="block text-xl sm:text-2xl md:text-[1.75rem] font-semibold text-primary/80 mb-2 sm:mb-3 opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.2s" }}>
@@ -407,28 +373,92 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column - Hero Image */}
+            {/* Right Column - Child Image + Three Phone Screens */}
             <div
-              className="flex justify-center items-center opacity-0"
+              className="relative flex items-center justify-center opacity-0 min-h-[350px] sm:min-h-[420px] md:min-h-[480px] lg:min-h-[520px]"
               style={{ animation: "phoneEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards" }}
             >
-              <div className="relative animate-float" style={{ animationDuration: "8s" }}>
-                {/* Subtle glow behind image */}
-                <div
-                  className="absolute inset-0 rounded-full blur-3xl opacity-20"
-                  style={{
-                    background: "radial-gradient(circle, rgba(107, 78, 113, 0.4) 0%, transparent 70%)",
-                    transform: "scale(0.8)",
-                  }}
-                />
+              {/* Child Image (heroimage) - shifted left, background layer */}
+              <div className="absolute left-[-5%] sm:left-0 top-1/2 -translate-y-1/2 lg:-translate-x-10 xl:-translate-x-14 animate-float z-10" style={{ animationDuration: "8s" }}>
                 <Image
-                  src="/heroimage.png"
+                  src="/image.png"
                   alt="Komal Digital Buddy"
                   width={1200}
                   height={1200}
-                  className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] h-auto relative z-10"
+                  className="w-[280px] sm:w-[320px] md:w-[380px] lg:w-[420px] xl:w-[460px] h-auto relative"
                   priority
                 />
+              </div>
+
+              {/* Three Phone Screens - Straight, 70% visible, clouds at bottom */}
+              <div className="relative z-20 ml-auto lg:mr-[-10px] xl:mr-[-20px]">
+                {/* Phone container - clips bottom 30% */}
+                <div className="relative overflow-hidden" style={{ maxHeight: "clamp(260px, 50vw, 420px)" }}>
+                  <div className="flex items-start justify-center">
+                    {/* Left Phone - 25% overlapped by center, pushed down for ladder effect */}
+                    <div className="z-10 -mr-[20px] sm:-mr-[25px] md:-mr-[30px] lg:-mr-[35px] xl:-mr-[39px] mt-[12%] opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.8s" }}>
+                      <div className="w-[80px] sm:w-[100px] md:w-[120px] lg:w-[140px] xl:w-[155px] bg-[#1a1a1a] rounded-[12px] sm:rounded-[16px] md:rounded-[20px] lg:rounded-[24px] p-[2.5px] sm:p-[3px] shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                        <div className="rounded-[10px] sm:rounded-[14px] md:rounded-[18px] lg:rounded-[22px] overflow-hidden">
+                          <Image
+                            src="/left-screen.png"
+                            alt="Child Safety Assessment"
+                            width={300}
+                            height={650}
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Center Phone - stays at top, higher than left & right */}
+                    <div className="z-20 opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.9s" }}>
+                      <div className="w-[94px] sm:w-[118px] md:w-[140px] lg:w-[164px] xl:w-[180px] bg-[#1a1a1a] rounded-[14px] sm:rounded-[18px] md:rounded-[22px] lg:rounded-[26px] p-[2.5px] sm:p-[3px] shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
+                        <div className="rounded-[12px] sm:rounded-[16px] md:rounded-[20px] lg:rounded-[24px] overflow-hidden">
+                          <Image
+                            src="/center.png"
+                            alt="Komal AI Buddy"
+                            width={300}
+                            height={650}
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Phone - 25% overlapped by center, 5% below left */}
+                    <div className="z-10 -ml-[20px] sm:-ml-[25px] md:-ml-[30px] lg:-ml-[35px] xl:-ml-[39px] mt-[17%] opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "1s" }}>
+                      <div className="w-[80px] sm:w-[100px] md:w-[120px] lg:w-[140px] xl:w-[155px] bg-[#1a1a1a] rounded-[12px] sm:rounded-[16px] md:rounded-[20px] lg:rounded-[24px] p-[2.5px] sm:p-[3px] shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                        <div className="rounded-[10px] sm:rounded-[14px] md:rounded-[18px] lg:rounded-[22px] overflow-hidden">
+                          <Image
+                            src="/right-screen.png"
+                            alt="Komal Safety Guide"
+                            width={300}
+                            height={650}
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cloud overlay - covers bottom, shifted 10% lower */}
+                  <div className="absolute bottom-[-10%] left-[-10%] right-[-10%] h-[40%] z-40 pointer-events-none" style={{
+                    background: "linear-gradient(to top, rgba(249,249,251,1) 0%, rgba(249,249,251,0.98) 20%, rgba(249,249,251,0.9) 40%, rgba(249,249,251,0.6) 65%, rgba(249,249,251,0) 100%)",
+                  }} />
+                  {/* Soft cloud puffs */}
+                  <div className="absolute bottom-[-5%] left-[10%] w-[35%] h-[25%] z-[39] pointer-events-none rounded-full" style={{
+                    background: "radial-gradient(ellipse, rgba(249,249,251,0.95) 0%, rgba(249,249,251,0) 70%)",
+                    filter: "blur(8px)",
+                  }} />
+                  <div className="absolute bottom-[-2%] right-[8%] w-[40%] h-[22%] z-[39] pointer-events-none rounded-full" style={{
+                    background: "radial-gradient(ellipse, rgba(249,249,251,0.9) 0%, rgba(249,249,251,0) 70%)",
+                    filter: "blur(10px)",
+                  }} />
+                  <div className="absolute bottom-[-10%] left-[25%] w-[50%] h-[20%] z-[41] pointer-events-none rounded-full" style={{
+                    background: "radial-gradient(ellipse, rgba(255,255,255,1) 0%, rgba(249,249,251,0.7) 50%, transparent 75%)",
+                    filter: "blur(6px)",
+                  }} />
+                </div>
               </div>
             </div>
 
@@ -674,6 +704,44 @@ export default function Home() {
       </section >
 
 
+
+      {/* Yale Badge - Between Kids Need Internet & Key Features */}
+      <ScrollReveal>
+        <div className="flex justify-center py-8 md:py-10 bg-white">
+          <div className="yale-badge-wrapper relative inline-flex">
+            <svg className="absolute inset-[-1px] w-[calc(100%+2px)] h-[calc(100%+2px)] pointer-events-none overflow-visible">
+              <rect
+                className="marching-border"
+                x="0.75"
+                y="0.75"
+                rx="20"
+                ry="20"
+                fill="none"
+                stroke="#1e3a5f"
+                strokeWidth="1.5"
+                strokeDasharray="5 5"
+                strokeLinecap="round"
+                style={{
+                  width: 'calc(100% - 1.5px)',
+                  height: 'calc(100% - 1.5px)',
+                }}
+              />
+            </svg>
+            <div className="relative inline-flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-primary/5">
+              <svg
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary spinning-diamond"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
+              </svg>
+              <span className="font-sans text-sm sm:text-base font-medium text-primary tracking-wide">
+                Grounded in Yale Research
+              </span>
+            </div>
+          </div>
+        </div>
+      </ScrollReveal>
 
       {/* Key Features Section */}
       < section className="features-section py-12 md:py-16 bg-white" >
