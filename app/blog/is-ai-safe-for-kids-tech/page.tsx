@@ -179,7 +179,7 @@ export default function IsAISafeForKidsTechPage() {
                   <li><strong>Privacy by default:</strong> No data leaves the device unless explicitly shared by parents</li>
                   <li><strong>Reduced attack surface:</strong> No cloud-based API calls means fewer vectors for data 
                   exposure or manipulation</li>
-                  <li><strong>Predictable latency:</strong> On-device processing provides consistent <200ms response times</li>
+                  <li><strong>Predictable latency:</strong> On-device processing provides consistent &lt;200ms response times</li>
                   <li><strong>Governance-friendly:</strong> Parents and institutions can audit system behavior without 
                   relying on third-party cloud services</li>
                 </ul>
