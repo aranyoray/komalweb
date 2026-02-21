@@ -1,8 +1,9 @@
 {
-  "name": "KOMAL - Child Internet Safety & Parental Control App",
+  "name": "KOMAL - AI Child Safety & Parental Control App",
   "short_name": "KOMAL",
-  "description": "AI-powered digital guardian for child internet safety. Protect your children online with smart content filtering, parental controls, and age-appropriate browsing. COPPA compliant.",
+  "description": "Protect your kids online with KOMAL — the AI-powered child safety app. Smart content filtering, real-time parental controls, and safe browsing for ages 3-12. COPPA & GDPR compliant.",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1e3a5f",
@@ -43,9 +44,36 @@
       "src": "/heroimage.png",
       "sizes": "1200x1200",
       "type": "image/png",
-      "label": "KOMAL Digital Guardian - Child Safety App"
+      "label": "KOMAL Digital Guardian - AI-Powered Child Safety App",
+      "form_factor": "wide"
     }
   ],
-  "related_applications": [],
-  "prefer_related_applications": false
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.komalkids.app",
+      "id": "com.komalkids.app"
+    }
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Parent Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Access your parental control dashboard"
+    },
+    {
+      "name": "Content Safety",
+      "short_name": "Safety",
+      "url": "/content-safety",
+      "description": "View content safety settings and guide"
+    },
+    {
+      "name": "Help & Support",
+      "short_name": "Help",
+      "url": "/help",
+      "description": "Get help and support"
+    }
+  ]
 }

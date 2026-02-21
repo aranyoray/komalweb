@@ -11,9 +11,9 @@ import AdvisorsSection from "@/components/AdvisorsSection";
 import FaqAccordion from "@/components/FaqAccordion";
 import PartnersCarousel from "@/components/PartnersCarousel";
 import HeroImageGallery from "@/components/HeroImageGallery";
-import { BrainIcon, ActivityIcon, ChartIcon, ShieldIcon, LockIcon, ZapIcon } from "@/components/Icons";
+import { BrainIcon, ChartIcon, ShieldIcon, LockIcon, ZapIcon } from "@/components/Icons";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, UsersIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Aurora from "@/components/Aurora";
 import FloatingButterflies from "@/components/FloatingButterflies";
 import FloatingDots from "@/components/FloatingDots";
@@ -65,7 +65,7 @@ export default function Home() {
     {
       question: "What is Komal?",
       answer:
-        "Komal is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
+        "Komal is a hyper-personalized digital guardian for children ages 3-12 that uses real-time behavioral AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment.",
     },
     {
       question: "How does Komal protect my child's privacy?",
@@ -75,7 +75,7 @@ export default function Home() {
     {
       question: "Does Komal diagnose my child?",
       answer:
-        "No. Komal provides insights and understanding, not medical or psychological diagnoses. We never label, categorise, or make diagnostic claims.",
+        "No. Komal provides insights and understanding, not medical or psychological diagnoses. We never label, categorize, or make diagnostic claims.",
     },
     {
       question: "What age is Komal designed for?",
@@ -85,7 +85,7 @@ export default function Home() {
     {
       question: "How does the real-time adaptation work?",
       answer:
-        "Komal processes behavioural signals in real-time (under ~200ms). When your child hesitates, shows frustration, or loses attention, the app adapts pacing, tone, and difficulty automatically.",
+        "Komal processes behavioral signals in real-time (under ~200ms). When your child hesitates, shows frustration, or loses attention, the app adapts pacing, tone, and difficulty automatically.",
     },
     {
       question: "What do the parent reports include?",
@@ -164,7 +164,7 @@ export default function Home() {
             },
             publisher: {
               "@type": "Organization",
-              name: "ChildCog Private Limited",
+              name: "KOMAL",
               url: "https://komalkids.com",
               logo: "https://komalkids.com/komaliconnobg.png"
             }
@@ -181,7 +181,7 @@ export default function Home() {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "KOMAL",
-            legalName: "ChildCog Private Limited",
+            legalName: "KOMAL",
             url: "https://komalkids.com",
             logo: "https://komalkids.com/komaliconnobg.png",
             description: "KOMAL is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
@@ -189,8 +189,13 @@ export default function Home() {
             founders: [
               {
                 "@type": "Person",
-                name: "Aranyo Ray",
+                name: "Saarthak Kumar",
                 jobTitle: "CEO"
+              },
+              {
+                "@type": "Person",
+                name: "Aranyo Ray",
+                jobTitle: "CTO"
               }
             ],
             contactPoint: {
@@ -248,7 +253,7 @@ export default function Home() {
                 name: "What is Komal?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Komal is a hyper-personalised digital guardian for children ages 3-12 that uses real-time behavioural AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment."
+                  text: "Komal is a hyper-personalized digital guardian for children ages 3-12 that uses real-time behavioral AI to understand how your child feels and learns. Unlike traditional apps that only track clicks, Komal reads gaze patterns, touch interactions, and micro-expressions to adapt learning moment-by-moment."
                 }
               },
               {
@@ -368,7 +373,7 @@ export default function Home() {
                   variant="outline"
                   className="bg-white text-primary border-primary border-2 hover:bg-primary/5 text-base sm:text-lg px-7 py-3.5 sm:px-8 sm:py-4 h-auto rounded-full w-full sm:w-auto transition-colors"
                 >
-                  <Link href="mailto:play@komalkids.com">Talk to Us</Link>
+                  <Link href="/demo">Demo Web Safety</Link>
                 </Button>
               </div>
             </div>
@@ -487,7 +492,7 @@ export default function Home() {
                 Kids Need the Internet,<br />But Not All of It
               </h2>
               <p className="text-slate-700 sm:text-lg leading-relaxed max-w-[700px] mx-auto text-center">
-                What is fine for an adult can be confusing, scary, or harmful for a child. Komal applies age-based access across content types, using clear rules and context rather than blanket bans.
+                Online media can be confusing, scary, or harmful for a child. Komal helps you set up age-based access across 30+ content types, with clear rules rather than blanket bans.
               </p>
             </div>
           </ScrollReveal>
@@ -657,44 +662,33 @@ export default function Home() {
               </div>
             </ScrollReveal>
 
-            {/* Split Family & Insights (Span 3) */}
-
-            {/* Family & Insights Combined Column */}
-            <div className="md:col-span-3 md:row-span-1 flex flex-col gap-4 h-full">
-
-              {/* Family */}
-              <ScrollReveal delay={0.45} className="flex-1">
-                <div className="bg-gradient-to-br from-orange-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-5 w-full h-full flex flex-col justify-center text-left hover:shadow-[0_8px_30px_rgb(249,115,22,0.15)] transition-all duration-300 border border-orange-100/50 group relative overflow-hidden ring-1 ring-orange-200/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-                      <UsersIcon className="w-5 h-5" />
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-800">Family First</h3>
+            {/* Age 5 Auto-A Box (Span 3) */}
+            <ScrollReveal delay={0.45} className="md:col-span-3 md:row-span-1 h-full">
+              <div className="bg-gradient-to-br from-indigo-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-6 w-full h-full flex flex-col justify-center text-left hover:shadow-[0_8px_30px_rgb(99,102,241,0.15)] transition-all duration-300 border border-indigo-100/50 group relative overflow-hidden ring-1 ring-indigo-200/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
                   </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mb-1">
-                    <div className="bg-orange-400 h-full w-[98%] rounded-full relative"></div>
+                  <h3 className="text-sm font-bold text-slate-800">Age 5 Auto-A</h3>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed mb-4">Context-aware filtering that truly understands content, not just keywords.</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-wide">
+                    <span>Age 5</span>
+                    <span className="text-indigo-500">Auto-Adapts</span>
                   </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Privacy Score</span>
-                    <span className="text-[10px] text-green-600 font-black">A+</span>
+                  <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden relative shadow-inner ring-1 ring-slate-200">
+                    <div
+                      className="absolute inset-y-0 left-0 w-[45%] bg-gradient-to-r from-indigo-400 to-indigo-500 rounded-full"
+                      style={{ animation: "sliderMove 4s infinite" }}
+                    ></div>
                   </div>
                 </div>
-              </ScrollReveal>
-
-              {/* Insights */}
-              <ScrollReveal delay={0.45} className="flex-1">
-                <div className="bg-gradient-to-br from-violet-50/90 to-white/60 backdrop-blur-xl rounded-[2rem] p-5 w-full h-full flex flex-row items-center gap-4 hover:shadow-[0_8px_30px_rgb(139,92,246,0.15)] transition-all duration-300 border border-violet-100/50 group relative overflow-hidden ring-1 ring-violet-200/30">
-                  <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
-                    <ActivityIcon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-800 leading-tight">Reports</h3>
-                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">Weekly activity digest.</p>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-            </div>
+              </div>
+            </ScrollReveal>
 
           </div>
         </div>
@@ -763,7 +757,7 @@ export default function Home() {
                 </h3>
                 <p className="text-sm md:text-base text-text-dim leading-relaxed text-center">
                   Minimal clicks; just talk.<br />
-                  Behavioural infra at scale.
+                  Behavioral infra at scale.
                 </p>
               </div>
             </ScrollReveal>
@@ -1023,6 +1017,35 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Keep Learning - SEO Conclusion Section */}
+      <section className="keep-learning py-12 md:py-16 bg-white">
+        <div className="container max-w-[900px] px-8 mx-auto text-center">
+          <ScrollReveal>
+            <h2 className="text-[24px] sm:text-[28px] md:text-[32px] font-sans font-bold mb-4 text-primary tracking-tight">
+              Keep Learning About Child Internet Safety
+            </h2>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="text-base md:text-lg text-text-dim leading-relaxed mb-8 max-w-[700px] mx-auto">
+              Understanding online safety for children is an ongoing journey. From parental controls and content filtering to AI-powered safe browsing, staying informed helps you protect your kids while encouraging healthy digital habits.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button asChild variant="outline" size="lg" className="rounded-full px-6 py-3 h-auto border-primary text-primary hover:bg-primary/5">
+                <Link href="/blog">Read Our Blog</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full px-6 py-3 h-auto border-primary text-primary hover:bg-primary/5">
+                <Link href="/content-safety">Content Safety Guide</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full px-6 py-3 h-auto border-primary text-primary hover:bg-primary/5">
+                <Link href="/safety-trust">Safety &amp; Trust</Link>
+              </Button>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="final-cta py-10 md:py-20 text-center bg-primary text-white text-center relative overflow-hidden">
         {/* Ambient floating orbs */}
@@ -1052,7 +1075,7 @@ export default function Home() {
       <ScrollReveal>
         <div className="my-6 text-center">
           <p className="text-text-dim/60 text-[10px] leading-relaxed  mx-auto">
-            Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of Komal (ChildCog Private Limited).
+            Disclaimer: All logos, trademarks, and brand names displayed on this website are the property of their respective owners. Their use does not imply any affiliation with, endorsement by, or sponsorship of Komal.
           </p>
         </div>
       </ScrollReveal>

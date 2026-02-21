@@ -67,7 +67,7 @@ export function loadAndVectorizeKeywords(): CategoryKeywords[] {
   }
 
   try {
-    const csvPath = path.join(process.cwd(), 'Models_Masterdoc.csv');
+    const csvPath = path.join(process.cwd(), 'Models_Masterdoc_Test.csv');
     const csvContent = fs.readFileSync(csvPath, 'utf-8');
     const lines = csvContent.trim().split('\n').filter(line => line.trim());
 

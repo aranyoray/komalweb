@@ -13,15 +13,15 @@ interface Advisor {
 
 const advisors: Advisor[] = [
     {
-        name: "Doris E. V., PhD",
-        title: "RESEARCH ADVISOR",
-        company: "@ UC BERKELEY",
-        description: "Dr. Doris holds a PhD in Integrative Biology from UC Berkeley. She brings deep expertise in biological systems and research methodology to Komal, ensuring our scientific approach is both rigorous and biologically sound.",
-        image: "/doris.png",
+        name: "Linda Yu, MBA",
+        title: "PRESIDENT",
+        company: "@ CANADA SUNSHINE FOUNDATION",
+        description: "Linda is the President of Canada Sunshine Foundation. A non-profit leader and parent advocate, she advises Komal on parent trust and community-led distribution, and has led large-scale fundraising for children's programs, including initiatives benefiting UNICEF and the Red Cross.",
+        image: "/advisor-canada-parent-advocate-gtm.png",
     },
     {
         name: "Audrey Wisch",
-        title: "GTM ADVISOR",
+        title: "CEO",
         company: "@ CURIOUS CARDINALS",
         description: "Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform for students. A Forbes 30 Under 30 honoree, she brings expertise in education technology and youth engagement, helping Komal scale its mission to families worldwide.",
         image: "/audrey.png",
@@ -35,14 +35,14 @@ const advisors: Advisor[] = [
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
     },
     {
-        name: "Shreya Jain, MBA",
-        title: "GTM ADVISOR",
-        company: "@ THE STACK",
-        description: "Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through strategic growth.",
-        image: "/shreya-jain-mba-business-gtm-advisor-india.png",
+        name: "Soham Poddar, PhD (PMRF)",
+        title: "TECHNICAL ADVISOR",
+        company: "@ IIT KHARAGPUR",
+        description: "NLP, social computing & green AI researcher with 460+ citations (h-index: 9) at AAAI, SIGIR, and NAACL. He advises Komal on child-safe LLM architecture, on-device inference optimization, and content safety classifiers.",
+        image: "/soham-poddar-phd-technical-advisor-microsoft-komal.jpg",
     },
     {
-        name: "Bratati Sinha Ray",
+        name: "Bratati Sinha Ray, MSc, MS",
         title: "CONSULTANT PSYCHOLOGIST",
         company: "@ APOLLO CLINIC",
         description: "Bratati is a Consultant Psychologist at Apollo Clinic with 22+ years of experience in child psychology. A certified Trauma Healer, she specializes in clinical counseling and provides deep expertise in adolescent mental health.",

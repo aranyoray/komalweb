@@ -6,8 +6,8 @@ export default function PricingPage() {
     const pricingPlans = [
         {
             name: "Essentials",
-            priceDisplay: "₹0",
-            priceDisplayUSD: "$0",
+            priceINR: 0,
+            priceUSD: 0,
             periodMonthlyLabel: "/month",
             tagline: "Perfect for getting started",
             cta: "Start Free",
@@ -21,12 +21,13 @@ export default function PricingPage() {
         },
         {
             name: "Grow",
-            priceDisplay: "₹99",
-            priceDisplayUSD: "$9.99",
+            priceINR: 99,
+            priceUSD: 10,
+            billingMonths: 1,
             periodMonthlyLabel: "/month",
             tagline: "Built for growing families",
             featured: true,
-            cta: "Get FREE AI Report",
+            cta: "Get Grow",
             features: [
                 "Everything in Essentials, plus:",
                 "Deeper personalization across sessions",
@@ -38,27 +39,32 @@ export default function PricingPage() {
         },
         {
             name: "Thrive",
-            priceDisplay: "₹299",
-            priceDisplayUSD: "$14.99",
-            periodMonthlyLabel: "per child / month",
-            tagline: "For advanced insights",
-            cta: "Contact Sales",
+            priceINR: Math.round(99 * 6 * 0.9),
+            priceUSD: Math.round(10 * 6 * 0.9),
+            originalPriceINR: 99 * 6,
+            originalPriceUSD: 10 * 6,
+            billingMonths: 6,
+            periodMonthlyLabel: "/6 months",
+            tagline: "Premium individual plan",
+            discount: 10,
+            cta: "Get Thrive",
             features: [
                 "Everything in Grow, plus:",
-                "Classroom-level dashboards",
+                "Advanced individual insights dashboard",
                 "SEL framework alignment and reporting",
-                "Anonymized engagement trends",
+                "Detailed engagement trends",
                 "Early support indicators (non-diagnostic)",
-                "Admin controls and role-based access",
+                "Multi-device access and family sharing",
             ],
         },
         {
             name: "Partner",
-            priceDisplay: "₹49",
-            priceDisplayUSD: "$4.99",
-            periodMonthlyLabel: "per child / month",
+            priceINR: 0,
+            priceUSD: 0,
+            periodMonthlyLabel: "",
             tagline: "For therapy and intervention centers",
             cta: "Contact Sales",
+            contactSales: true,
             features: [
                 "Everything in Thrive, plus:",
                 "Between-session progress tracking",
@@ -71,7 +77,7 @@ export default function PricingPage() {
     ];
 
     return (
-        <main className="pt-24 pb-16 bg-white">
+        <main className="pt-36 md:pt-44 pb-16 bg-white">
             <section className="pricing py-14" id="pricing">
                 <div className="container max-w-[1240px] px-8 mx-auto">
                     <h1 className="section-title font-sans text-[26px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-bold mb-6 leading-[1.15] tracking-[-0.02em] text-primary text-center animate-[fadeDown_0.8s_ease_forwards]">

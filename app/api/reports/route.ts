@@ -1,68 +1,112 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import { auth } from '@clerk/nextjs/server';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
 
-// Mock auth for build
-const auth = async () => ({ userId: 'guest_user' });
-
-// Helper to get user reports file path
-function getUserReportsPath(userId: string) {
-  const reportsDir = path.join(process.cwd(), 'data', 'reports');
-  // Ensure directory exists
-  if (!fs.existsSync(reportsDir)) {
-    fs.mkdirSync(reportsDir, { recursive: true });
-  }
-  return path.join(reportsDir, `${userId}.json`);
-}
-
-// Helper to read user reports
-function readUserReports(userId: string): SavedReport[] {
-  const filePath = getUserReportsPath(userId);
-  if (!fs.existsSync(filePath)) {
-    return [];
-  }
-  try {
-    const data = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-// Helper to write user reports
-function writeUserReports(userId: string, reports: SavedReport[]) {
-  const filePath = getUserReportsPath(userId);
-  fs.writeFileSync(filePath, JSON.stringify(reports, null, 2));
-}
+const COLLECTION = 'report-history';
 
 interface SavedReport {
   id: string;
+  uid: string;
+  userName: string;
+  userEmail: string;
   url: string;
   overallScore: number;
   overallRisk: string;
   timestamp: string;
   title?: string;
-  fullReport: any;
+  fullReport: Record<string, unknown>;
+}
+
+type AuthResult =
+  | { success: true; user: { uid: string; email: string; name: string } }
+  | { success: false; reason: string };
+
+// Helper to verify Firebase ID token and extract user info
+async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
+  const authHeader = request.headers.get('Authorization');
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const reason = 'Missing or malformed Authorization header';
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
+  }
+
+  const token = authHeader.split('Bearer ')[1];
+
+  if (!token || token.length < 10) {
+    const reason = 'Token is empty or too short';
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
+  }
+
+  // Check if Firebase Admin SDK is initialized
+  if (!db) {
+    const reason = 'Firebase Admin SDK not initialized - check FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY env vars in Vercel';
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
+  }
+
+  // Decode JWT payload to check audience/issuer
+  const tokenParts = token.split('.');
+  let tokenPayload: any = {};
+  try {
+    tokenPayload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+  } catch { /* ignore */ }
+
+  const debug = {
+    jwtParts: tokenParts.length,
+    tokenAud: tokenPayload.aud,
+    tokenIss: tokenPayload.iss,
+    serverProjectId: process.env.FIREBASE_PROJECT_ID,
+    projectIdMatch: tokenPayload.aud === process.env.FIREBASE_PROJECT_ID,
+  };
+
+  try {
+    const decodedToken = await getAuth().verifyIdToken(token);
+    // Fetch full user record for display name
+    const userRecord = await getAuth().getUser(decodedToken.uid);
+    return {
+      success: true,
+      user: {
+        uid: decodedToken.uid,
+        email: userRecord.email || decodedToken.email || '',
+        name: userRecord.displayName || decodedToken.name || '',
+      },
+    };
+  } catch (error: any) {
+    const reason = `verifyIdToken error: ${error?.code || error?.message || 'unknown'}`;
+    console.error('[reports] Auth failed:', reason, debug);
+    return { success: false, reason, ...debug } as any;
+  }
 }
 
 // GET - Fetch all reports for the authenticated user
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const auth = await verifyAuthToken(request);
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!auth.success) {
+      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
     }
 
-    const reports = readUserReports(userId);
+    const userInfo = auth.user;
 
-    // Return reports sorted by timestamp (newest first)
-    const sortedReports = reports.sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
+    // Query report-history collection for this user
+    const reportsSnapshot = await db
+      .collection(COLLECTION)
+      .where('uid', '==', userInfo.uid)
+      .limit(100)
+      .get();
 
-    return NextResponse.json({ reports: sortedReports });
+    const reports: SavedReport[] = [];
+    reportsSnapshot.forEach((doc) => {
+      reports.push(doc.data() as SavedReport);
+    });
+
+    // Sort by timestamp descending (client-side to avoid composite index requirement)
+    reports.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    return NextResponse.json({ reports });
   } catch (error) {
     console.error('Error fetching reports:', error);
     return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 });
@@ -72,11 +116,13 @@ export async function GET() {
 // POST - Save a new report for the authenticated user
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const auth = await verifyAuthToken(request);
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!auth.success) {
+      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
     }
+
+    const userInfo = auth.user;
 
     const body = await request.json();
     const { report } = body;
@@ -85,12 +131,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Report is required' }, { status: 400 });
     }
 
-    // Read existing reports
-    const reports = readUserReports(userId);
+    // Generate unique report ID
+    const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create saved report object
+    // Create saved report object with user data
     const savedReport: SavedReport = {
-      id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: reportId,
+      uid: userInfo.uid,
+      userName: userInfo.name,
+      userEmail: userInfo.email,
       url: report.url,
       overallScore: report.overallScore,
       overallRisk: report.childSafetyAnalysis?.overallRisk || 'unknown',
@@ -99,14 +148,8 @@ export async function POST(request: NextRequest) {
       fullReport: report,
     };
 
-    // Add new report at the beginning
-    reports.unshift(savedReport);
-
-    // Keep only last 100 reports per user
-    const trimmedReports = reports.slice(0, 100);
-
-    // Write reports back
-    writeUserReports(userId, trimmedReports);
+    // Save to Firestore report-history collection
+    await db.collection(COLLECTION).doc(reportId).set(savedReport);
 
     return NextResponse.json({
       success: true,
@@ -122,11 +165,13 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete a specific report
 export async function DELETE(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const auth = await verifyAuthToken(request);
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!auth.success) {
+      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
     }
+
+    const userInfo = auth.user;
 
     const { searchParams } = new URL(request.url);
     const reportId = searchParams.get('id');
@@ -135,18 +180,20 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Report ID is required' }, { status: 400 });
     }
 
-    // Read existing reports
-    const reports = readUserReports(userId);
+    // Get the report to verify ownership
+    const reportDoc = await db.collection(COLLECTION).doc(reportId).get();
 
-    // Filter out the report to delete
-    const filteredReports = reports.filter((r) => r.id !== reportId);
-
-    if (filteredReports.length === reports.length) {
+    if (!reportDoc.exists) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    // Write reports back
-    writeUserReports(userId, filteredReports);
+    const reportData = reportDoc.data();
+    if (reportData?.uid !== userInfo.uid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    // Delete the report
+    await db.collection(COLLECTION).doc(reportId).delete();
 
     return NextResponse.json({ success: true, message: 'Report deleted successfully' });
   } catch (error) {

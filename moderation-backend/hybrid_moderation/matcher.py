@@ -3,6 +3,8 @@ import re
 import difflib
 from typing import List, Tuple
 
+from .config import NEUTRAL_IDENTITY_TERMS
+
 class KeywordMatcher:
     def tokenize(self, text: str) -> List[str]:
         """Simple tokenizer that removes punctuation and lowercases."""
@@ -27,6 +29,9 @@ class KeywordMatcher:
         # Check for phrase matches first (multi-word keywords)
         for kw in keywords:
             if not kw: continue
+
+            if kw.lower() in NEUTRAL_IDENTITY_TERMS:
+                continue
             
             # Direct containment
             if kw in text_lower:

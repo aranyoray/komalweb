@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import ScrollReveal from "./ScrollReveal";
 
 interface ButterflyState {
@@ -94,6 +95,7 @@ function Butterfly({ state }: { state: ButterflyState }) {
 }
 
 export default function Footer() {
+  const pathname = usePathname();
   const [butterflies, setButterflies] = useState<ButterflyState[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
@@ -235,6 +237,9 @@ export default function Footer() {
     };
   }, []);
 
+  // Hide footer on dashboard page
+  if (pathname === "/dashboard") return null;
+
   return (
     <footer className="footer py-12 border-t border-border bg-surface relative overflow-hidden" id="contact" ref={containerRef}>
       {/* Flying butterflies */}
@@ -320,6 +325,20 @@ export default function Footer() {
               <span className="text-sm font-semibold leading-tight">Google Play</span>
             </div>
           </Link>
+          <Link
+            href="https://chromewebstore.google.com/detail/egobidnbpgjogfjfjcchjdidcnpfgbki?utm_source=item-share-cb"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-text text-surface px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 1.637v19.09c0 .9.736 1.636 1.636 1.636h.131a10.4 10.4 0 0 1-.13-1.636 10.3 10.3 0 0 1 1.667-5.64l4.202 7.276h1.128A3.77 3.77 0 0 1 12 16.958a3.77 3.77 0 0 1 3.366 5.406h1.048a4.7 4.7 0 0 0-1.587-5.406h6.83a10.34 10.34 0 0 1 .577 5.406h.13c.9 0 1.636-.737 1.636-1.637V1.637Zm9.273 2.181h5.454a1.09 1.09 0 1 1 0 2.182H9.273a1.09 1.09 0 1 1 0-2.182M12 10.364a10.36 10.36 0 0 1 9.233 5.652H12a4.71 4.71 0 0 0-4.677 4.149L3.91 14.25A10.34 10.34 0 0 1 12 10.364" />
+            </svg>
+            <div className="flex flex-col">
+              <span className="text-[10px] leading-none opacity-80">Available on</span>
+              <span className="text-sm font-semibold leading-tight">Chrome Web Store</span>
+            </div>
+          </Link>
           </div>
         </ScrollReveal>
 
@@ -338,8 +357,16 @@ export default function Footer() {
               Safety & Trust
             </Link>
             <span className="text-border">|</span>
-            <Link href="/privacypolicy" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+            <Link href="/pioneer" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+              Pioneer Program
+            </Link>
+            <span className="text-border">|</span>
+            <Link href="/privacy-policy" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
               Privacy Policy
+            </Link>
+            <span className="text-border">|</span>
+            <Link href="/terms-of-service" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+              Terms of Service
             </Link>
             <span className="text-border">|</span>
             <Link href="/team" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">

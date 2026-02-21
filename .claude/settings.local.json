@@ -14,10 +14,17 @@
       "Bash(ping:*)",
       "Bash(git revert:*)",
       "Bash(dir:*)",
-      "Bash(ls:*)",
-      "Bash(curl:*)",
-      "Bash(git checkout:*)",
-      "Bash(python3:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(findstr:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(powershell:*)",
+      "Bash(npx next lint:*)",
+      "Bash(grep:*)",
+      "Bash(git status:*)",
+      "Bash(wc:*)",
+      "WebSearch",
+      "WebFetch(domain:cdn.jsdelivr.net)"
     ]
   }
 }

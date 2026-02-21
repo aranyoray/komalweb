@@ -8,7 +8,7 @@
 ## Product Framing (Non-Negotiables)
 
 ### What Komal Is:
-- **Hyper-personalised digital guardian** for children ages 3-12
+- **Hyper-personalized digital guardian** for children ages 3-12
 - **AI-powered digital buddy** that uses real-time behavioral AI
 - **Education + emotional intelligence + safety-by-design**
 - **Non-addictive** by design
@@ -74,7 +74,7 @@
 ## Language & Tone Guidelines
 
 ### DO Use:
-- "Hyper-personalised digital guardian"
+- "Hyper-personalized digital guardian"
 - "Real-time behavioral AI"
 - "Reads how a child feels, not just what they click"
 - "Guidance, not gatekeeping"

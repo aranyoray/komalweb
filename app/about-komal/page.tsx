@@ -25,16 +25,16 @@ export default function AboutKomalPage() {
             "founders": [
               {
                 "@type": "Person",
-                "name": "Aranyo Ray",
-                "jobTitle": "Co-Founder & CEO",
-                "alumniOf": "Yale University",
-                "award": "1st Place, APA at ISEF"
+                "name": "Saarthak Kumar",
+                "jobTitle": "CEO",
+                "alumniOf": "Columbia University, London School of Economics"
               },
               {
                 "@type": "Person",
-                "name": "Jvalaj Pandey",
-                "jobTitle": "Co-Founder & CTO",
-                "alumniOf": "University of South Florida"
+                "name": "Aranyo Ray",
+                "jobTitle": "CTO",
+                "alumniOf": "Yale University",
+                "award": "1st Place, APA at ISEF"
               }
             ],
             "sameAs": [
@@ -92,7 +92,7 @@ export default function AboutKomalPage() {
         }}
       />
 
-      <div className="min-h-screen pt-20">
+      <div className="min-h-screen pt-36 md:pt-44">
         <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl py-12">
           {/* Header */}
           <ScrollReveal>
@@ -138,46 +138,60 @@ export default function AboutKomalPage() {
               <h2 className="text-3xl font-bold mb-6 text-text">Founding Team</h2>
               <div className="space-y-8">
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Aranyo Ray</h3>
-                  <p className="text-sm text-text-dim mb-3">Co-Founder & CEO</p>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Saarthak Kumar</h3>
+                  <p className="text-sm text-text-dim mb-3">CEO</p>
                   <p className="text-text-dim leading-relaxed">
-                    Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda. 
-                    A Wu Tsai Scholar at Yale University investigating implicit bias in multicultural learning, he won 
-                    1st Place from the American Psychological Association (APA) at ISEF for his culturally relevant 
-                    game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads 
-                    overall execution and expansion.
+                    Saarthak holds MPAs from Columbia University and the London School of Economics in economic
+                    policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India
+                    at the United Nations, bringing expertise in international policy and development economics.
+                    At Komal, he leads overall strategy and execution.
                   </p>
                   <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> Wu Tsai Scholar, Yale University | Ex-Graymatics, Commenda | 
+                    <strong>Credentials:</strong> MPA, Columbia & LSE | Ex-UN Advisor
+                  </p>
+                </div>
+
+                <div className="bg-surface/50 p-6 rounded-lg border border-border">
+                  <h3 className="text-xl font-semibold mb-2 text-text">Aranyo Ray</h3>
+                  <p className="text-sm text-text-dim mb-3">CTO</p>
+                  <p className="text-text-dim leading-relaxed">
+                    Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda.
+                    A Wu Tsai Scholar at Yale University investigating implicit bias in multicultural learning, he won
+                    1st Place from the American Psychological Association (APA) at ISEF for his culturally relevant
+                    game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads
+                    technology and product development.
+                  </p>
+                  <p className="text-sm text-text-dim mt-2">
+                    <strong>Credentials:</strong> Wu Tsai Scholar, Yale University | Ex-Graymatics, Commenda |
                     Published in Harvard's Journal of Emerging Investigators
                   </p>
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Jvalaj Pandey</h3>
-                  <p className="text-sm text-text-dim mb-3">Co-Founder & CTO</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Jvalaj is a Full Stack Engineer and Designer specializing in high-performance web interfaces and 
-                    AI-driven design. With experience at Delta Air Lines and Nucor Steel, he leads Komal's technical 
-                    implementation. He previously built AI tools like GRID and VS Chat, combining artistic vision 
-                    with scalable engineering to build the future of child safety.
-                  </p>
-                  <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> Ex-Delta Air Lines, Nucor | BS CS @ USF (Honors) | Full Stack Engineer
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Saarthak Kumar</h3>
-                  <p className="text-sm text-text-dim mb-3">Policy Lead</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Saarthak holds MPAs from Columbia University and the London School of Economics in economic 
-                    policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India 
-                    at the United Nations, bringing expertise in international policy and development economics.
-                  </p>
-                  <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> MPA, Columbia & LSE | Ex-UN Advisor
-                  </p>
+                  <div className="flex items-start gap-5">
+                    <div className="shrink-0">
+                      <Image
+                        src="/joy-cai.png"
+                        alt="Joy Cai"
+                        width={96}
+                        height={96}
+                        className="rounded-full object-cover w-20 h-20 md:w-24 md:h-24"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2 text-text">Joy Cai</h3>
+                      <p className="text-sm text-text-dim mb-3">Growth & Partnership</p>
+                      <p className="text-text-dim leading-relaxed">
+                        Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian
+                        platform that provides nutritional counseling backed by health insurance. Previously, she was
+                        Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep
+                        experience in fundraising, operations, and growth.
+                      </p>
+                      <p className="text-sm text-text-dim mt-2">
+                        <strong>Credentials:</strong> BA Economics, UPenn | Founder, Solis Health | Ex-Chief of Staff, Flagler Health
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -189,18 +203,16 @@ export default function AboutKomalPage() {
               <h2 className="text-3xl font-bold mb-6 text-text">Advisory Board</h2>
               <div className="space-y-6">
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Dr. Doris E. V., PhD</h3>
-                  <p className="text-sm text-text-dim mb-3">Research Advisor | UC Berkeley</p>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Linda Yu, MBA</h3>
+                  <p className="text-sm text-text-dim mb-3">President | Canada Sunshine Foundation</p>
                   <p className="text-text-dim leading-relaxed">
-                    Dr. Doris holds a PhD in Integrative Biology from UC Berkeley. She brings deep expertise in 
-                    biological systems and research methodology to Komal, ensuring our scientific approach is both 
-                    rigorous and sound.
+                    Linda is the President of Canada Sunshine Foundation. A non-profit leader and parent advocate, she has extensive experience as a senior leader of multiple non-profit organizations. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Yu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.
                   </p>
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
                   <h3 className="text-xl font-semibold mb-2 text-text">Audrey Wisch</h3>
-                  <p className="text-sm text-text-dim mb-3">GTM Advisor | Co-Founder & CEO, Curious Cardinals | Forbes 30u30</p>
+                  <p className="text-sm text-text-dim mb-3">CEO | Co-Founder & CEO, Curious Cardinals | Forbes 30u30</p>
                   <p className="text-text-dim leading-relaxed">
                     Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform connecting 
                     students with inspiring role models. A Forbes 30 Under 30 honoree, she brings deep expertise in 
@@ -223,24 +235,25 @@ export default function AboutKomalPage() {
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Bratati Sinha Ray</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Bratati Sinha Ray, MSc, MS</h3>
                   <p className="text-sm text-text-dim mb-3">Consultant Psychologist | Apollo Clinic | 22+ years experience</p>
                   <p className="text-text-dim leading-relaxed">
                     Bratati is a Consultant Psychologist and Psychotherapist at Apollo Clinic with 22+ years of experience 
                     in child psychology, working pan-India across cultural boundaries with clients aged 5-85. She specializes 
                     in supporting children and adolescents with ADHD, learning disorders, ASD, OCD, anxiety, depression, and 
-                    addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counselling and Clinical 
+                    addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counseling and Clinical 
                     Psychology, and is a certified Trauma Healer.
                   </p>
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Shreya Jain, MBA</h3>
-                  <p className="text-sm text-text-dim mb-3">GTM Advisor | Founder, The Stack | Formerly at BYJU'S</p>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Soham Poddar, PhD (PMRF)</h3>
+                  <p className="text-sm text-text-dim mb-3">Technical Advisor | IIT Kharagpur | 460+ citations</p>
                   <p className="text-text-dim leading-relaxed">
-                    Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert 
-                    in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through 
-                    strategic growth.
+                    NLP, social computing &amp; green AI researcher with 460+ citations (h-index: 9) at AAAI, SIGIR, and NAACL.
+                    Soham has published on LLM efficiency and misinformation detection; prev: HPE Labs. He advises Komal on
+                    child-safe LLM architecture, on-device inference optimization, and content safety classifiers. Soham holds a
+                    PhD in Computer Science from IIT Kharagpur.
                   </p>
                 </div>
               </div>

@@ -90,7 +90,7 @@ export default function HowKomalWorks() {
   return (
     <>
       {/* Hero Section - Redesigned with inline pill and image */}
-      <section className="relative pt-18 md:pt-32 pb-8 px-6 md:px-16 overflow-hidden bg-white">
+      <section className="relative pt-36 md:pt-44 pb-8 px-6 md:px-16 overflow-hidden bg-white">
         {/* Floating Particles Background */}
         <div className="absolute inset-0 z-0">
           <FloatingParticles count={40} />
@@ -115,7 +115,7 @@ export default function HowKomalWorks() {
                 </span>
               </span> to understand your child and deliver{" "}
 
-              {" "} personalised insights to help them thrive.
+              {" "} personalized insights to help them thrive.
             </h1>
           </div>
 
@@ -181,13 +181,13 @@ export default function HowKomalWorks() {
               </div>
             </div>
 
-            {/* Row 1: Real-time behavioural AI */}
+            {/* Row 1: Real-time behavioral AI */}
             <div className="grid grid-cols-3 border-b border-gray-300">
               <div className="py-1 px-2 md:py-3 md:px-6 bg-[#F5F0FF] flex items-center gap-1 md:gap-3 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span className="text-primary font-medium text-[11px] md:text-base">Real-time behavioural AI</span>
+                <span className="text-primary font-medium text-[11px] md:text-base">Real-time behavioral AI</span>
               </div>
               <div className="py-1 px-2 md:py-3 md:px-6 flex items-center justify-center gap-1 md:gap-2 border-r border-gray-300">
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -372,7 +372,7 @@ export default function HowKomalWorks() {
             The Big Idea
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
-            Most learning apps are blindfolded—they only see if your child got the answer right or wrong. Komal is different. We watch how your child engages, not just what they click. We use <span className="font-semibold">gaze, speech,</span> and <span className="font-semibold">microexpressions</span> to study <span className="font-semibold">behaviour</span> instead of bombarding them with buttons.
+            Most learning apps are blindfolded—they only see if your child got the answer right or wrong. Komal is different. We watch how your child engages, not just what they click. We use <span className="font-semibold">gaze, speech,</span> and <span className="font-semibold">microexpressions</span> to study <span className="font-semibold">behavior</span> instead of bombarding them with buttons.
           </p>
           <p className="text-lg text-text-dim leading-relaxed">
             It&apos;s like a teacher who notices when your child hesitates, when they&apos;re getting frustrated, or when they&apos;re genuinely excited. Komal is <span className="font-bold">(child-first, game-second)</span>.
@@ -470,7 +470,7 @@ export default function HowKomalWorks() {
                 <span></span> Understanding, Not Data
               </h4>
               <p className="text-text-dim text-[15px] leading-relaxed text-center">
-                We translate complex <span className="font-semibold">behavioural signals</span> into simple insights. Instead of jargon, you see &quot;Your child showed strong focus today!&quot;
+                We translate complex <span className="font-semibold">behavioral signals</span> into simple insights. Instead of jargon, you see &quot;Your child showed strong focus today!&quot;
               </p>
             </div>
           </div>
@@ -485,7 +485,7 @@ export default function HowKomalWorks() {
               Experience the App
             </h2>
             <p className="text-lg text-center text-text-dim leading-relaxed max-w-[700px] mx-auto">
-              See how KOMAL creates a personalised journey for every child with intuitive interfaces and actionable insights.
+              See how KOMAL creates a personalized journey for every child with intuitive interfaces and actionable insights.
             </p>
           </div>
 
@@ -527,7 +527,7 @@ export default function HowKomalWorks() {
                 Know Your Child
               </h3>
               <p className="text-text-dim text-sm mb-4 hidden md:block">
-                Track their unique behavioural patterns.
+                Track their unique behavioral patterns.
               </p>
               {/* Phone mockup */}
               <div className="flex justify-center">
@@ -788,7 +788,7 @@ export default function HowKomalWorks() {
 
               <p className="text-primary font-medium mb-2">Explainability</p>
               <p className="text-text-dim text-[15px] leading-relaxed">
-                If we can&apos;t explain it simply, we don&apos;t use it. Every insight comes with confidence ranges and plain-language explanations using <span className="font-semibold">personalised insights</span>.
+                If we can&apos;t explain it simply, we don&apos;t use it. Every insight comes with confidence ranges and plain-language explanations using <span className="font-semibold">personalized insights</span>.
               </p>
             </div>
 
@@ -867,7 +867,7 @@ export default function HowKomalWorks() {
                 <h3 className="text-xl font-semibold text-primary">What Komal Sees</h3>
               </div>
 
-              <p className="text-text-dim mb-3 text-[15px]">Komal reads behavioural signals in real-time:</p>
+              <p className="text-text-dim mb-3 text-[15px]">Komal reads behavioral signals in real-time:</p>
 
               <div className="grid grid-cols-2 gap-2 mb-4">
                 <div className="bg-[#F5F5F7] rounded-xl p-3">
@@ -1030,7 +1030,7 @@ export default function HowKomalWorks() {
             </svg>
           </h2>
           <p className="text-lg text-text-dim leading-relaxed mb-5">
-            We&apos;re not just building an app. We&apos;re building the foundation for how AI can understand and support children&apos;s learning. Our goal is to become the &quot;behavioural interface&quot; for childhood learning—meaning any educational tool could use Komal&apos;s understanding to better adapt to your child.
+            We&apos;re not just building an app. We&apos;re building the foundation for how AI can understand and support children&apos;s learning. Our goal is to become the &quot;behavioral interface&quot; for childhood learning—meaning any educational tool could use Komal&apos;s understanding to better adapt to your child.
           </p>
           <p className="text-lg text-text-dim leading-relaxed">
             Imagine if every learning app could answer: &quot;Is the child engaged? Is this too hard? Is this helping?&quot; That&apos;s the future we&apos;re building—one where technology truly understands children, not just tracks them.

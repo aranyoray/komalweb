@@ -30,14 +30,14 @@ This document captures:
 
 ### 3. Existing Pages Already Aligned
 The following pages already use authentic positioning from the product:
-- `/app/page.tsx` (Homepage) - Uses "hyper-personalised digital guardian" and behavioral AI language
+- `/app/page.tsx` (Homepage) - Uses "hyper-personalized digital guardian" and behavioral AI language
 - `/app/why/page.tsx` - Contains the core philosophy: "reads how a child feels, not just what they click"
 - `/app/about-komal/page.tsx` - Comprehensive brand/entity page with E-E-A-T content
 
 ## Key Positioning Elements Extracted
 
 ### From Existing Content:
-1. **"Hyper-personalised digital guardian"** - Primary positioning
+1. **"Hyper-personalized digital guardian"** - Primary positioning
 2. **"Reads how a child feels, not just what they click"** - Core differentiator
 3. **Real-time behavioral AI (<200ms)** - Technical specification
 4. **Three-tier filtering: Block, Gate, Allow** - Content moderation approach
@@ -90,7 +90,7 @@ The following pages already use authentic positioning from the product:
 ## Language Guidelines
 
 ### DO Use:
-- "Hyper-personalised digital guardian"
+- "Hyper-personalized digital guardian"
 - "Real-time behavioral AI"
 - "Reads how a child feels, not just what they click"
 - "Guidance, not gatekeeping"
