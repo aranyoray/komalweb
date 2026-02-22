@@ -484,20 +484,9 @@ export default function Home() {
               <p className="text-slate-700 sm:text-lg leading-relaxed max-w-[700px] mx-auto text-center">
                 Online media can be confusing, scary, or harmful for a child. Komal helps you set up age-based access across 30+ content types, with clear rules rather than blanket bans.
               </p>
-              <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/5 mt-4">
-                <svg
-                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary spinning-diamond"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
-                </svg>
-                <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide">
-                  Grounded in Yale Research
-                </span>
-              </div>
             </div>
           </ScrollReveal>
+
 
         </div>
 
@@ -704,6 +693,23 @@ export default function Home() {
       {/* Key Features Section */}
       < section className="features-section py-12 md:py-16 bg-white" >
         <div className="container max-w-[1100px] px-8 mx-auto">
+          <div className="text-center mb-12">
+            <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/5">
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="none">
+                <rect x="1" y="1" width="198" height="38" rx="20" ry="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="6 4" className="text-primary/30 marching-border" />
+              </svg>
+              <svg
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary spinning-diamond relative z-10"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
+              </svg>
+              <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide relative z-10">
+                Grounded in Yale Research
+              </span>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 text-center">
             {/* Feature 1: 100% Hands-Free */}
             <ScrollReveal delay={0} direction="up">
@@ -983,7 +989,7 @@ export default function Home() {
       <section className="keep-learning py-12 md:py-16 bg-white">
         <div className="container max-w-[900px] px-8 mx-auto text-center">
           <ScrollReveal>
-            <h2 className="text-[24px] sm:text-[28px] md:text-[32px] font-sans font-bold mb-4 text-primary tracking-tight">
+            <h2 className="text-[24px] sm:text-[28px] md:text-[32px] font-sans font-bold mb-4 text-primary tracking-tight text-center">
               Keep Learning About Child Internet Safety
             </h2>
           </ScrollReveal>
