@@ -91,7 +91,7 @@ const jsonLd = {
       operatingSystem: "iOS, Android, Web",
       description:
         "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing for kids ages 3-12. COPPA and GDPR compliant.",
-      screenshot: "https://komalkids.com/heroimage.png",
+      screenshot: "https://komalkids.com/kid-hero.png",
       featureList: [
         "AI-Powered Content Filtering",
         "Real-Time Parental Controls",
@@ -199,7 +199,7 @@ export const metadata: Metadata = {
     alternateLocale: ["en_IN", "en_GB", "en_CA", "en_AU"],
     images: [
       {
-        url: "https://komalkids.com/heroimage.png",
+        url: "https://komalkids.com/kid-hero.png",
         width: 1200,
         height: 1200,
         alt: "KOMAL - AI Child Internet Safety App with Parental Controls",
@@ -211,7 +211,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KOMAL - #1 Child Internet Safety App | AI Parental Controls",
     description: "Protect your kids online with KOMAL — AI-powered content filtering, real-time parental controls, and safe browsing for ages 3-12.",
-    images: ["https://komalkids.com/heroimage.png"],
+    images: ["https://komalkids.com/kid-hero.png"],
     creator: "@komalforkids",
     site: "@komalforkids",
   },

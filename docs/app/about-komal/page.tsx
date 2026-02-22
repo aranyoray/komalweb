@@ -79,7 +79,7 @@ export default function AboutKomalPage() {
               "ratingValue": "4.8",
               "ratingCount": "500"
             },
-            "screenshot": "https://komalkids.com/heroimage.png",
+            "screenshot": "https://komalkids.com/kid-hero.png",
             "featureList": [
               "Real-time behavioral AI adaptation",
               "On-device privacy processing",

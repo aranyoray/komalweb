@@ -130,7 +130,7 @@ export default function Home() {
             applicationSubCategory: "Parental Control",
             description:
               "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing. Protects children ages 3-12 online with real-time behavioral AI. COPPA, GDPR-K compliant.",
-            screenshot: "https://komalkids.com/heroimage.png",
+            screenshot: "https://komalkids.com/kid-hero.png",
             featureList: [
               "Child Internet Safety",
               "Parental Control Dashboard",
@@ -427,7 +427,7 @@ export default function Home() {
                   }}
                 />
                 <Image
-                  src="/heroimage.png"
+                  src="/kid-hero.png"
                   alt="Komal Digital Buddy"
                   width={1200}
                   height={1200}

@@ -130,7 +130,7 @@ export default function Home() {
             applicationSubCategory: "Parental Control",
             description:
               "AI-powered child internet safety app with smart content filtering, parental controls, and age-appropriate browsing. Protects children ages 3-12 online with real-time behavioral AI. COPPA, GDPR-K compliant.",
-            screenshot: "https://komalkids.com/heroimage.png",
+            screenshot: "https://komalkids.com/kid-hero.png",
             featureList: [
               "Child Internet Safety",
               "Parental Control Dashboard",
@@ -306,7 +306,7 @@ export default function Home() {
       <ParticleField count={35} color="263, 50%, 40%" speed={0.2} connectDistance={80} />
 
       {/* Hero Section */}
-      <section className="hero-section relative pt-24 md:pt-28 lg:pt-20 pb-12 md:pb-16 overflow-hidden min-h-[90vh] flex items-center justify-center">
+      <section className="hero-section relative pt-24 md:pt-28 lg:pt-20 pb-0 overflow-hidden min-h-[90vh] flex items-center justify-center">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
 
@@ -334,40 +334,6 @@ export default function Home() {
 
             {/* Left Column - Text Content */}
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left pt-6 lg:pt-0">
-              {/* Yale Badge */}
-              <div className="yale-badge-wrapper relative inline-flex mb-5 opacity-0 animate-[fadeDown_0.8s_ease_forwards]" style={{ animationDelay: "0.1s" }}>
-                <svg className="absolute inset-[-1px] w-[calc(100%+2px)] h-[calc(100%+2px)] pointer-events-none overflow-visible">
-                  <rect
-                    className="marching-border"
-                    x="0.75"
-                    y="0.75"
-                    rx="20"
-                    ry="20"
-                    fill="none"
-                    stroke="#1e3a5f"
-                    strokeWidth="1.5"
-                    strokeDasharray="5 5"
-                    strokeLinecap="round"
-                    style={{
-                      width: 'calc(100% - 1.5px)',
-                      height: 'calc(100% - 1.5px)',
-                    }}
-                  />
-                </svg>
-                <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/5">
-                  <svg
-                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary spinning-diamond"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
-                  </svg>
-                  <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide">
-                    Grounded in Yale Research
-                  </span>
-                </div>
-              </div>
-
               {/* Hero Title */}
               <h1 className="hero-title font-sans font-bold leading-[1.08] tracking-[-0.02em] text-primary">
                 <span className="block text-xl sm:text-2xl md:text-[1.75rem] font-semibold text-primary/80 mb-2 sm:mb-3 opacity-0 animate-[fadeDown_0.6s_ease_forwards]" style={{ animationDelay: "0.2s" }}>
@@ -412,13 +378,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column - Hero Image */}
+            {/* Right Column - Hero Image + Screen Frames side by side */}
             <div
-              className="flex justify-center items-center opacity-0"
+              className="relative opacity-0"
               style={{ animation: "phoneEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards" }}
             >
-              <div className="relative animate-float" style={{ animationDuration: "8s" }}>
-                {/* Subtle glow behind image */}
+              {/* Kid Hero - left side, behind screens */}
+              <div className="absolute top-0 -left-24 sm:-left-32 md:-left-40 z-0 animate-float" style={{ animationDuration: "8s" }}>
                 <div
                   className="absolute inset-0 rounded-full blur-3xl opacity-20"
                   style={{
@@ -427,13 +393,67 @@ export default function Home() {
                   }}
                 />
                 <Image
-                  src="/heroimage.png"
+                  src="/kid-hero.png"
                   alt="KOMAL child internet safety app - AI digital guardian for kids"
                   width={1200}
                   height={1200}
-                  className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] h-auto relative z-10"
+                  className="w-[200px] sm:w-[240px] md:w-[280px] lg:w-[320px] xl:w-[360px] h-auto relative z-10"
                   priority
                 />
+              </div>
+
+              {/* Three Screen Frames - right of kid, overlapping */}
+              <div className="relative w-[302px] sm:w-[353px] md:w-[404px] lg:w-[454px] xl:w-[504px] h-[328px] sm:h-[378px] md:h-[454px] lg:h-[504px] xl:h-[554px] ml-auto">
+                {/* Left Screen */}
+                <div className="absolute bottom-0 w-[35%] z-10" style={{ left: "16%", transform: "translateX(-50%)" }}>
+                  <div className="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-black/80 shadow-lg">
+                    <Image
+                      src="/left-screen-homepage.jpeg"
+                      alt="Komal app screen"
+                      width={591}
+                      height={1280}
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+
+                {/* Center Screen - overlapping left & right, same bottom */}
+                <div className="absolute left-1/2 bottom-0 w-[42%] z-20" style={{ transform: "translateX(-50%)" }}>
+                  <div className="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-black/80 shadow-xl">
+                    <Image
+                      src="/center-screen-homepage.jpeg"
+                      alt="Komal app main screen"
+                      width={591}
+                      height={1280}
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Screen */}
+                <div className="absolute bottom-0 w-[35%] z-10" style={{ right: "16%", transform: "translateX(50%)" }}>
+                  <div className="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-black/80 shadow-lg">
+                    <Image
+                      src="/right-screen-homepage.jpeg"
+                      alt="Komal app screen"
+                      width={670}
+                      height={1280}
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+
+                {/* Cloud fade - smooth texture from all sides */}
+                <div className="absolute -bottom-[5%] -left-[15%] -right-[15%] h-[40%] z-30 pointer-events-none" style={{
+                  background: `
+                    radial-gradient(ellipse 120% 80% at 50% 100%, white 0%, rgba(255,255,255,0.9) 30%, rgba(255,255,255,0.5) 55%, transparent 80%),
+                    radial-gradient(ellipse 60% 50% at 20% 90%, rgba(255,255,255,0.8) 0%, transparent 70%),
+                    radial-gradient(ellipse 60% 50% at 80% 90%, rgba(255,255,255,0.8) 0%, transparent 70%),
+                    radial-gradient(ellipse 40% 35% at 35% 85%, rgba(255,255,255,0.6) 0%, transparent 65%),
+                    radial-gradient(ellipse 40% 35% at 65% 85%, rgba(255,255,255,0.6) 0%, transparent 65%)
+                  `,
+                  filter: "blur(2px)",
+                }} />
               </div>
             </div>
 
@@ -464,6 +484,18 @@ export default function Home() {
               <p className="text-slate-700 sm:text-lg leading-relaxed max-w-[700px] mx-auto text-center">
                 Online media can be confusing, scary, or harmful for a child. Komal helps you set up age-based access across 30+ content types, with clear rules rather than blanket bans.
               </p>
+              <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/5 mt-4">
+                <svg
+                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary spinning-diamond"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 0L15 9L24 12L15 15L12 24L9 15L0 12L9 9L12 0Z" />
+                </svg>
+                <span className="font-sans text-xs sm:text-sm font-medium text-primary tracking-wide">
+                  Grounded in Yale Research
+                </span>
+              </div>
             </div>
           </ScrollReveal>
 
@@ -745,8 +777,11 @@ export default function Home() {
       {/* Sleek divider line */}
       < div className="w-full h-[1px] bg-gradient-to-r from-transparent via-violet-200/60 to-transparent" />
 
+      {/* Komal: Your Best Section */}
+      < KomalYourBestSection />
+
       {/* Partners Section - Trust through Institutional Legitimacy */}
-      < section className="partners-section pt-4 pb-0 md:py-12 bg-white overflow-hidden relative" >
+      <section className="partners-section pt-4 pb-0 md:py-12 bg-white overflow-hidden relative">
         <div className="partners-container max-w-[1400px] mx-auto px-6 md:px-16">
           <ScrollReveal>
             <h2 className="partners-title text-[22px] sm:text-[24px] md:text-[28px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#1e3a5f] mb-8 md:mb-16 font-semibold text-center">OUR ECOSYSTEM</h2>
@@ -757,13 +792,8 @@ export default function Home() {
           </ScrollReveal>
 
         </div>
-      </section >
+      </section>
 
-      {/* Komal: Your Best Section */}
-      < KomalYourBestSection />
-      <br />
-      <br />
-      <br />
       {/* Testimonials */}
       <section className="testimonials mt-12 md:mt-4 py-10 md:py-16 bg-white relative overflow-hidden">
         {/* Background Image with padding and curved borders */}

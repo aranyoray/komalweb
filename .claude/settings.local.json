@@ -27,7 +27,9 @@
       "Bash(npm outdated:*)",
       "Bash(npm update:*)",
       "Bash(npm test:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)"
     ]
   }
 }
