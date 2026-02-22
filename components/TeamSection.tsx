@@ -83,7 +83,7 @@ const advisors: Advisor[] = [
     },
 
     {
-        name: "Prof Om Prakash Singh",
+        name: "Dr. (Prof) Om Prakash Singh, MD, FRCP",
         role: "Editor-in-Chief",
         credentials: ["Indian Journal of Psychiatry", "MD, FRCP"],
         image: "/dr-professor-om-prakash-singh-md-psychiatrist-research-advisor-president-national-psychiatric-society-bangalore.png",
@@ -151,7 +151,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
     const memberWebsite = 'website' in member ? member.website : undefined;
 
     const imageElement = (
-        <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 overflow-hidden rounded-full border border-primary/10 shadow-inner bg-white p-1 md:p-2">
+        <div className={`relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 overflow-hidden rounded-full shadow-inner bg-white p-1 md:p-2 ${isEven ? 'border border-primary/10' : 'border-2 border-primary/30'}`}>
             <Image
                 src={member.image}
                 alt={member.name}
@@ -180,7 +180,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
 
     return (
         <div
-            className={`group flex flex-row items-start justify-between gap-3 md:gap-10 py-4 md:py-6 transition-colors duration-300 rounded-2xl md:rounded-3xl px-3 md:px-24 ${isEven ? 'bg-gray-200 flex-row-reverse md:flex-row-reverse' : 'bg-white'}`}
+            className={`group flex flex-row items-start justify-between gap-3 md:gap-10 py-4 md:py-6 transition-colors duration-300 rounded-2xl md:rounded-3xl px-3 md:px-24 ${isEven ? 'bg-purple-100 flex-row-reverse md:flex-row-reverse' : 'bg-white'}`}
         >
             {/* PFP + Name Column */}
             <div className={`flex flex-col items-center ${isEven ? 'items-end' : 'items-start'} shrink-0 w-[100px] sm:w-[160px] md:w-[220px]`}>

@@ -22,7 +22,12 @@
       "Bash(npx next lint:*)",
       "Bash(grep:*)",
       "Bash(git status:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npm update:*)",
+      "Bash(npm test:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
