@@ -183,7 +183,78 @@ export default function PrivacyPolicyPage() {
               <li>Device permissions status (camera, microphone - only if granted)</li>
             </ul>
 
-            <h3>2.5 Advertising Data</h3>
+            <h3>2.5 TrueDepth Camera and Face Tracking (iOS)</h3>
+            <div className="privacy-highlight">
+              <p>
+                <strong>Apple TrueDepth Camera Disclosure:</strong> On supported iOS devices, our App uses Apple&apos;s
+                TrueDepth camera system and ARKit framework to provide attention monitoring and eye tracking features
+                during therapy sessions.
+              </p>
+            </div>
+            <p><strong>What TrueDepth data is accessed:</strong></p>
+            <ul>
+              <li>
+                <strong>Face Geometry (ARFaceAnchor):</strong> Real-time face position and orientation detected by the
+                TrueDepth camera
+              </li>
+              <li>
+                <strong>Eye Gaze Direction (lookAtPoint):</strong> Estimated eye gaze coordinates used to determine
+                where the child is looking on-screen
+              </li>
+              <li>
+                <strong>Facial Blend Shapes:</strong> Eye blink coefficients (eyeBlinkLeft, eyeBlinkRight) used solely
+                to detect blink rate and screen fatigue
+              </li>
+            </ul>
+            <p><strong>How TrueDepth data is used:</strong></p>
+            <ul>
+              <li>To calculate attention scores (0-100) based on gaze direction</li>
+              <li>To classify gaze zones (where on the screen the child is looking)</li>
+              <li>To measure blink rate per minute as an indicator of screen fatigue</li>
+              <li>To generate a screen fatigue index for parental reporting</li>
+            </ul>
+            <p><strong>TrueDepth data processing and storage:</strong></p>
+            <ul>
+              <li>
+                <strong>On-Device Processing Only:</strong> All TrueDepth camera data is processed entirely on the
+                device using Apple&apos;s ARKit framework. No raw face data, face maps, face geometry, or depth data is
+                ever transmitted off the device.
+              </li>
+              <li>
+                <strong>Immediate Disposal:</strong> Raw TrueDepth data (ARFaceAnchor, gaze coordinates, blend shape
+                values) is discarded immediately after each frame is processed. No raw TrueDepth data is written to
+                disk or stored in memory beyond the current processing frame.
+              </li>
+              <li>
+                <strong>Only Numeric Scores Retained:</strong> The only data derived from TrueDepth processing that is
+                retained consists of de-identified numeric scores: attention score (integer 0-100), gaze zone
+                classification, blink rate (number per minute), and screen fatigue index (integer 0-100). These scores
+                cannot be used to reconstruct facial features or identify any individual.
+              </li>
+              <li>
+                <strong>Retention Period:</strong> De-identified eye tracking daily summaries are stored locally on the
+                device for a maximum of 90 days and are then automatically purged.
+              </li>
+            </ul>
+            <p><strong>TrueDepth data sharing:</strong></p>
+            <ul>
+              <li>
+                <strong>No Third-Party Sharing:</strong> We do <strong>NOT</strong> share any TrueDepth camera data with
+                third parties. No raw face data, facial geometry, gaze data, or blend shape data is transmitted to any
+                external server, analytics service, advertising network, or any other third party.
+              </li>
+              <li>
+                <strong>No Facial Profiles:</strong> We do not create facial profiles, faceprints, or any biometric
+                identifiers from TrueDepth data.
+              </li>
+            </ul>
+            <p>
+              The TrueDepth camera feature is optional. The App can be used without granting camera permission, with
+              eye tracking features disabled. You can enable or disable eye tracking at any time in the App&apos;s
+              settings.
+            </p>
+
+            <h3>2.6 Advertising Data</h3>
             <p>Our App uses Google AdMob to display advertisements. Because Komal is a child-directed app, we configure our advertising requests to support the Google Play Families Policy and applicable children's privacy laws.</p>
             <ul>
               <li><strong>Child-directed ad requests:</strong> We request ads as child-directed (COPPA) and for users under the age of consent (TFUA) where applicable.</li>
@@ -475,10 +546,12 @@ export default function PrivacyPolicyPage() {
             <p>Our App may request the following permissions:</p>
             <ul>
               <li>
-                <strong>Camera:</strong> Required for real-time eye tracking and micro-expression analysis during therapy
-                sessions. <strong>Important:</strong> Video is processed locally on your device and is never stored or
-                transmitted. Only numeric scores are saved. This permission is optional and the App can function with
-                limited features if not granted.
+                <strong>Camera (including TrueDepth Camera):</strong> On iOS devices, the App uses Apple&apos;s TrueDepth
+                camera and ARKit for real-time eye tracking and attention monitoring during therapy sessions.{" "}
+                <strong>Important:</strong> All TrueDepth and camera data is processed locally on your device and is
+                never stored or transmitted. Only de-identified numeric scores are saved. This permission is optional
+                and the App can function with limited features if not granted. See Section 2.5 for full TrueDepth
+                camera disclosure.
               </li>
               <li>
                 <strong>Microphone:</strong> Required for real-time voice tracking and analysis during therapy sessions.{" "}
@@ -523,6 +596,11 @@ export default function PrivacyPolicyPage() {
               <li>
                 <strong>Analytics Data:</strong> Aggregated, de-identified data may be retained for research and
                 improvement purposes
+              </li>
+              <li>
+                <strong>Eye Tracking Summaries:</strong> De-identified daily summaries (attention scores, blink rate,
+                gaze distribution) are retained locally for a maximum of 90 days and then automatically deleted. No raw
+                TrueDepth camera data is ever retained.
               </li>
             </ul>
             <p>
