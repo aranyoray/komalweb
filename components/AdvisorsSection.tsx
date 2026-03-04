@@ -28,7 +28,7 @@ const advisors: Advisor[] = [
     },
 
     {
-        name: "Prof (Dr.) Om Prakash Singh, MD, FRCP",
+        name: "Dr. (Prof) Om Prakash Singh, MD, FRCP",
         title: "EDITOR-IN-CHIEF",
         company: "@ INDIAN JOURNAL OF PSYCHIATRY",
         description: "Dr. Singh is a senior psychiatrist with 30 years of clinical and academic experience. He leads the Indian Journal of Psychiatry and advises Komal on de-addiction strategies and our psychosocial mental health framework.",

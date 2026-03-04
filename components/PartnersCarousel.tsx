@@ -9,7 +9,7 @@ const partners = [
     { src: "/california-state-university-longbeach_seal-pilot-partners-komalkids.png", name: "California State University Long Beach", caption: "Pilot Partners" },
     { src: "/ucal.jpg", name: "UCAL", caption: "Institutional Partner" },
     { src: "/zeelearn.png", name: "Zee Learn", caption: "Education Partner" },
-    { src: "/cc.png", name: "Curious Cardinals", caption: "Mentorship Partner" },
+    { src: "/curious_cardinals.png", name: "Curious Cardinals", caption: "Mentorship Partner" },
     { src: "/sunshine-foundation-logo.png", name: "Sunshine Foundation", caption: "Community Partner" },
 ];
 

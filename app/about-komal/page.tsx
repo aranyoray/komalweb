@@ -79,7 +79,7 @@ export default function AboutKomalPage() {
               "ratingValue": "4.8",
               "ratingCount": "500"
             },
-            "screenshot": "https://komalkids.com/heroimage.png",
+            "screenshot": "https://komalkids.com/kid-hero.png",
             "featureList": [
               "Real-time behavioral AI adaptation",
               "On-device privacy processing",
@@ -222,7 +222,7 @@ export default function AboutKomalPage() {
                 </div>
 
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Prof. (Dr.) Om Prakash Singh, MD, FRCP</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-text">Dr. (Prof) Om Prakash Singh, MD, FRCP</h3>
                   <p className="text-sm text-text-dim mb-3">Editor-in-Chief, Indian Journal of Psychiatry</p>
                   <p className="text-text-dim leading-relaxed">
                     Dr. Singh is a senior psychiatrist with three decades of clinical, academic, and leadership experience, 

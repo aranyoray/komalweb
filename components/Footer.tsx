@@ -353,6 +353,10 @@ export default function Footer() {
               Terms of Service
             </Link>
             <span className="text-border">|</span>
+            <Link href="/refund-policy" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+              Refund Policy
+            </Link>
+            <span className="text-border">|</span>
             <Link href="/team" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
               About Us
             </Link>

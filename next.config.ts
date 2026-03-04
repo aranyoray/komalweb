@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    qualities: [70, 75],
+  },
   serverExternalPackages: ["nodemailer"],
   async headers() {
     return [

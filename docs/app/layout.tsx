@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "https://komalkids.com/heroimage.png",
+        url: "https://komalkids.com/kid-hero.png",
         width: 1200,
         height: 1200,
         alt: "KOMAL - Child Internet Safety App",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KOMAL - Child Internet Safety App | Parental Control for Kids",
     description: "Protect your children online with AI-powered content filtering and parental controls. Safe screen time for ages 3-12.",
-    images: ["https://komalkids.com/heroimage.png"],
+    images: ["https://komalkids.com/kid-hero.png"],
     creator: "@komalkids",
   },
   category: "technology",

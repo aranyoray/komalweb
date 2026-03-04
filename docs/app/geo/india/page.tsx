@@ -49,7 +49,7 @@ export default function IndiaGeoPage() {
                 <div className="bg-surface/50 p-6 rounded-lg border border-border">
                   <h3 className="text-xl font-semibold mb-3 text-text">Expert Advisory</h3>
                   <p className="text-text-dim">
-                    Advised by leading Indian child psychologists including Prof. Om Prakash Singh, 
+                    Advised by leading Indian child psychologists including Dr. (Prof) Om Prakash Singh, MD, FRCP, 
                     Editor-in-Chief of the Indian Journal of Psychiatry.
                   </p>
                 </div>
