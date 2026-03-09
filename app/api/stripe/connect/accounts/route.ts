@@ -31,6 +31,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripeClient from '@/lib/stripe';
+import { db } from '@/lib/firebase-admin';
+import { requireAuth, isAuthError } from '@/lib/connect-auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // =============================================================================
 // POST - Create a new Connected Account
@@ -58,6 +61,15 @@ import stripeClient from '@/lib/stripe';
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-accounts-post:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
+    // Require authenticated user
+    const auth = await requireAuth(request);
+    if (isAuthError(auth)) return auth;
+
     // Parse the request body
     const body = await request.json();
     const { displayName, email, country = 'us' } = body;
@@ -143,21 +155,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    /**
-     * TODO: Store the account ID in your database
-     *
-     * You should create a mapping between your user/organization and
-     * the Stripe account ID. Example:
-     *
-     * await db.collection('users').doc(userId).update({
-     *   stripeAccountId: account.id,
-     * });
-     *
-     * This allows you to look up the account later for:
-     * - Creating products on the account
-     * - Creating checkout sessions
-     * - Checking onboarding status
-     */
+    // Store the account ID in the user's Firestore document
+    await db!.collection('users').doc(auth.userId).update({
+      stripeAccountId: account.id,
+    });
 
     // Return the created account information
     return NextResponse.json({
@@ -171,17 +172,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating connected account:', error);
-
-    // Handle Stripe-specific errors
-    if (error instanceof Error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json(
       {
@@ -208,33 +198,46 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 100);
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-accounts-get:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
 
-    // List accounts from Stripe
-    // Note: V2 accounts are listed using the V1 API
-    const accounts = await stripeClient.accounts.list({
-      limit,
-    });
+    // Require authenticated user
+    const auth = await requireAuth(request);
+    if (isAuthError(auth)) return auth;
 
-    return NextResponse.json({
-      success: true,
-      accounts: accounts.data.map((account) => ({
-        id: account.id,
-        email: account.email,
-        chargesEnabled: account.charges_enabled,
-        payoutsEnabled: account.payouts_enabled,
-        created: account.created,
-      })),
-      hasMore: accounts.has_more,
-    });
+    // Only return the authenticated user's own connected account
+    const userDoc = await db!.collection('users').doc(auth.userId).get();
+    const stripeAccountId = userDoc.data()?.stripeAccountId;
+
+    if (!stripeAccountId) {
+      return NextResponse.json({ success: true, accounts: [], hasMore: false });
+    }
+
+    try {
+      const account = await stripeClient.accounts.retrieve(stripeAccountId);
+      return NextResponse.json({
+        success: true,
+        accounts: [{
+          id: account.id,
+          email: account.email,
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+          created: account.created,
+        }],
+        hasMore: false,
+      });
+    } catch {
+      return NextResponse.json({ success: true, accounts: [], hasMore: false });
+    }
   } catch (error) {
     console.error('Error listing connected accounts:', error);
 
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to list accounts',
+        error: 'Failed to list accounts',
       },
       { status: 500 }
     );

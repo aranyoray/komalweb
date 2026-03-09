@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // ============================================================================
 // Auth helper
@@ -27,14 +28,19 @@ async function verifyAuth(request: NextRequest): Promise<{ uid: string } | null>
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`reports-categorized:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const childId = searchParams.get('childId');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500);
+    const parsedLimit = parseInt(searchParams.get('limit') || '100', 10);
+    const limit = Math.min(Math.max(Number.isNaN(parsedLimit) ? 100 : parsedLimit, 1), 500);
 
     // Fetch reports
     const snapshot = await db

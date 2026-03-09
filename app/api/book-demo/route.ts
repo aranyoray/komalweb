@@ -1,41 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
-const loadNodemailer = () => {
-  try {
-    const requireFn = eval('require') as NodeRequire;
-    return requireFn('nodemailer') as {
-      createTransport: (options: Record<string, unknown>) => {
-        sendMail: (mailOptions: Record<string, unknown>) => Promise<unknown>;
-      };
-    };
-  } catch (error) {
-    console.error('Nodemailer dependency is missing:', error);
-    throw new Error('Email service is unavailable. Please install nodemailer.');
-  }
-};
+// Escape HTML special characters to prevent injection
+const escapeHtml = (str: string): string =>
+  str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-// Create nodemailer transporter for Titan Email
-const createTransporter = () => {
-  const nodemailer = loadNodemailer();
-  const port = parseInt(process.env.SMTP_PORT || '587');
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.titan.email',
-    port: port,
-    // Port 587 uses STARTTLS (secure: false), Port 465 uses direct TLS (secure: true)
-    secure: port === 465,
-    auth: {
-      type: 'login',
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    tls: {
-      rejectUnauthorized: true,
-      minVersion: 'TLSv1.2',
-    },
-    requireTLS: true,
-  });
-};
+// Strip ALL line-break characters (including unicode) to prevent email header injection
+const sanitizeSubject = (str: string): string =>
+  str.replace(/[\r\n\u000b\u000c\u0085\u2028\u2029]/g, '');
 
 // Generate HTML email template for demo request
 const generateDemoRequestHTML = (name: string, email: string, organization?: string): string => {
@@ -186,12 +159,26 @@ const generateConfirmationHTML = (name: string): string => {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 3 demo requests per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`book-demo:${ip}`, 3, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { name, email, organization } = body;
 
-    if (!name || !email) {
+    if (!name || typeof name !== 'string' || !email || typeof email !== 'string') {
       return NextResponse.json(
         { error: 'Name and email are required' },
+        { status: 400 }
+      );
+    }
+
+    // Input length limits to prevent abuse
+    if (name.length > 200 || email.length > 254 || (organization && String(organization).length > 300)) {
+      return NextResponse.json(
+        { error: 'Input too long' },
         { status: 400 }
       );
     }
@@ -205,14 +192,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const transporter = createTransporter();
+    const port = parseInt(process.env.SMTP_PORT || '587');
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.titan.email',
+      port: port,
+      secure: port === 465,
+      auth: {
+        type: 'login',
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: true,
+        minVersion: 'TLSv1.2',
+      },
+      requireTLS: true,
+    } as nodemailer.TransportOptions);
+
+    // Escape user inputs for HTML embedding
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeOrg = organization ? escapeHtml(organization) : undefined;
 
     // Send notification to sales team
     await transporter.sendMail({
       from: process.env.SMTP_FROM || '"KomalAI Demo" <noreply@komalkids.com>',
       to: 'play@komalkids.com',
-      subject: `New Demo Request from ${name}${organization ? ` (${organization})` : ''}`,
-      html: generateDemoRequestHTML(name, email, organization),
+      subject: sanitizeSubject(`New Demo Request from ${safeName}${safeOrg ? ` (${safeOrg})` : ''}`),
+      html: generateDemoRequestHTML(safeName, safeEmail, safeOrg),
       replyTo: email,
     });
 
@@ -221,7 +228,7 @@ export async function POST(request: NextRequest) {
       from: process.env.SMTP_FROM || '"KOMAL" <noreply@komalkids.com>',
       to: email,
       subject: 'Demo Request Confirmed - KOMAL',
-      html: generateConfirmationHTML(name),
+      html: generateConfirmationHTML(safeName),
     });
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import { getParentChildren, addChild, ageToAgeBand } from '@/lib/safety-engine/parent-controls';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // ============================================================================
 // Auth helper
@@ -27,6 +28,11 @@ async function verifyAuth(request: NextRequest): Promise<{ uid: string } | null>
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`parent-children-get:${ip}`, 30, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -48,6 +54,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`parent-children-post:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -75,13 +86,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'allowedUrls must be an array' }, { status: 400 });
     }
 
+    // Validate and sanitize array entries (max 100 items each, max 2048 chars per entry)
+    const sanitizeArray = (arr: unknown[], maxLen = 100, maxChars = 2048): string[] =>
+      (arr || [])
+        .slice(0, maxLen)
+        .map((item: unknown) => String(item).trim().slice(0, maxChars))
+        .filter(Boolean);
+
     const child = await addChild(auth.uid, {
-      name: name.trim(),
+      name: name.trim().slice(0, 100),
       age,
       ageBand: ageToAgeBand(age),
-      blockedUrls: (blockedUrls || []).map((u: string) => u.trim()).filter(Boolean),
-      blockedKeywords: (blockedKeywords || []).map((k: string) => k.trim()).filter(Boolean),
-      allowedUrls: (allowedUrls || []).map((u: string) => u.trim()).filter(Boolean),
+      blockedUrls: sanitizeArray(blockedUrls || []),
+      blockedKeywords: sanitizeArray(blockedKeywords || []),
+      allowedUrls: sanitizeArray(allowedUrls || []),
     });
 
     if (!child) {

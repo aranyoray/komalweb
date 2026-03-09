@@ -1,8 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Rate limit: 20 requests per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`ambassadors:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     if (!db) {
       return NextResponse.json({ error: 'Database not available' }, { status: 500 });
     }
@@ -11,6 +18,10 @@ export async function GET() {
       .collection('users')
       .where('role', '==', 'ambassador')
       .get();
+
+    // Only return URLs that start with https:// to prevent javascript:/phishing URIs
+    const safeUrl = (url: unknown): string =>
+      typeof url === 'string' && url.startsWith('https://') ? url : '';
 
     const ambassadors = snapshot.docs.map((doc) => {
       const data = doc.data();
@@ -22,9 +33,9 @@ export async function GET() {
         grade: data.grade || '',
         bio: data.bio || '',
         photoURL: data.photoURL || '',
-        linkedIn: data.linkedIn || '',
-        instagram: data.instagram || '',
-        twitter: data.twitter || '',
+        linkedIn: safeUrl(data.linkedIn),
+        instagram: safeUrl(data.instagram),
+        twitter: safeUrl(data.twitter),
       };
     });
 

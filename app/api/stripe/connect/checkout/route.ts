@@ -24,6 +24,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import stripeClient, { getBaseUrl } from '@/lib/stripe';
+import { safePath } from '@/lib/safe-redirect';
+import { requireAccountOwner, isAuthError } from '@/lib/connect-auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // =============================================================================
 // POST - Create a Checkout Session for a Connected Account
@@ -56,6 +59,11 @@ import stripeClient, { getBaseUrl } from '@/lib/stripe';
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-checkout-post:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json();
     const {
       accountId,
@@ -64,10 +72,17 @@ export async function POST(request: NextRequest) {
       priceInCents,
       quantity = 1,
       applicationFeePercent = 10,
-      successPath = '/connect/success',
-      cancelPath = '/connect/storefront',
       currency = 'usd',
     } = body;
+
+    // Validate currency
+    const allowedCurrencies = ['usd', 'cad', 'eur', 'gbp', 'inr', 'aud', 'sgd'];
+    if (typeof currency !== 'string' || !allowedCurrencies.includes(currency.toLowerCase())) {
+      return NextResponse.json({ success: false, error: 'Invalid or unsupported currency' }, { status: 400 });
+    }
+
+    const successPath = safePath(body.successPath, '/connect/success');
+    const cancelPath = safePath(body.cancelPath, '/connect/storefront');
 
     // Validate required fields
     if (!accountId) {
@@ -102,6 +117,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
+
+    // Validate numeric inputs
+    const safeQuantity = Math.min(Math.max(Math.floor(Number(quantity) || 1), 1), 100);
+    const safeFeePercent = Math.min(Math.max(Number(applicationFeePercent) || 10, 0), 50);
+    const safePriceInCents = priceInCents ? Math.min(Math.max(Math.floor(Number(priceInCents) || 0), 50), 10000000) : 0;
+
     const baseUrl = getBaseUrl();
 
     /**
@@ -115,7 +139,7 @@ export async function POST(request: NextRequest) {
           {
             // Use existing price from connected account
             price: priceId,
-            quantity: quantity,
+            quantity: safeQuantity,
           },
         ]
       : [
@@ -123,12 +147,12 @@ export async function POST(request: NextRequest) {
             // Create price inline for one-time purchases
             price_data: {
               currency: currency.toLowerCase(),
-              unit_amount: priceInCents,
+              unit_amount: safePriceInCents,
               product_data: {
                 name: productName,
               },
             },
-            quantity: quantity,
+            quantity: safeQuantity,
           },
         ];
 
@@ -143,8 +167,8 @@ export async function POST(request: NextRequest) {
      * - Connected account receives: $90
      * - Platform receives: $10 (minus Stripe fees)
      */
-    const totalAmount = priceInCents ? priceInCents * quantity : 0;
-    const applicationFeeAmount = Math.round(totalAmount * (applicationFeePercent / 100));
+    const totalAmount = safePriceInCents ? safePriceInCents * safeQuantity : 0;
+    const applicationFeeAmount = Math.round(totalAmount * (safeFeePercent / 100));
 
     /**
      * Create the Checkout Session using Direct Charges
@@ -198,16 +222,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating checkout session:', error);
 
-    if (error instanceof Error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
       {
         success: false,
@@ -233,6 +247,11 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-checkout-get:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
     const accountId = searchParams.get('accountId');
@@ -246,6 +265,10 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
 
     /**
      * Retrieve the checkout session from the connected account
@@ -287,7 +310,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to retrieve session',
+        error: 'Failed to retrieve session',
       },
       { status: 500 }
     );

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import stripeClient from '@/lib/stripe';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const PLAN_VALIDITY_DAYS: Record<string, number> = {
   ambassador: 30,
@@ -12,6 +13,12 @@ const PLAN_VALIDITY_DAYS: Record<string, number> = {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 10 verification attempts per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`verify-payment:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -33,13 +40,13 @@ export async function POST(request: NextRequest) {
     // Retrieve the checkout session from Stripe
     const session = await stripeClient.checkout.sessions.retrieve(sessionId);
 
-    // Verify the session belongs to this user
-    if (session.metadata?.firebaseUid !== decoded.uid) {
+    // Verify the session has metadata and belongs to this user
+    if (!session.metadata || session.metadata.firebaseUid !== decoded.uid) {
       return NextResponse.json({ error: 'Session does not belong to this user' }, { status: 403 });
     }
 
-    // Check payment status
-    if (session.payment_status !== 'paid') {
+    // Verify session is fully complete with payment confirmed
+    if (session.status !== 'complete' || session.payment_status !== 'paid') {
       return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
     }
 
@@ -48,46 +55,47 @@ export async function POST(request: NextRequest) {
 
     // Handle ambassador one-time payment
     if (plan === 'ambassador' && session.mode === 'payment') {
-      const userDoc = await db.collection('users').doc(userId).get();
-      const userData = userDoc.data();
+      // Retrieve payment intent for detailed payment info (outside transaction)
+      const paymentIntentId = typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id;
 
-      // Only update if not already ambassador (idempotent)
-      if (userData?.plan !== 'ambassador') {
-        // Retrieve payment intent for detailed payment info
-        const paymentIntentId = typeof session.payment_intent === 'string'
-          ? session.payment_intent
-          : session.payment_intent?.id;
+      let paymentDetails: Record<string, unknown> = {};
+      if (paymentIntentId) {
+        const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId, {
+          expand: ['latest_charge'],
+        });
 
-        let paymentDetails: Record<string, unknown> = {};
-        if (paymentIntentId) {
-          const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId, {
-            expand: ['latest_charge'],
-          });
+        const charge = paymentIntent.latest_charge;
+        const chargeObj = typeof charge === 'object' && charge !== null ? charge : null;
 
-          const charge = paymentIntent.latest_charge;
-          const chargeObj = typeof charge === 'object' && charge !== null ? charge : null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const chargeData = chargeObj as any;
+        const card = chargeData?.payment_method_details?.card;
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const chargeData = chargeObj as any;
-          const card = chargeData?.payment_method_details?.card;
+        paymentDetails = {
+          paymentIntentId: String(paymentIntent.id || ''),
+          amountPaid: Number(paymentIntent.amount) || 0,
+          currency: String(paymentIntent.currency || ''),
+          paymentMethod: paymentIntent.payment_method ? String(paymentIntent.payment_method) : null,
+          paymentStatus: String(paymentIntent.status || ''),
+          receiptUrl: chargeData?.receipt_url ? String(chargeData.receipt_url) : null,
+          cardBrand: card?.brand ? String(card.brand) : null,
+          cardLast4: card?.last4 ? String(card.last4) : null,
+        };
+      }
 
-          paymentDetails = {
-            paymentIntentId: paymentIntent.id,
-            amountPaid: paymentIntent.amount,
-            currency: paymentIntent.currency,
-            paymentMethod: paymentIntent.payment_method,
-            paymentStatus: paymentIntent.status,
-            receiptUrl: chargeData?.receipt_url || null,
-            cardBrand: card?.brand || null,
-            cardLast4: card?.last4 || null,
-          };
-        }
+      const now = new Date();
+      const validityDays = PLAN_VALIDITY_DAYS.ambassador;
+      const expiryDate = new Date(now.getTime() + validityDays * 24 * 60 * 60 * 1000);
 
-        const now = new Date();
-        const validityDays = PLAN_VALIDITY_DAYS.ambassador;
-        const expiryDate = new Date(now.getTime() + validityDays * 24 * 60 * 60 * 1000);
+      // Atomic check-then-update to prevent race conditions
+      const userRef = db.collection('users').doc(userId);
+      const alreadyAmbassador = await db.runTransaction(async (tx) => {
+        const userDoc = await tx.get(userRef);
+        if (userDoc.data()?.plan === 'ambassador') return true;
 
-        await db.collection('users').doc(userId).update({
+        tx.update(userRef, {
           plan: 'ambassador',
           planName: 'Ambassador Community',
           role: 'ambassador',
@@ -101,8 +109,11 @@ export async function POST(request: NextRequest) {
           stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
           ...paymentDetails,
         });
+        return false;
+      });
 
-        // Write to /pay collection
+      if (!alreadyAmbassador) {
+        // Write to /pay collection (outside transaction — idempotent audit log)
         await db.collection('pay').add({
           uid: userId,
           type: 'ambassador_payment',

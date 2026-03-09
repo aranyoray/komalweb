@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const COLLECTION = 'report-history';
 
@@ -46,21 +47,6 @@ async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
     return { success: false, reason };
   }
 
-  // Decode JWT payload to check audience/issuer
-  const tokenParts = token.split('.');
-  let tokenPayload: any = {};
-  try {
-    tokenPayload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
-  } catch { /* ignore */ }
-
-  const debug = {
-    jwtParts: tokenParts.length,
-    tokenAud: tokenPayload.aud,
-    tokenIss: tokenPayload.iss,
-    serverProjectId: process.env.FIREBASE_PROJECT_ID,
-    projectIdMatch: tokenPayload.aud === process.env.FIREBASE_PROJECT_ID,
-  };
-
   try {
     const decodedToken = await getAuth().verifyIdToken(token);
     // Fetch full user record for display name
@@ -74,19 +60,25 @@ async function verifyAuthToken(request: NextRequest): Promise<AuthResult> {
       },
     };
   } catch (error: any) {
-    const reason = `verifyIdToken error: ${error?.code || error?.message || 'unknown'}`;
-    console.error('[reports] Auth failed:', reason, debug);
-    return { success: false, reason, ...debug } as any;
+    const reason = `verifyIdToken error: ${error?.code || 'unknown'}`;
+    console.error('[reports] Auth failed:', reason);
+    return { success: false, reason };
   }
 }
 
 // GET - Fetch all reports for the authenticated user
 export async function GET(request: NextRequest) {
   try {
+    // Rate limit: 30 requests per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`reports-get:${ip}`, 30, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuthToken(request);
 
     if (!auth.success) {
-      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userInfo = auth.user;
@@ -116,10 +108,16 @@ export async function GET(request: NextRequest) {
 // POST - Save a new report for the authenticated user
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 10 report saves per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`reports-post:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuthToken(request);
 
     if (!auth.success) {
-      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userInfo = auth.user;
@@ -129,6 +127,12 @@ export async function POST(request: NextRequest) {
 
     if (!report) {
       return NextResponse.json({ error: 'Report is required' }, { status: 400 });
+    }
+
+    // Prevent excessively large report documents (max 100KB)
+    const reportJson = JSON.stringify(report);
+    if (reportJson.length > 100_000) {
+      return NextResponse.json({ error: 'Report data too large' }, { status: 400 });
     }
 
     // Generate unique report ID
@@ -165,10 +169,16 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete a specific report
 export async function DELETE(request: NextRequest) {
   try {
+    // Rate limit: 10 deletes per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`reports-delete:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuthToken(request);
 
     if (!auth.success) {
-      return NextResponse.json({ error: 'Unauthorized', reason: auth.reason }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userInfo = auth.user;

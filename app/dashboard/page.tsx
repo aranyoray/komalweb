@@ -570,9 +570,10 @@ function DashboardContent() {
     setModalMessage({ type: "", text: "" });
 
     try {
+      const token = await getIdToken();
       const response = await fetch("/api/send-report", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ email: emailInput.trim(), report: result }),
       });
 

@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
+import { getAuth } from 'firebase-admin/auth';
 
-const loadNodemailer = () => {
-  try {
-    const requireFn = eval('require') as NodeRequire;
-    return requireFn('nodemailer') as {
-      createTransport: (options: Record<string, unknown>) => {
-        sendMail: (mailOptions: Record<string, unknown>) => Promise<unknown>;
-      };
-    };
-  } catch (error) {
-    console.error('Nodemailer dependency is missing:', error);
-    throw new Error('Email service is unavailable. Please install nodemailer.');
-  }
-};
+// Escape HTML special characters to prevent injection in email templates
+const escapeHtml = (str: string): string =>
+  str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+// Strip ALL line-break characters (including unicode) to prevent email header injection
+const sanitizeSubject = (str: string): string =>
+  str.replace(/[\r\n\u000b\u000c\u0085\u2028\u2029]/g, '');
 
 // Full ReportData interface matching the page structure
 interface ReportData {
@@ -443,6 +440,23 @@ const generateReportHTML = (report: ReportData): string => {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 emails per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`send-report:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
+    // Require authentication to prevent email relay abuse
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    try {
+      await getAuth().verifyIdToken(authHeader.split('Bearer ')[1]);
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { email, report } = body;
 
@@ -461,32 +475,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure report has defaults for optional fields - matching page structure
+    // Helper to escape all strings in arrays
+    const escapeArr = (arr: string[]): string[] => (arr || []).map(s => escapeHtml(String(s)));
+
+    // Ensure report has defaults for optional fields - all strings HTML-escaped
     const sanitizedReport: ReportData = {
-      url: report.url,
-      overallScore: report.overallScore ?? 0,
-      ageGroupScores: report.ageGroupScores || {},
+      url: escapeHtml(String(report.url || '')),
+      overallScore: Number(report.overallScore) || 0,
+      ageGroupScores: Object.fromEntries(
+        Object.entries(report.ageGroupScores || {}).map(([age, data]: [string, any]) => [
+          escapeHtml(age),
+          {
+            score: Number(data?.score) || 0,
+            action: ['BLOCK', 'GATE', 'ALLOW'].includes(data?.action) ? data.action : 'ALLOW',
+            reason: escapeHtml(String(data?.reason || '')),
+            risks: escapeArr(data?.risks || []),
+          },
+        ])
+      ),
       contentAnalysis: {
         textAnalysis: {
-          sentiment: report.contentAnalysis?.textAnalysis?.sentiment || 'N/A',
-          keyTopics: report.contentAnalysis?.textAnalysis?.keyTopics || [],
-          languageScore: report.contentAnalysis?.textAnalysis?.languageScore ?? 0,
-          entities: report.contentAnalysis?.textAnalysis?.entities || [],
-          unsafeKeywordsFound: report.contentAnalysis?.textAnalysis?.unsafeKeywordsFound || [],
-          safeKeywordsFound: report.contentAnalysis?.textAnalysis?.safeKeywordsFound || [],
+          sentiment: escapeHtml(String(report.contentAnalysis?.textAnalysis?.sentiment || 'N/A')),
+          keyTopics: escapeArr(report.contentAnalysis?.textAnalysis?.keyTopics),
+          languageScore: Number(report.contentAnalysis?.textAnalysis?.languageScore) || 0,
+          entities: escapeArr(report.contentAnalysis?.textAnalysis?.entities),
+          unsafeKeywordsFound: escapeArr(report.contentAnalysis?.textAnalysis?.unsafeKeywordsFound),
+          safeKeywordsFound: escapeArr(report.contentAnalysis?.textAnalysis?.safeKeywordsFound),
         },
         visualAnalysis: {
-          detectedObjects: report.contentAnalysis?.visualAnalysis?.detectedObjects || [],
-          safetyScore: report.contentAnalysis?.visualAnalysis?.safetyScore ?? 0,
-          concerns: report.contentAnalysis?.visualAnalysis?.concerns || [],
-          labels: report.contentAnalysis?.visualAnalysis?.labels || [],
+          detectedObjects: escapeArr(report.contentAnalysis?.visualAnalysis?.detectedObjects),
+          safetyScore: Number(report.contentAnalysis?.visualAnalysis?.safetyScore) || 0,
+          concerns: escapeArr(report.contentAnalysis?.visualAnalysis?.concerns),
+          labels: escapeArr(report.contentAnalysis?.visualAnalysis?.labels),
         },
         multimediaAnalysis: report.contentAnalysis?.multimediaAnalysis,
-        metadata: report.contentAnalysis?.metadata,
+        metadata: report.contentAnalysis?.metadata ? {
+          title: escapeHtml(String(report.contentAnalysis.metadata.title || '')),
+          description: escapeHtml(String(report.contentAnalysis.metadata.description || '')),
+          keywords: escapeArr(report.contentAnalysis.metadata.keywords),
+          imageCount: Number(report.contentAnalysis.metadata.imageCount) || 0,
+          linkCount: Number(report.contentAnalysis.metadata.linkCount) || 0,
+          videoCount: Number(report.contentAnalysis.metadata.videoCount) || 0,
+          audioCount: Number(report.contentAnalysis.metadata.audioCount) || 0,
+        } : undefined,
       },
       childSafetyAnalysis: {
-        overallRisk: report.childSafetyAnalysis?.overallRisk || 'safe',
-        riskCategories: report.childSafetyAnalysis?.riskCategories || [],
+        overallRisk: (['safe', 'caution', 'unsafe', 'dangerous'].includes(report.childSafetyAnalysis?.overallRisk)
+          ? report.childSafetyAnalysis.overallRisk : 'safe') as ReportData['childSafetyAnalysis']['overallRisk'],
+        riskCategories: (report.childSafetyAnalysis?.riskCategories || []).map((r: any) => ({
+          category: escapeHtml(String(r?.category || '')),
+          severity: escapeHtml(String(r?.severity || '')),
+          matchCount: Number(r?.matchCount) || 0,
+          matchedKeywords: escapeArr(r?.matchedKeywords || []),
+          contextSnippets: escapeArr(r?.contextSnippets || []),
+        })),
         depthAnalysis: report.childSafetyAnalysis?.depthAnalysis || {
           titleSafe: true,
           metadataSafe: true,
@@ -495,8 +537,8 @@ export async function POST(request: NextRequest) {
         },
       },
       timestamp: report.timestamp || new Date().toISOString(),
-      analysisMethod: report.analysisMethod || 'demo',
-      usedSearchFallback: report.usedSearchFallback || false,
+      analysisMethod: report.analysisMethod === 'live' ? 'live' : 'demo',
+      usedSearchFallback: !!report.usedSearchFallback,
     };
 
     // Validate email format
@@ -519,15 +561,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create transporter for Titan Email
-    const nodemailer = loadNodemailer();
     const port = parseInt(process.env.SMTP_PORT || '587');
-
-    // Debug - remove after fixing
-    console.log('SMTP Debug:', {
-      user: smtpUser,
-      passLength: process.env.SMTP_PASS?.length,
-      passPreview: process.env.SMTP_PASS?.substring(0, 3) + '***',
-    });
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.titan.email',
@@ -544,14 +578,14 @@ export async function POST(request: NextRequest) {
         minVersion: 'TLSv1.2',
       },
       requireTLS: true,
-    });
+    } as nodemailer.TransportOptions);
 
     const htmlContent = generateReportHTML(sanitizedReport);
 
     await transporter.sendMail({
       from: process.env.SMTP_FROM || `"KOMAL Safety" <${smtpUser}>`,
       to: email,
-      subject: `Komal URL Safety Report: ${sanitizedReport.url}`,
+      subject: sanitizeSubject(`Komal URL Safety Report: ${sanitizedReport.url}`),
       html: htmlContent,
     });
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const COLLECTION = 'report-history';
 
@@ -42,6 +43,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`report-id-get:${ip}`, 30, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const userId = await verifyAuthToken(request);
 
     if (!userId) {
@@ -63,9 +69,9 @@ export async function GET(
 
     const report = reportDoc.data() as SavedReport;
 
-    // Verify ownership
+    // Verify ownership — return 404 to prevent report ID enumeration
     if (report.uid !== userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
     return NextResponse.json({ report });
@@ -81,6 +87,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`report-id-delete:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const userId = await verifyAuthToken(request);
 
     if (!userId) {
@@ -102,7 +113,7 @@ export async function DELETE(
 
     const reportData = reportDoc.data();
     if (reportData?.uid !== userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
     // Delete the report

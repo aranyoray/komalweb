@@ -39,6 +39,9 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
   },
+  "overrides": {
+    "@tootallnate/once": "^3.0.1"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",

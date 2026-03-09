@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 onboarding attempts per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`onboarding:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -17,6 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
+    // Explicitly destructure only allowed fields — never allow role, plan, or subscription fields
     const { firstName, lastName, phone, phoneCountryCode, country, referralCode, photoURL, linkedIn, instagram, twitter, city, grade, bio } = await request.json();
 
     if (!firstName?.trim() || !lastName?.trim()) {
@@ -37,20 +45,34 @@ export async function POST(request: NextRequest) {
 
     const userId = decoded.uid;
 
-    await db.collection('users').doc(userId).update({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      phone: phone?.trim() || '',
-      phoneCountryCode: phoneCountryCode || '',
-      country: country.trim(),
-      referralCode: referralCode?.trim() || '',
+    // Validate photoURL format if provided (must be a data:image/* URI, max 500KB)
+    const allowedMimes = ['data:image/jpeg;', 'data:image/png;', 'data:image/gif;', 'data:image/webp;'];
+    if (photoURL && typeof photoURL === 'string' && photoURL.length > 0) {
+      if (!allowedMimes.some(m => photoURL.startsWith(m))) {
+        return NextResponse.json({ error: 'Invalid photo URL format. Allowed: JPEG, PNG, GIF, WebP data URIs.' }, { status: 400 });
+      }
+      if (photoURL.length > 500_000) {
+        return NextResponse.json({ error: 'Photo too large. Please use a smaller image.' }, { status: 400 });
+      }
+    }
+
+    // Truncate all string fields to prevent excessive data storage
+    const s = (v: string | undefined, max = 200) => (v?.trim() || '').slice(0, max);
+
+    await db!.collection('users').doc(userId).update({
+      firstName: s(firstName, 100),
+      lastName: s(lastName, 100),
+      phone: s(phone, 20),
+      phoneCountryCode: s(phoneCountryCode, 5),
+      country: s(country, 100),
+      referralCode: s(referralCode, 50),
       photoURL: photoURL || '',
-      linkedIn: linkedIn?.trim() || '',
-      instagram: instagram?.trim() || '',
-      twitter: twitter?.trim() || '',
-      city: city.trim(),
-      grade: grade.trim(),
-      bio: bio?.trim() || '',
+      linkedIn: s(linkedIn, 200),
+      instagram: s(instagram, 200),
+      twitter: s(twitter, 200),
+      city: s(city, 100),
+      grade: s(grade, 50),
+      bio: s(bio, 1000),
       onboardingCompleted: true,
       onboardingStatus: 'completed',
     });

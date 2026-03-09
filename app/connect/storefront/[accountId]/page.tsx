@@ -32,6 +32,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, use } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 // =============================================================================
 // Type Definitions
@@ -59,6 +60,7 @@ export default function Storefront({ params }: { params: Promise<{ accountId: st
   // State
   // ---------------------------------------------------------------------------
 
+  const { getIdToken } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,11 @@ export default function Storefront({ params }: { params: Promise<{ accountId: st
     setError(null);
 
     try {
-      const response = await fetch(`/api/stripe/connect/products?accountId=${accountId}`);
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setIsLoading(false); return; }
+      const response = await fetch(`/api/stripe/connect/products?accountId=${accountId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -87,7 +93,7 @@ export default function Storefront({ params }: { params: Promise<{ accountId: st
     } finally {
       setIsLoading(false);
     }
-  }, [accountId]);
+  }, [accountId, getIdToken]);
 
   useEffect(() => {
     if (accountId) {
@@ -109,9 +115,11 @@ export default function Storefront({ params }: { params: Promise<{ accountId: st
     setError(null);
 
     try {
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setPurchasingProductId(null); return; }
       const response = await fetch('/api/stripe/connect/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           accountId,
           priceId: product.priceId,
@@ -125,7 +133,7 @@ export default function Storefront({ params }: { params: Promise<{ accountId: st
 
       const data = await response.json();
 
-      if (data.success && data.url) {
+      if (data.success && data.url && typeof data.url === 'string' && data.url.startsWith('https://')) {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {

@@ -6,6 +6,7 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
 } from '@/lib/safety-engine/parent-controls';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // ============================================================================
 // Auth helper
@@ -32,13 +33,19 @@ async function verifyAuth(request: NextRequest): Promise<{ uid: string } | null>
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`parent-notif-get:${ip}`, 30, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 100);
+    const parsedLimit = parseInt(searchParams.get('limit') || '50', 10);
+    const limit = Math.min(Math.max(Number.isNaN(parsedLimit) ? 50 : parsedLimit, 1), 100);
     const unreadOnly = searchParams.get('unreadOnly') === 'true';
 
     const notifications = await getNotifications(auth.uid, limit, unreadOnly);
@@ -58,6 +65,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`parent-notif-post:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

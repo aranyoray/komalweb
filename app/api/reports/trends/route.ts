@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // ============================================================================
 // Auth helper
@@ -27,13 +28,19 @@ async function verifyAuth(request: NextRequest): Promise<{ uid: string } | null>
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`reports-trends:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const days = Math.min(parseInt(searchParams.get('days') || '30', 10), 90);
+    const parsedDays = parseInt(searchParams.get('days') || '30', 10);
+    const days = Math.min(Math.max(Number.isNaN(parsedDays) ? 30 : parsedDays, 1), 90);
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
@@ -127,7 +134,9 @@ export async function GET(request: NextRequest) {
     }
 
     for (const [week, data] of weekMap) {
-      const avgScore = Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length);
+      const avgScore = data.scores.length > 0
+        ? Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length)
+        : 0;
       let topCategory = 'None';
       let topCount = 0;
       for (const [cat, count] of data.categories) {

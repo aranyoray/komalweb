@@ -25,6 +25,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripeClient, { getBaseUrl } from '@/lib/stripe';
+import { safePath } from '@/lib/safe-redirect';
+import { requireAccountOwner, isAuthError } from '@/lib/connect-auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // =============================================================================
 // POST - Create an Account Link for Onboarding
@@ -49,33 +52,30 @@ import stripeClient, { getBaseUrl } from '@/lib/stripe';
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-links:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json();
-    const {
-      accountId,
-      returnPath = '/connect/dashboard',
-      refreshPath = '/connect/dashboard',
-    } = body;
+    const { accountId } = body;
+    const returnPath = safePath(body.returnPath, '/connect/dashboard');
+    const refreshPath = safePath(body.refreshPath, '/connect/dashboard');
 
     // Validate the account ID
-    if (!accountId) {
+    if (!accountId || !accountId.startsWith('acct_')) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required field: accountId',
+          error: 'Missing or invalid accountId',
         },
         { status: 400 }
       );
     }
 
-    if (!accountId.startsWith('acct_')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid account ID format. Account IDs should start with "acct_"',
-        },
-        { status: 400 }
-      );
-    }
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
 
     // Get the base URL for constructing return URLs
     const baseUrl = getBaseUrl();
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: error.message,
+          error: 'Failed to create account link',
         },
         { status: 500 }
       );

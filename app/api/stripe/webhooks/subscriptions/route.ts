@@ -40,9 +40,11 @@ function getPlanFromSubscription(subscription: Stripe.Subscription): 'grow' | 't
 
 // Find Firestore user doc by stripeCustomerId or by subscription metadata
 async function findUserByStripeCustomer(customerId: string, metadata?: Stripe.Metadata): Promise<string | null> {
-  // First check metadata for firebaseUid
+  // First check metadata for firebaseUid — but verify the user doc actually exists
   if (metadata?.firebaseUid) {
-    return metadata.firebaseUid;
+    const userDoc = await db.collection('users').doc(metadata.firebaseUid).get();
+    if (userDoc.exists) return metadata.firebaseUid;
+    // If the doc doesn't exist, fall through to other lookup methods
   }
 
   // Query Firestore by stripeCustomerId
@@ -99,6 +101,25 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Received event: ${event.type} (${event.id})`);
+
+    // Reject events older than 5 minutes to prevent replay attacks
+    const eventAge = Math.abs(Date.now() / 1000 - event.created);
+    if (eventAge > 300) {
+      console.warn(`Rejecting stale event ${event.id} (age: ${Math.round(eventAge)}s)`);
+      return NextResponse.json({ received: true, skipped: 'stale' });
+    }
+
+    // Idempotency: atomic check-and-set to prevent duplicate processing
+    const eventRef = db.collection('processed_webhook_events').doc(event.id);
+    const isDuplicate = await db.runTransaction(async (tx) => {
+      const doc = await tx.get(eventRef);
+      if (doc.exists) return true;
+      tx.set(eventRef, { type: event.type, processedAt: new Date().toISOString() });
+      return false;
+    });
+    if (isDuplicate) {
+      return NextResponse.json({ received: true, skipped: 'duplicate' });
+    }
 
     switch (event.type) {
       case 'customer.subscription.created':
@@ -157,7 +178,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 
   const userId = await findUserByStripeCustomer(customerId, subscription.metadata);
   if (!userId) {
-    console.error(`No user found for customer ${customerId}`);
+    console.error('No user found for Stripe customer');
     return;
   }
 
@@ -208,7 +229,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     createdAt: now.toISOString(),
   });
 
-  console.log(`Updated user ${userId} with plan: ${plan}`);
+  console.log(`Updated user with plan: ${plan}`);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -220,7 +241,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   const userId = await findUserByStripeCustomer(customerId, subscription.metadata);
   if (!userId) {
-    console.error(`No user found for customer ${customerId}`);
+    console.error('No user found for Stripe customer');
     return;
   }
 
@@ -272,7 +293,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     createdAt: now.toISOString(),
   });
 
-  console.log(`Updated subscription for user ${userId}`);
+  console.log('Subscription updated for user');
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -284,7 +305,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
   const userId = await findUserByStripeCustomer(customerId, subscription.metadata);
   if (!userId) {
-    console.error(`No user found for customer ${customerId}`);
+    console.error('No user found for Stripe customer');
     return;
   }
 
@@ -307,7 +328,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     createdAt: new Date().toISOString(),
   });
 
-  console.log(`Revoked access for user ${userId}`);
+  console.log('Revoked access for user');
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -385,7 +406,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     const userId = await findUserByStripeCustomer(customerId, session.metadata || undefined);
     if (!userId) {
-      console.error(`No user found for subscription checkout, customer ${customerId}`);
+      console.error('No user found for subscription checkout');
       return;
     }
 
@@ -410,14 +431,14 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         const card = chargeObj?.payment_method_details?.card;
 
         subscriptionDetails = {
-          paymentIntentId: paymentIntent?.id || null,
-          amountPaid: paymentIntent?.amount || session.amount_total,
-          currency: paymentIntent?.currency || session.currency,
-          paymentMethod: paymentIntent?.payment_method || null,
-          paymentStatus: paymentIntent?.status || null,
-          receiptUrl: chargeObj?.receipt_url || null,
-          cardBrand: card?.brand || null,
-          cardLast4: card?.last4 || null,
+          paymentIntentId: paymentIntent?.id ? String(paymentIntent.id) : null,
+          amountPaid: Number(paymentIntent?.amount || session.amount_total) || 0,
+          currency: String(paymentIntent?.currency || session.currency || ''),
+          paymentMethod: paymentIntent?.payment_method ? String(paymentIntent.payment_method) : null,
+          paymentStatus: paymentIntent?.status ? String(paymentIntent.status) : null,
+          receiptUrl: chargeObj?.receipt_url ? String(chargeObj.receipt_url) : null,
+          cardBrand: card?.brand ? String(card.brand) : null,
+          cardLast4: card?.last4 ? String(card.last4) : null,
         };
       } catch (e) {
         console.error('Error retrieving subscription details:', e);
@@ -451,12 +472,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       createdAt: now.toISOString(),
     });
 
-    console.log(`Saved subscription checkout details for user ${userId}, plan: ${plan}`);
+    console.log(`Saved subscription checkout details, plan: ${plan}`);
     return;
   }
 
   // Only handle one-time payments for ambassador plan
   if (session.mode !== 'payment' || plan !== 'ambassador') {
+    return;
+  }
+
+  // CRITICAL: Verify payment was actually completed before granting ambassador role
+  if (session.payment_status !== 'paid') {
+    console.warn(`Ambassador checkout ${session.id} has payment_status=${session.payment_status}, skipping`);
     return;
   }
 
@@ -470,7 +497,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   const userId = await findUserByStripeCustomer(customerId, session.metadata || undefined);
   if (!userId) {
-    console.error(`No user found for ambassador checkout, customer ${customerId}`);
+    console.error('No user found for ambassador checkout');
     return;
   }
 
@@ -542,5 +569,5 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     createdAt: now.toISOString(),
   });
 
-  console.log(`Activated ambassador plan for user ${userId}`);
+  console.log('Activated ambassador plan for user');
 }

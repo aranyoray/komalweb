@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const PAGE_SIZE = 10;
 
@@ -25,45 +26,48 @@ async function verifyAdmin(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Rate limit: 20 requests per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`admin:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const adminUid = await verifyAdmin(request);
     if (!adminUid) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const parsedPage = parseInt(searchParams.get('page') || '1', 10);
+    const page = Math.max(1, Number.isNaN(parsedPage) ? 1 : parsedPage);
     const search = (searchParams.get('search') || '').trim().toLowerCase();
     const filter = searchParams.get('filter') || 'all'; // all | paid | not-paid
 
-    // Fetch only Canada/China users
-    const snapshot = await db.collection('users').get();
-    let users = snapshot.docs
-      .map((doc) => {
-        const d = doc.data();
-        const country = d.country || null;
-        const subscriptionStatus = d.subscriptionStatus || null;
-        const plan = d.plan || 'free';
-        const isPaid =
-          subscriptionStatus === 'active' ||
-          subscriptionStatus === 'canceling' ||
-          plan === 'ambassador';
-        return {
-          uid: doc.id,
-          name: d.name || '',
-          email: d.email || '',
-          plan,
-          subscriptionStatus,
-          subscriptionEndDate: d.subscriptionEndDate || null,
-          country,
-          role: d.role || null,
-          paid: isPaid,
-        };
-      })
-      .filter(
-        (u) =>
-          u.country &&
-          ['CA', 'CN'].includes(u.country.toUpperCase())
-      );
+    // Fetch only Canada/China users (pushed to Firestore query to avoid full-table scan)
+    const snapshot = await db.collection('users')
+      .where('country', 'in', ['CA', 'CN', 'ca', 'cn', 'Ca', 'Cn', 'cA', 'cN'])
+      .get();
+    let users = snapshot.docs.map((doc) => {
+      const d = doc.data();
+      const country = d.country || null;
+      const subscriptionStatus = d.subscriptionStatus || null;
+      const plan = d.plan || 'free';
+      const isPaid =
+        subscriptionStatus === 'active' ||
+        subscriptionStatus === 'canceling' ||
+        plan === 'ambassador';
+      return {
+        uid: doc.id,
+        name: d.name || '',
+        email: d.email || '',
+        plan,
+        subscriptionStatus,
+        subscriptionEndDate: d.subscriptionEndDate || null,
+        country,
+        role: d.role || null,
+        paid: isPaid,
+      };
+    });
 
     // Search filter (case-insensitive contains on name + email)
     if (search) {

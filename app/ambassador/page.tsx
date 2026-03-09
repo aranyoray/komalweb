@@ -83,7 +83,7 @@ export default function AmbassadorPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create checkout");
 
-      if (data.url) {
+      if (data.url && typeof data.url === 'string' && data.url.startsWith('https://')) {
         window.location.href = data.url;
       }
     } catch (err) {

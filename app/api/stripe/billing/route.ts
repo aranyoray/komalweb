@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import stripeClient, { getBaseUrl } from '@/lib/stripe';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // Helper to verify Firebase auth
 async function verifyAuth(request: NextRequest) {
@@ -20,9 +21,19 @@ async function verifyAuth(request: NextRequest) {
 // GET - Fetch billing data (subscription, invoices, payment method)
 export async function GET(request: NextRequest) {
   try {
+    // Rate limit: 20 requests per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`billing-get:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const userId = await verifyAuth(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!db) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
     }
 
     const userDoc = await db.collection('users').doc(userId).get();
@@ -137,12 +148,22 @@ export async function GET(request: NextRequest) {
 // POST - Handle billing actions (cancel, portal)
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 billing actions per minute per IP
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`billing-post:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const userId = await verifyAuth(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { action } = await request.json();
+
+    if (!db) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
 
     const userDoc = await db.collection('users').doc(userId).get();
     const userData = userDoc.data();

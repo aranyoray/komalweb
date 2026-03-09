@@ -27,6 +27,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripeClient, { getBaseUrl, getPlatformPriceId } from '@/lib/stripe';
+import { safePath } from '@/lib/safe-redirect';
+import { requireAccountOwner, isAuthError } from '@/lib/connect-auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // =============================================================================
 // POST - Create Subscription Checkout for Connected Account
@@ -52,13 +55,15 @@ import stripeClient, { getBaseUrl, getPlatformPriceId } from '@/lib/stripe';
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-subs-post:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json();
-    const {
-      accountId,
-      priceId,
-      successPath = '/connect/dashboard',
-      cancelPath = '/connect/dashboard',
-    } = body;
+    const { accountId, priceId } = body;
+    const successPath = safePath(body.successPath, '/connect/dashboard');
+    const cancelPath = safePath(body.cancelPath, '/connect/dashboard');
 
     // Validate required fields
     if (!accountId) {
@@ -81,6 +86,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
 
     const baseUrl = getBaseUrl();
 
@@ -133,16 +142,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating subscription checkout:', error);
 
-    if (error instanceof Error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
       {
         success: false,
@@ -175,18 +174,30 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-subs-get:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('accountId');
 
-    if (!accountId) {
+    if (!accountId || typeof accountId !== 'string' || !accountId.startsWith('acct_')) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required parameter: accountId',
+          error: 'Missing or invalid required parameter: accountId',
         },
         { status: 400 }
       );
     }
+
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
+
+    // Sanitize accountId for Stripe search query (allow only alphanumeric + underscore)
+    const safeAccountId = accountId.replace(/[^a-zA-Z0-9_]/g, '');
 
     /**
      * List subscriptions for the connected account
@@ -199,7 +210,7 @@ export async function GET(request: NextRequest) {
      * a search approach.
      */
     const subscriptions = await stripeClient.subscriptions.search({
-      query: `metadata["account_id"]:"${accountId}"`,
+      query: `metadata["account_id"]:"${safeAccountId}"`,
       limit: 1,
     });
 
@@ -255,7 +266,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get subscription status',
+        error: 'Failed to get subscription status',
       },
       { status: 500 }
     );

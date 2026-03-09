@@ -3,6 +3,7 @@ import { db } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import { getParentChildren } from '@/lib/safety-engine/parent-controls';
 import { getNotifications } from '@/lib/safety-engine/parent-controls';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // ============================================================================
 // Auth helper
@@ -28,6 +29,11 @@ async function verifyAuth(request: NextRequest): Promise<{ uid: string } | null>
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`parent-controls:${ip}`, 30, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

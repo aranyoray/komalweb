@@ -34,7 +34,11 @@ export function parseHTMLContentFast(html: string, url: string) {
     const src = $(el).attr('src');
     if (src) {
       try {
-        imageUrls.push(new URL(src, url).href);
+        const resolved = new URL(src, url);
+        // Only allow http/https image URLs (block file://, data:, javascript:, etc.)
+        if (resolved.protocol === 'http:' || resolved.protocol === 'https:') {
+          imageUrls.push(resolved.href);
+        }
       } catch { /* skip */ }
     }
   });

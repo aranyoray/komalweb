@@ -254,21 +254,121 @@ export async function searchKeywordWithGoogle(keyword: string): Promise<{
 }
 
 // ============================================================================
+// SSRF Protection - Block requests to private/internal networks
+// ============================================================================
+
+function isPrivateIPv4(hostname: string): boolean {
+  const parts = hostname.split('.').map(Number);
+  if (parts.length !== 4 || !parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) return false;
+  if (parts[0] === 10) return true;                                      // 10.0.0.0/8
+  if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true; // 172.16.0.0/12
+  if (parts[0] === 192 && parts[1] === 168) return true;                // 192.168.0.0/16
+  if (parts[0] === 169 && parts[1] === 254) return true;                // Link-local / cloud metadata
+  if (parts[0] === 127) return true;                                     // 127.0.0.0/8 (full loopback range)
+  if (parts[0] === 0) return true;                                       // 0.0.0.0/8
+  return false;
+}
+
+function isUnsafeUrl(urlStr: string): boolean {
+  try {
+    const parsed = new URL(urlStr);
+    // new URL normalises bracketed IPv6: hostname is without brackets
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Block non-HTTP protocols
+    if (!['http:', 'https:'].includes(parsed.protocol)) return true;
+
+    // Block localhost variants
+    if (hostname === 'localhost' || hostname === 'localhost.localdomain') return true;
+    if (hostname.endsWith('.local') || hostname.endsWith('.internal')) return true;
+
+    // Block cloud metadata domains
+    if (hostname === 'metadata.google.internal') return true;
+    if (hostname === 'metadata.google.com') return true;
+
+    // Block IPv4 private ranges
+    if (isPrivateIPv4(hostname)) return true;
+
+    // Block IPv6 addresses (all of them — legitimate sites use domain names)
+    // new URL('[::1]') → hostname = '::1', new URL('[::ffff:127.0.0.1]') → hostname = '::ffff:127.0.0.1'
+    if (hostname.includes(':')) return true;
+
+    // Block DNS rebinding trick domains (e.g. 127.0.0.1.nip.io, 169.254.169.254.xip.io)
+    // Check if any segment of the hostname looks like a private IP
+    const domainParts = hostname.split('.');
+    for (let i = 0; i <= domainParts.length - 4; i++) {
+      const candidate = domainParts.slice(i, i + 4).join('.');
+      if (isPrivateIPv4(candidate)) return true;
+    }
+
+    return false;
+  } catch {
+    return true; // Block malformed URLs
+  }
+}
+
+// ============================================================================
 // Fast Content Fetching
 // ============================================================================
 
 export async function fetchWebpageContentFast(url: string): Promise<string> {
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml',
-      'Accept-Language': 'en-US,en;q=0.9',
-    },
-    signal: AbortSignal.timeout(3000),
-  });
+  if (isUnsafeUrl(url)) {
+    throw new Error('URL targets a restricted network');
+  }
 
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return await response.text();
+  // Use manual redirect to re-validate each hop against SSRF filters
+  let currentUrl = url;
+  const maxRedirects = 5;
+  for (let i = 0; i <= maxRedirects; i++) {
+    const response = await fetch(currentUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(3000),
+      redirect: 'manual',
+    });
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location) throw new Error('Redirect with no Location header');
+      // Resolve relative redirects against current URL
+      const resolved = new URL(location, currentUrl).href;
+      if (isUnsafeUrl(resolved)) {
+        throw new Error('Redirect targets a restricted network');
+      }
+      currentUrl = resolved;
+      continue;
+    }
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    // Guard against memory exhaustion from oversized responses (10 MB limit)
+    const MAX_BYTES = 10 * 1024 * 1024;
+    const contentLength = response.headers.get('content-length');
+    if (contentLength && parseInt(contentLength, 10) > MAX_BYTES) {
+      throw new Error('Response too large');
+    }
+    // Stream body with byte counter to prevent OOM from chunked responses
+    if (!response.body) throw new Error('Empty response body');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let totalBytes = 0;
+    let result = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.length;
+      if (totalBytes > MAX_BYTES) {
+        reader.cancel();
+        return result; // return what we have so far, truncated
+      }
+      result += decoder.decode(value, { stream: true });
+    }
+    result += decoder.decode(); // flush remaining
+    return result;
+  }
+  throw new Error('Too many redirects');
 }
 
 // ============================================================================
@@ -429,9 +529,9 @@ export async function searchForUrlInfo(targetUrl: string, isKeywordSearch: boole
         $img('a.iusc').slice(0, 5).each((_, el) => {
           try {
             const m = $img(el).attr('m');
-            if (m) {
+            if (m && m.length < 5000) {
               const data = JSON.parse(m);
-              if (data.murl) imageUrls.push(data.murl);
+              if (data.murl && typeof data.murl === 'string') imageUrls.push(data.murl);
             }
           } catch { /* ignore */ }
         });

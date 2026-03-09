@@ -20,6 +20,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 // =============================================================================
 // Type Definitions
@@ -109,6 +110,9 @@ function ConnectDashboardContent() {
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
 
+  // Auth
+  const { getIdToken } = useAuth();
+
   // Get URL params to check for return from onboarding
   const searchParams = useSearchParams();
 
@@ -119,14 +123,12 @@ function ConnectDashboardContent() {
   useEffect(() => {
     // Check for account ID in URL (returned from onboarding)
     const urlAccountId = searchParams.get('accountId');
-    if (urlAccountId) {
+    if (urlAccountId && /^acct_[a-zA-Z0-9]+$/.test(urlAccountId)) {
       setAccountId(urlAccountId);
-      // Save to localStorage for persistence
-      localStorage.setItem('stripeConnectAccountId', urlAccountId);
+      sessionStorage.setItem('stripeConnectAccountId', urlAccountId);
     } else {
-      // Load from localStorage
-      const savedAccountId = localStorage.getItem('stripeConnectAccountId');
-      if (savedAccountId) {
+      const savedAccountId = sessionStorage.getItem('stripeConnectAccountId');
+      if (savedAccountId && /^acct_[a-zA-Z0-9]+$/.test(savedAccountId)) {
         setAccountId(savedAccountId);
       }
     }
@@ -153,7 +155,11 @@ function ConnectDashboardContent() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/stripe/connect/accounts/${accountId}`);
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setIsLoading(false); return; }
+      const response = await fetch(`/api/stripe/connect/accounts/${accountId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -167,7 +173,7 @@ function ConnectDashboardContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [accountId]);
+  }, [accountId, getIdToken]);
 
   useEffect(() => {
     fetchAccountStatus();
@@ -183,7 +189,11 @@ function ConnectDashboardContent() {
     setIsLoadingProducts(true);
 
     try {
-      const response = await fetch(`/api/stripe/connect/products?accountId=${accountId}`);
+      const token = await getIdToken();
+      if (!token) return;
+      const response = await fetch(`/api/stripe/connect/products?accountId=${accountId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -194,7 +204,7 @@ function ConnectDashboardContent() {
     } finally {
       setIsLoadingProducts(false);
     }
-  }, [accountId, accountStatus?.readyToProcessPayments]);
+  }, [accountId, accountStatus?.readyToProcessPayments, getIdToken]);
 
   useEffect(() => {
     fetchProducts();
@@ -211,13 +221,15 @@ function ConnectDashboardContent() {
     setSuccessMessage(null);
 
     try {
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setIsLoading(false); return; }
       const response = await fetch('/api/stripe/connect/accounts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           displayName,
           email,
-          country: 'us', // Default to US for demo
+          country: 'us',
         }),
       });
 
@@ -225,7 +237,7 @@ function ConnectDashboardContent() {
 
       if (data.success) {
         setAccountId(data.account.id);
-        localStorage.setItem('stripeConnectAccountId', data.account.id);
+        sessionStorage.setItem('stripeConnectAccountId', data.account.id);
         setSuccessMessage('Account created! Click "Start Onboarding" to continue.');
         setDisplayName('');
         setEmail('');
@@ -251,9 +263,11 @@ function ConnectDashboardContent() {
     setError(null);
 
     try {
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setIsLoading(false); return; }
       const response = await fetch('/api/stripe/connect/account-links', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           accountId,
           returnPath: '/connect/dashboard',
@@ -265,7 +279,7 @@ function ConnectDashboardContent() {
 
       if (data.success && data.url) {
         // Redirect to Stripe's hosted onboarding
-        window.location.href = data.url;
+        if (typeof data.url === 'string' && data.url.startsWith('https://')) window.location.href = data.url;
       } else {
         setError(data.error || 'Failed to create onboarding link');
       }
@@ -291,9 +305,11 @@ function ConnectDashboardContent() {
     try {
       const priceInCents = Math.round(parseFloat(productPrice) * 100);
 
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setIsLoading(false); return; }
       const response = await fetch('/api/stripe/connect/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           accountId,
           name: productName,
@@ -333,9 +349,11 @@ function ConnectDashboardContent() {
     setError(null);
 
     try {
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setIsLoading(false); return; }
       const response = await fetch('/api/stripe/connect/subscriptions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           accountId,
           successPath: '/connect/dashboard',
@@ -346,7 +364,7 @@ function ConnectDashboardContent() {
       const data = await response.json();
 
       if (data.success && data.url) {
-        window.location.href = data.url;
+        if (typeof data.url === 'string' && data.url.startsWith('https://')) window.location.href = data.url;
       } else {
         setError(data.error || 'Failed to create subscription checkout');
       }
@@ -369,9 +387,11 @@ function ConnectDashboardContent() {
     setError(null);
 
     try {
+      const token = await getIdToken();
+      if (!token) { setError('Please sign in'); setIsLoading(false); return; }
       const response = await fetch('/api/stripe/connect/billing-portal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           accountId,
           returnPath: '/connect/dashboard',
@@ -381,7 +401,7 @@ function ConnectDashboardContent() {
       const data = await response.json();
 
       if (data.success && data.url) {
-        window.location.href = data.url;
+        if (typeof data.url === 'string' && data.url.startsWith('https://')) window.location.href = data.url;
       } else {
         setError(data.error || 'Failed to open billing portal');
       }
@@ -398,7 +418,7 @@ function ConnectDashboardContent() {
   // ---------------------------------------------------------------------------
 
   const handleClearAccount = () => {
-    localStorage.removeItem('stripeConnectAccountId');
+    sessionStorage.removeItem('stripeConnectAccountId');
     setAccountId(null);
     setAccountStatus(null);
     setProducts([]);

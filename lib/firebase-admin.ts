@@ -9,19 +9,6 @@ const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-// Diagnostic log (safe - no secrets exposed)
-console.log('[firebase-admin] Init check:', {
-  hasProjectId: !!projectId,
-  hasClientEmail: !!clientEmail,
-  hasPrivateKey: !!rawPrivateKey,
-  privateKeyLength: rawPrivateKey?.length,
-  startsWithQuote: rawPrivateKey?.startsWith('"'),
-  startsWithBegin: rawPrivateKey?.startsWith('-----'),
-  containsLiteralBackslashN: rawPrivateKey?.includes('\\n'),
-  containsRealNewline: rawPrivateKey?.includes('\n'),
-  firstChars: rawPrivateKey?.substring(0, 30),
-  appsAlreadyInitialized: getApps().length,
-});
 
 // Handle private key: Vercel may store it with literal \n, escaped \\n, or JSON-encoded
 let privateKey = rawPrivateKey;
@@ -37,11 +24,6 @@ if (privateKey) {
   // Replace literal \n sequences with actual newlines
   privateKey = privateKey!.replace(/\\n/g, '\n');
 
-  console.log('[firebase-admin] After processing:', {
-    startsWithBegin: privateKey?.startsWith('-----'),
-    containsRealNewline: privateKey?.includes('\n'),
-    processedLength: privateKey?.length,
-  });
 }
 
 if (projectId && clientEmail && privateKey && !getApps().length) {
@@ -63,5 +45,7 @@ if (projectId && clientEmail && privateKey && !getApps().length) {
   firestoreDb = getFirestore(app);
 }
 
-// Export db - will be null during build if env vars are not set
+// Export db - will be null during build if env vars are not set.
+// NOTE: Routes that access db should check `if (!db)` before use.
+// Server-only paths (webhooks, admin SDK writes) can assume non-null at runtime.
 export const db = firestoreDb as Firestore;

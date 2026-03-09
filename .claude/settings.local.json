@@ -29,7 +29,8 @@
       "Bash(npm test:*)",
       "Bash(git stash:*)",
       "Bash(python3:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(node:*)"
     ]
   }
 }

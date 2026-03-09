@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isRateLimited, getClientIp } from '@/lib/rate-limit'
+import { getAuth } from 'firebase-admin/auth'
 
-const INDEXNOW_KEY = 'abfcb24594d9c1abc2e2656951e70958'
-const SITE_URL = 'https://komalkids.com'
+async function verifyAuth(request: NextRequest): Promise<boolean> {
+  const authHeader = request.headers.get('Authorization')
+  if (!authHeader?.startsWith('Bearer ')) return false
+  try {
+    await getAuth().verifyIdToken(authHeader.split('Bearer ')[1])
+    return true
+  } catch {
+    return false
+  }
+}
+
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || ''
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://komalkids.com'
 
 // All public URLs to submit for indexing
 const ALL_URLS = [
@@ -71,13 +84,48 @@ async function submitToIndexNow(urls: string[]) {
 // POST: Submit specific URLs
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 requests per minute per IP
+    const ip = getClientIp(request.headers)
+    if (isRateLimited(`indexnow:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
+    if (!await verifyAuth(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!INDEXNOW_KEY) {
+      return NextResponse.json({ error: 'IndexNow not configured' }, { status: 500 })
+    }
+
     const { urls } = await request.json()
 
-    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+    if (!urls || !Array.isArray(urls) || urls.length === 0 || urls.length > 100) {
       return NextResponse.json(
-        { error: 'Please provide an array of URLs to submit' },
+        { error: 'Please provide an array of 1-100 URLs to submit' },
         { status: 400 }
       )
+    }
+
+    // Only allow URLs under our own domain to prevent SEO spam abuse
+    const siteHost = new URL(SITE_URL).host
+    for (const u of urls) {
+      if (typeof u !== 'string') {
+        return NextResponse.json({ error: 'All URLs must be strings' }, { status: 400 })
+      }
+      // Allow relative paths (will be resolved by submitToIndexNow) and own-domain URLs
+      if (u.startsWith('/')) continue
+      try {
+        const parsed = new URL(u)
+        if (parsed.host !== siteHost) {
+          return NextResponse.json(
+            { error: `URL not allowed: only ${siteHost} URLs accepted` },
+            { status: 400 }
+          )
+        }
+      } catch {
+        return NextResponse.json({ error: `Invalid URL: ${u.slice(0, 100)}` }, { status: 400 })
+      }
     }
 
     const response = await submitToIndexNow(urls)
@@ -103,8 +151,22 @@ export async function POST(request: NextRequest) {
 }
 
 // GET: Submit all known public URLs (useful for post-deploy indexing)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Rate limit: 2 bulk submissions per minute per IP
+    const ip = getClientIp(request.headers)
+    if (isRateLimited(`indexnow-bulk:${ip}`, 2, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
+    if (!await verifyAuth(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!INDEXNOW_KEY) {
+      return NextResponse.json({ error: 'IndexNow not configured' }, { status: 500 })
+    }
+
     const response = await submitToIndexNow(ALL_URLS)
 
     if (response.ok || response.status === 200 || response.status === 202) {

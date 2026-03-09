@@ -25,6 +25,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripeClient, { getBaseUrl } from '@/lib/stripe';
+import { safePath } from '@/lib/safe-redirect';
+import { requireAccountOwner, isAuthError } from '@/lib/connect-auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // =============================================================================
 // POST - Create Billing Portal Session
@@ -50,11 +53,14 @@ import stripeClient, { getBaseUrl } from '@/lib/stripe';
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-portal:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json();
-    const {
-      accountId,
-      returnPath = '/connect/dashboard',
-    } = body;
+    const { accountId } = body;
+    const returnPath = safePath(body.returnPath, '/connect/dashboard');
 
     // Validate required fields
     if (!accountId) {
@@ -77,6 +83,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
 
     const baseUrl = getBaseUrl();
 
@@ -137,7 +147,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: error.message,
+          error: 'Failed to create billing portal session',
         },
         { status: 500 }
       );

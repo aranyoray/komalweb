@@ -98,7 +98,7 @@ function getStripeClient(): Stripe {
       'Your Stripe secret key should start with:\n' +
       '- sk_test_ (for test mode)\n' +
       '- sk_live_ (for live mode)\n\n' +
-      'Current value starts with: ' + stripeSecretKey.substring(0, 10) + '...\n\n' +
+      'Your key does not start with sk_test_ or sk_live_.\n\n' +
       'Get the correct key from: https://dashboard.stripe.com/apikeys\n\n'
     );
   }
@@ -197,7 +197,7 @@ export const getWebhookSecret = (): string => {
  * Used for constructing return URLs and success URLs
  */
 export const getBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_BASE_URL || 'http://komalkids.com';
+  return process.env.NEXT_PUBLIC_BASE_URL || 'https://komalkids.com';
 };
 
 /**

@@ -240,7 +240,7 @@ export async function analyzeUrl(url: string, userId?: string | null): Promise<S
       apiPromises.push(
         analyzeTextFast(parsed.textContent)
           .then(r => { nlpResults = r; })
-          .catch(() => { })
+          .catch(err => { console.error('[Pipeline] API call failed:', err?.message || err); })
       );
     }
 
@@ -248,7 +248,7 @@ export async function analyzeUrl(url: string, userId?: string | null): Promise<S
       apiPromises.push(
         analyzeImagesWithVisionFast(parsed.imageUrls)
           .then(r => { visionResults = r; })
-          .catch(() => { })
+          .catch(err => { console.error('[Pipeline] API call failed:', err?.message || err); })
       );
     } else if (useSearchFallback) {
       const searchData = await searchForUrlInfo(url, false);
@@ -258,7 +258,7 @@ export async function analyzeUrl(url: string, userId?: string | null): Promise<S
         apiPromises.push(
           analyzeImagesWithVisionFast(searchData.imageUrls)
             .then(r => { visionResults = r; })
-            .catch(() => { })
+            .catch(err => { console.error('[Pipeline] API call failed:', err?.message || err); })
         );
       }
 

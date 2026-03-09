@@ -15,7 +15,7 @@ export async function runPythonAnalysis(
     return { _debug: { status: 'skipped', reason: 'URL_NOT_SET' } };
   }
 
-  console.log(`[KOMAL] Calling External Moderation Service at: ${serviceUrl}`);
+  console.log('[KOMAL] Calling External Moderation Service');
 
   try {
     const controller = new AbortController();
@@ -38,15 +38,15 @@ export async function runPythonAnalysis(
 
     if (!response.ok) {
       console.error(`Moderation service error: ${response.status} ${response.statusText}`);
-      return { _debug: { status: 'error', code: response.status, url: serviceUrl } };
+      return { _debug: { status: 'error', code: response.status } };
     }
 
     const data = await response.json();
     console.log(`[KOMAL] Python service response: ${data.final_decision?.decision}`);
-    return { ...data, _debug: { status: 'success', url: serviceUrl } };
+    return { ...data, _debug: { status: 'success' } };
   } catch (error) {
     console.error('Failed to call moderation service:', error);
-    return { _debug: { status: 'failed', error: String(error), url: serviceUrl } };
+    return { _debug: { status: 'failed', error: String(error) } };
   }
 }
 

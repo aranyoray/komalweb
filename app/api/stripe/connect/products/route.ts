@@ -17,6 +17,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripeClient from '@/lib/stripe';
+import { requireAccountOwner, isAuthError } from '@/lib/connect-auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // =============================================================================
 // POST - Create a Product on a Connected Account
@@ -48,6 +50,11 @@ import stripeClient from '@/lib/stripe';
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-products-post:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json();
     const {
       accountId,
@@ -58,13 +65,20 @@ export async function POST(request: NextRequest) {
       imageUrl,
     } = body;
 
-    // Validate required fields
-    if (!accountId || !name || !priceInCents) {
+    // Validate required fields and length limits
+    if (!accountId || !name || typeof name !== 'string' || !priceInCents) {
       return NextResponse.json(
         {
           success: false,
           error: 'Missing required fields: accountId, name, and priceInCents are required',
         },
+        { status: 400 }
+      );
+    }
+
+    if (name.length > 250 || (description && String(description).length > 2000)) {
+      return NextResponse.json(
+        { success: false, error: 'Name (max 250) or description (max 2000) too long' },
         { status: 400 }
       );
     }
@@ -79,6 +93,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
 
     // Validate price
     if (priceInCents < 50) {
@@ -107,8 +125,10 @@ export async function POST(request: NextRequest) {
         name: name,
         description: description || undefined,
 
-        // Product images (optional)
-        images: imageUrl ? [imageUrl] : undefined,
+        // Product images (optional) - validate URL format
+        images: (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('https://'))
+          ? [imageUrl.slice(0, 2048)]
+          : undefined,
 
         // Create a default price along with the product
         // This price will be used when creating checkout sessions
@@ -146,16 +166,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating product:', error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json(
       {
@@ -195,9 +205,15 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-products-get:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('accountId');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
+    const parsedLimit = parseInt(searchParams.get('limit') || '20', 10);
+    const limit = Math.min(Math.max(Number.isNaN(parsedLimit) ? 20 : parsedLimit, 1), 100);
 
     // Validate account ID
     if (!accountId) {
@@ -219,6 +235,10 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
 
     /**
      * List products from the connected account
@@ -273,16 +293,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error listing products:', error);
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json(
       {

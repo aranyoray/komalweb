@@ -31,22 +31,13 @@ export default function Navbar() {
 
   // Scroll-based: flat at top, pill on scroll
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    let lastScrollY = window.scrollY;
     let ticking = false;
 
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY;
-          const shouldScroll = currentScrollY > 0;
-
-          // Only update if state actually changed
-          if (shouldScroll !== isScrolled) {
-            setIsScrolled(shouldScroll);
-          }
-
-          lastScrollY = currentScrollY;
+          const shouldScroll = window.scrollY > 0;
+          setIsScrolled(shouldScroll);
           ticking = false;
         });
         ticking = true;
@@ -54,16 +45,13 @@ export default function Navbar() {
     };
 
     // Initial check
-    const initialShouldScroll = window.scrollY > 50;
-    if (initialShouldScroll !== isScrolled) {
-      setIsScrolled(initialShouldScroll);
-    }
+    setIsScrolled(window.scrollY > 50);
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [isScrolled]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close menus on route change
   useEffect(() => {
@@ -80,6 +68,15 @@ export default function Navbar() {
     ],
     []
   );
+
+  // Validate photoURL: only allow data:image/ URIs (from upload) or HTTPS URLs (social login)
+  const safePhotoURL = useMemo(() => {
+    const url = userData?.photoURL;
+    if (!url || typeof url !== 'string') return null;
+    if (url.startsWith('data:image/')) return url;
+    if (url.startsWith('https://')) return url;
+    return null;
+  }, [userData?.photoURL]);
 
   // Hide navbar on dashboard page (after all hooks to respect Rules of Hooks)
   if (pathname === "/dashboard") return null;
@@ -162,9 +159,9 @@ export default function Navbar() {
               href="/dashboard"
               className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20 overflow-hidden"
             >
-              {userData?.photoURL ? (
+              {safePhotoURL ? (
                 <Image
-                  src={userData.photoURL}
+                  src={safePhotoURL}
                   alt="Profile"
                   width={36}
                   height={36}
@@ -226,9 +223,9 @@ export default function Navbar() {
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                 className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors ring-2 ring-primary/20 overflow-hidden"
               >
-                {userData?.photoURL ? (
+                {safePhotoURL ? (
                   <Image
-                    src={userData.photoURL}
+                    src={safePhotoURL}
                     alt="Profile"
                     width={40}
                     height={40}

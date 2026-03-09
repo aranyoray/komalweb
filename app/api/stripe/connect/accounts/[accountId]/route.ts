@@ -19,6 +19,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripeClient from '@/lib/stripe';
+import { requireAccountOwner, isAuthError } from '@/lib/connect-auth';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // =============================================================================
 // Helper Functions
@@ -86,6 +88,11 @@ export async function GET(
   { params }: { params: Promise<{ accountId: string }> }
 ) {
   try {
+    const ip = getClientIp(request.headers);
+    if (isRateLimited(`connect-account-status:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
+    }
+
     const { accountId } = await params;
 
     // Validate the account ID format
@@ -98,6 +105,10 @@ export async function GET(
         { status: 400 }
       );
     }
+
+    // Require authenticated user who owns this account
+    const auth = await requireAccountOwner(request, accountId);
+    if (isAuthError(auth)) return auth;
 
     /**
      * Retrieve the account using V2 API with expanded fields
@@ -189,7 +200,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to retrieve account',
+        error: 'Failed to retrieve account',
       },
       { status: 500 }
     );
