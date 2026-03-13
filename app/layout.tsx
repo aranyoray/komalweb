@@ -128,7 +128,20 @@ const jsonLd = {
       name: "KOMAL - Child Safety",
       operatingSystem: "Android",
       applicationCategory: "EducationalApplication",
-      installUrl: "https://play.google.com/store/apps/details?id=com.komalkids.app",
+      installUrl: "https://play.google.com/store/apps/details?id=com.komalkids.app&hl=en",
+      author: { "@id": "https://komalkids.com/#organization" },
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+    },
+    {
+      "@type": "MobileApplication",
+      name: "KOMAL - Your Digital Buddy",
+      operatingSystem: "iOS",
+      applicationCategory: "EducationalApplication",
+      installUrl: "https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754",
       author: { "@id": "https://komalkids.com/#organization" },
       offers: {
         "@type": "Offer",
@@ -229,7 +242,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   other: {
-    "apple-itunes-app": "app-id=YOUR_APP_ID", // TODO: Replace with actual App Store ID
+    "apple-itunes-app": "app-id=6757139754",
     "google-play-app": "app-id=com.komalkids.app",
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",

@@ -298,7 +298,9 @@ export default function Footer() {
         <ScrollReveal delay={0.1}>
           <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
           <Link
-            href="/marketing"
+            href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-2 bg-text text-surface px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -310,7 +312,7 @@ export default function Footer() {
             </div>
           </Link>
           <Link
-            href="https://play.google.com/store/apps/details?id=com.komalkids.app"
+            href="https://play.google.com/store/apps/details?id=com.komalkids.app&hl=en"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 bg-text text-surface px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
@@ -321,6 +323,20 @@ export default function Footer() {
             <div className="flex flex-col">
               <span className="text-[10px] leading-none opacity-80">GET IT ON</span>
               <span className="text-sm font-semibold leading-tight">Google Play</span>
+            </div>
+          </Link>
+          <Link
+            href="https://chromewebstore.google.com/detail/egobidnbpgjogfjfjcchjdidcnpfgbki"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-text text-surface px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 18a6 6 0 110-12 6 6 0 010 12zm0-9a3 3 0 100 6 3 3 0 000-6z" />
+            </svg>
+            <div className="flex flex-col">
+              <span className="text-[10px] leading-none opacity-80">Available on</span>
+              <span className="text-sm font-semibold leading-tight">Chrome</span>
             </div>
           </Link>
           </div>

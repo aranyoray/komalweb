@@ -51,8 +51,18 @@
   "related_applications": [
     {
       "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.komalkids.app",
+      "url": "https://play.google.com/store/apps/details?id=com.komalkids.app&hl=en",
       "id": "com.komalkids.app"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754",
+      "id": "6757139754"
+    },
+    {
+      "platform": "chrome_web_store",
+      "url": "https://chromewebstore.google.com/detail/egobidnbpgjogfjfjcchjdidcnpfgbki",
+      "id": "egobidnbpgjogfjfjcchjdidcnpfgbki"
     }
   ],
   "prefer_related_applications": false,

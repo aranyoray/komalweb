@@ -26,7 +26,7 @@ export default function MarketingPage() {
         <ScrollReveal delay={0.1}>
           <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
             <Link
-              href="https://apps.apple.com/app/komal"
+              href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-text text-surface px-6 py-3 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
@@ -40,7 +40,7 @@ export default function MarketingPage() {
               </div>
             </Link>
             <Link
-              href="https://play.google.com/store/apps/details?id=com.komalkids.app"
+              href="https://play.google.com/store/apps/details?id=com.komalkids.app&hl=en"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-text text-surface px-6 py-3 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
@@ -51,6 +51,20 @@ export default function MarketingPage() {
               <div className="flex flex-col">
                 <span className="text-[11px] leading-none opacity-80">GET IT ON</span>
                 <span className="text-base font-semibold leading-tight">Google Play</span>
+              </div>
+            </Link>
+            <Link
+              href="https://chromewebstore.google.com/detail/egobidnbpgjogfjfjcchjdidcnpfgbki"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-text text-surface px-6 py-3 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
+            >
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 18a6 6 0 110-12 6 6 0 010 12zm0-9a3 3 0 100 6 3 3 0 000-6z" />
+              </svg>
+              <div className="flex flex-col">
+                <span className="text-[11px] leading-none opacity-80">Available on</span>
+                <span className="text-base font-semibold leading-tight">Chrome</span>
               </div>
             </Link>
           </div>
@@ -171,7 +185,7 @@ export default function MarketingPage() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link
-                href="https://apps.apple.com/app/komal"
+                href="https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-text text-surface px-8 py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
@@ -185,7 +199,7 @@ export default function MarketingPage() {
                 </div>
               </Link>
               <Link
-                href="https://play.google.com/store/apps/details?id=com.komalkids.app"
+                href="https://play.google.com/store/apps/details?id=com.komalkids.app&hl=en"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-text text-surface px-8 py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
@@ -196,6 +210,20 @@ export default function MarketingPage() {
                 <div className="flex flex-col">
                   <span className="text-[11px] leading-none opacity-80">GET IT ON</span>
                   <span className="text-base font-semibold leading-tight">Google Play</span>
+                </div>
+              </Link>
+              <Link
+                href="https://chromewebstore.google.com/detail/egobidnbpgjogfjfjcchjdidcnpfgbki"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-text text-surface px-8 py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 18a6 6 0 110-12 6 6 0 010 12zm0-9a3 3 0 100 6 3 3 0 000-6z" />
+                </svg>
+                <div className="flex flex-col">
+                  <span className="text-[11px] leading-none opacity-80">Available on</span>
+                  <span className="text-base font-semibold leading-tight">Chrome</span>
                 </div>
               </Link>
             </div>
