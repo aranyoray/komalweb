@@ -39,7 +39,7 @@ const coreTeam: TeamMember[] = [
         role: "Founding Engineer",
         credentials: ["Fellow @Delta II (The Residency, SF)", "Graduate, Founders Ashram", "Graduate, No Cap Accelerator"],
         image: "/raviraj-kumar.png",
-        description: "Raviraj leads early technology development at Komal, building the child content filtration and blocking algorithms that power the platform. He architects and ships across the full stack — web apps in Next.js and Node.js, native Android (Kotlin), and iOS (Swift) — and manages the entire cloud and DevOps infrastructure across GCP and AWS. A Top 10 Finalist at IIT(ISM) Dhanbad's AAVISHKAR 2.0 and Top 1000 India at IIT Delhi, he is a Founders Ashram Graduate and nc/acc cohort 1 member. He founded Provoke Developers and also leads product development for IoT wearables serving the visually impaired. At Komal, he owns the end-to-end engineering pipeline from content safety models to production deployment.",
+        description: "Raviraj leads early technology development at Komal, building the child content filtration and blocking algorithms that power the platform. He architects and ships across the full stack — web apps in Next.js and Node.js, native Android (Kotlin), and iOS (Swift) — and manages the entire cloud and DevOps infrastructure across GCP and AWS. A Top 10 Finalist at IIT(ISM) Dhanbad's AAVISHKAR 2.0 and Top 1000 India (College Youth Ideathon) at IIT Delhi, he is a Founders Ashram Graduate and nc/acc cohort 1 member. He founded Provoke Developers and also leads product development for IoT wearables serving the visually impaired. At Komal, he owns the end-to-end engineering pipeline from content safety models to production deployment.",
         tagline: "Engineering child safety from stack to scale",
         website: "https://raviraj.lol",
     },
@@ -196,7 +196,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
         >
             {/* PFP + Name Column */}
             <div className={`flex flex-col items-center ${isEven ? 'items-end' : 'items-start'} shrink-0 w-[100px] sm:w-[160px] md:w-[220px]`}>
-                <div className="relative mb-2">
+                <div className="relative mb-2 sm:mb-12">
                     {/* Decorative elements */}
                     <div className="hidden md:block">
                         <DecorativeElements index={index} />
