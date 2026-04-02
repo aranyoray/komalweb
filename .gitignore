@@ -42,3 +42,4 @@ nul
 
 # User data (reports storage)
 /data/reports/
+.gstack/

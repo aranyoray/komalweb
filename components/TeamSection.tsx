@@ -37,9 +37,9 @@ const coreTeam: TeamMember[] = [
     {
         name: "Raviraj Kumar",
         role: "Founding Engineer",
-        credentials: ["Founder, ProvokeDev", "Founders Ashram Graduate"],
+        credentials: ["Fellow @Delta II (The Residency, SF)", "Graduate, Founders Ashram", "Graduate, No Cap Accelerator"],
         image: "/raviraj-kumar.png",
-        description: "Raviraj leads early technology development at Komal, building the child content filtration and blocking algorithms that power the platform. He architects and ships across the full stack — web apps in Next.js and Node.js, native Android (Kotlin), and iOS (Swift) — and manages the entire cloud and DevOps infrastructure across GCP and AWS. A Top 10 Finalist at IIT(ISM) Dhanbad's AAVISHKAR 2.0 and Top 1000 India at IIT Delhi, he is a Founders Ashram Graduate and nc/acc cohort 1 member. He founded ProvokeDev and also leads product development for IoT wearables serving the visually impaired. At Komal, he owns the end-to-end engineering pipeline from content safety models to production deployment.",
+        description: "Raviraj leads early technology development at Komal, building the child content filtration and blocking algorithms that power the platform. He architects and ships across the full stack — web apps in Next.js and Node.js, native Android (Kotlin), and iOS (Swift) — and manages the entire cloud and DevOps infrastructure across GCP and AWS. A Top 10 Finalist at IIT(ISM) Dhanbad's AAVISHKAR 2.0 and Top 1000 India at IIT Delhi, he is a Founders Ashram Graduate and nc/acc cohort 1 member. He founded Provoke Developers and also leads product development for IoT wearables serving the visually impaired. At Komal, he owns the end-to-end engineering pipeline from content safety models to production deployment.",
         tagline: "Engineering child safety from stack to scale",
         website: "https://raviraj.lol",
     },
@@ -155,7 +155,9 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
                 ? 'center 5%'
                 : member.name.includes('Bratati')
                     ? 'center 5%'
-                    : 'center 10%';
+                    : member.name.includes('Raviraj')
+                        ? 'center 20%'
+                        : 'center 10%';
 
     const memberWebsite = 'website' in member ? member.website : undefined;
 
@@ -168,6 +170,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 style={{
                     objectPosition: objectPos,
+                    transform: member.name.includes('Raviraj') ? 'scale(0.8)' : undefined,
                 }}
             />
             {/* Halftone overlay effect in Violet */}
@@ -210,7 +213,7 @@ const TeamMemberCard = ({ member, index }: { member: TeamMember | Advisor, index
 
                     {/* Tagline badge (Speech bubble style) - Hidden on smallest screens to save space/clutter */}
                     {member.tagline && (
-                        <div className={`hidden sm:block absolute -bottom-1 ${isEven ? '-right-4' : '-left-4'} bg-white px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 max-w-[140px] md:max-w-[180px] transform ${isEven ? 'rotate-2' : '-rotate-2'}`}>
+                        <div className={`hidden sm:block absolute -bottom-8 ${isEven ? '-right-4' : '-left-4'} bg-white px-3 py-1.5 rounded-xl shadow-sm border border-gray-100 max-w-[140px] md:max-w-[180px] transform ${isEven ? 'rotate-2' : '-rotate-2'}`}>
                             <p className="text-[9px] md:text-[10px] text-primary/80 font-medium italic leading-tight">
                                 &ldquo;{member.tagline}&rdquo;
                             </p>
