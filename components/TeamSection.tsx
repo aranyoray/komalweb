@@ -35,13 +35,13 @@ const coreTeam: TeamMember[] = [
         website: "https://aranyoing.com",
     },
     {
-        name: "Joy Cai",
-        role: "Growth & Operations",
-        credentials: ["BA Economics, University of Pennsylvania", "Founder, Solis Health"],
-        image: "/joy-cai.png",
-        description: "Joy holds a B.A. in Economics from the University of Pennsylvania. She founded Solis Health, a telehealth nutrition practice scaled to 15+ medical specialties with 20+ clinic partnerships. Previously, as Chief of Staff at Flagler Health, she helped close a $4M+ seed round, enrolled 3,000+ patients in AI-powered remote therapeutic monitoring, and built clinical data pipelines. She has raised and deployed $4M+ in capital across ventures and launched 20+ partnership channels. At Komal, she leads growth, partnerships, and operations.",
-        tagline: "Driving growth and strategic partnerships",
-        website: "https://joycai.vercel.app",
+        name: "Raviraj Kumar",
+        role: "Founding Engineer",
+        credentials: ["Founder, ProvokeDev", "Full-Stack & DevOps Engineer"],
+        image: "/raviraj-kumar.png",
+        description: "Raviraj leads early technology development at Komal, building the child content filtration and blocking algorithms that power the platform. He architects and ships across the full stack — web apps in Next.js and Node.js, native Android (Kotlin), and iOS (Swift). He also manages the entire cloud and DevOps infrastructure across GCP and AWS. Previously, he founded ProvokeDev, a developer-focused organization. At Komal, he owns the end-to-end engineering pipeline from content safety models to production deployment.",
+        tagline: "Engineering child safety from stack to scale",
+        website: "https://raviraj.lol",
     },
     {
         name: "Yudhajit Ain, MSc",
@@ -50,6 +50,15 @@ const coreTeam: TeamMember[] = [
         image: "/yudhajit-ain-phd-research-advisor-komalkids-canada.png",
         description: "Yudhajit is a PhD Candidate in computational psychology at the Internal Attention Lab, UCalgary, where he has developed novel algorithms for attention tracking. He is first-author on 6+ papers, including research on ADHD in the Journal of Attention Disorders and mindfulness in Psychol. Aging. A Gold Medallist from the IISER BS-MS Neuroscience program.",
         tagline: "Decoding attention, one algorithm at a time",
+    },
+    {
+        name: "Joy Cai",
+        role: "Head of US GTM",
+        credentials: ["BA Economics, University of Pennsylvania", "Founder, Solis Health"],
+        image: "/joy-cai.png",
+        description: "Joy holds a B.A. in Economics from the University of Pennsylvania. She founded Solis Health, a telehealth nutrition practice scaled to 15+ medical specialties with 20+ clinic partnerships. Previously, as Chief of Staff at Flagler Health, she helped close a $4M+ seed round, enrolled 3,000+ patients in AI-powered remote therapeutic monitoring, and built clinical data pipelines. She has raised and deployed $4M+ in capital across ventures and launched 20+ partnership channels. At Komal, she leads growth, partnerships, and operations.",
+        tagline: "Driving growth and strategic partnerships",
+        website: "https://joycai.vercel.app",
     },
 ];
 

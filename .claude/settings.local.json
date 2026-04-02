@@ -30,7 +30,11 @@
       "Bash(git stash:*)",
       "Bash(python3:*)",
       "Bash(ls:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "WebFetch(domain:raviraj.lol)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:provokedev.in)",
+      "WebFetch(domain:www.linkedin.com)"
     ]
   }
 }
