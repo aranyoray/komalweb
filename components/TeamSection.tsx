@@ -37,9 +37,9 @@ const coreTeam: TeamMember[] = [
     {
         name: "Raviraj Kumar",
         role: "Founding Engineer",
-        credentials: ["Founder, ProvokeDev", "Full-Stack & DevOps Engineer"],
+        credentials: ["Founder, ProvokeDev", "Founders Ashram Graduate"],
         image: "/raviraj-kumar.png",
-        description: "Raviraj leads early technology development at Komal, building the child content filtration and blocking algorithms that power the platform. He architects and ships across the full stack — web apps in Next.js and Node.js, native Android (Kotlin), and iOS (Swift). He also manages the entire cloud and DevOps infrastructure across GCP and AWS. Previously, he founded ProvokeDev, a developer-focused organization. At Komal, he owns the end-to-end engineering pipeline from content safety models to production deployment.",
+        description: "Raviraj leads early technology development at Komal, building the child content filtration and blocking algorithms that power the platform. He architects and ships across the full stack — web apps in Next.js and Node.js, native Android (Kotlin), and iOS (Swift) — and manages the entire cloud and DevOps infrastructure across GCP and AWS. A Top 10 Finalist at IIT(ISM) Dhanbad's AAVISHKAR 2.0 and Top 1000 India at IIT Delhi, he is a Founders Ashram Graduate and nc/acc cohort 1 member. He founded ProvokeDev and also leads product development for IoT wearables serving the visually impaired. At Komal, he owns the end-to-end engineering pipeline from content safety models to production deployment.",
         tagline: "Engineering child safety from stack to scale",
         website: "https://raviraj.lol",
     },
