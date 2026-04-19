@@ -10,6 +10,14 @@ export interface SceneResponse {
   isBondScene: boolean;
 }
 
+export interface QuestionAnswer {
+  questionType: 'mcq' | 'sel';
+  selDimension?: string;
+  selectedIndex: number;
+  correctIndex: number;
+  isCorrect: boolean;
+}
+
 export interface CaselScores {
   selfAwareness: number;
   selfManagement: number;
@@ -27,13 +35,16 @@ export interface CaselReport {
 
 const DISCLAIMER = 'This is an exploratory activity, not a clinical assessment. Results reflect your child\'s engagement with the stories and should not be used for diagnosis.';
 
-export function computeCaselScores(responses: SceneResponse[]): CaselReport {
+export function computeCaselScores(responses: SceneResponse[], questionAnswers?: QuestionAnswer[]): CaselReport {
+  const selAnswers = (questionAnswers || []).filter(a => a.questionType === 'sel');
+  const mcqAnswers = (questionAnswers || []).filter(a => a.questionType === 'mcq');
+
   const scores: CaselScores = {
-    selfAwareness: computeSelfAwareness(responses),
+    selfAwareness: computeSelfAwareness(responses, selAnswers),
     selfManagement: computeSelfManagement(responses),
-    socialAwareness: computeSocialAwareness(responses),
-    relationshipSkills: computeRelationshipSkills(responses),
-    responsibleDecisionMaking: computeResponsibleDecisionMaking(responses),
+    socialAwareness: computeSocialAwareness(responses, selAnswers),
+    relationshipSkills: computeRelationshipSkills(responses, selAnswers),
+    responsibleDecisionMaking: computeResponsibleDecisionMaking(responses, mcqAnswers),
   };
 
   return {
@@ -44,10 +55,16 @@ export function computeCaselScores(responses: SceneResponse[]): CaselReport {
   };
 }
 
-function computeSelfAwareness(responses: SceneResponse[]): number {
+function computeSelfAwareness(responses: SceneResponse[], selAnswers: QuestionAnswer[]): number {
+  // Combine emoji diversity with SEL self-awareness question
   const validResponses = responses.filter(r => r.emojiLabel !== null);
   const uniqueEmojis = new Set(validResponses.map(r => r.emojiLabel));
-  return Math.max(1, Math.min(5, uniqueEmojis.size));
+  const emojiScore = Math.max(1, Math.min(3, uniqueEmojis.size)); // max 3 from emojis
+
+  const saQuestion = selAnswers.find(a => a.selDimension === 'selfAwareness');
+  const questionScore = saQuestion?.isCorrect ? 2 : 0; // 2 points from correct answer
+
+  return Math.max(1, Math.min(5, emojiScore + questionScore));
 }
 
 function computeSelfManagement(responses: SceneResponse[]): number {
@@ -73,45 +90,58 @@ function computeSelfManagement(responses: SceneResponse[]): number {
   return Math.max(1, Math.min(5, Math.ceil((recoveryTransitions / Math.max(1, possibleTransitions)) * 5)));
 }
 
-function computeSocialAwareness(responses: SceneResponse[]): number {
+function computeSocialAwareness(responses: SceneResponse[], selAnswers: QuestionAnswer[]): number {
   const validResponses = responses.filter(r => r.emojiLabel !== null && r.empathyTag !== '');
-  if (validResponses.length === 0) return 3;
 
   let empathyMatches = 0;
   for (const r of validResponses) {
-    // Check if the picked emoji matches the empathetic response for this scene
-    // Allow partial matches (e.g., "Happy" matches "Happy/Calm")
     const tags = r.empathyTag.split('/');
     if (tags.some(tag => r.emojiLabel === tag)) {
       empathyMatches++;
     }
   }
 
-  return Math.max(1, Math.min(5, Math.ceil((empathyMatches / Math.max(1, validResponses.length)) * 5)));
+  const emojiScore = validResponses.length > 0
+    ? Math.ceil((empathyMatches / Math.max(1, validResponses.length)) * 3)
+    : 1; // max 3 from empathy matching
+
+  const saQuestion = selAnswers.find(a => a.selDimension === 'socialAwareness');
+  const questionScore = saQuestion?.isCorrect ? 2 : 0;
+
+  return Math.max(1, Math.min(5, emojiScore + questionScore));
 }
 
-function computeRelationshipSkills(responses: SceneResponse[]): number {
+function computeRelationshipSkills(responses: SceneResponse[], selAnswers: QuestionAnswer[]): number {
   const bondScenes = responses.filter(r => r.isBondScene);
-  if (bondScenes.length === 0) return 3;
-
   const positiveOnBond = bondScenes.filter(r => r.emojiValence === 'positive').length;
-  return Math.max(1, Math.min(5, Math.ceil((positiveOnBond / Math.max(1, bondScenes.length)) * 5)));
+  const emojiScore = bondScenes.length > 0
+    ? Math.ceil((positiveOnBond / Math.max(1, bondScenes.length)) * 3)
+    : 1; // max 3 from emoji
+
+  const rsQuestion = selAnswers.find(a => a.selDimension === 'relationshipSkills');
+  const questionScore = rsQuestion?.isCorrect ? 2 : 0;
+
+  return Math.max(1, Math.min(5, emojiScore + questionScore));
 }
 
-function computeResponsibleDecisionMaking(responses: SceneResponse[]): number {
+function computeResponsibleDecisionMaking(responses: SceneResponse[], mcqAnswers: QuestionAnswer[]): number {
   let score = 0;
 
-  // Factor 1: Not rushing (responseTime > 3000ms for at least 3/5 scenes)
+  // Factor 1: Not rushing (responseTime > 3000ms)
   const thoughtfulResponses = responses.filter(r => r.responseTimeMs > 3000).length;
-  if (thoughtfulResponses >= 3) score += 1.67;
+  if (thoughtfulResponses >= 1) score += 1; // adjusted for 2 emoji responses
 
-  // Factor 2: Variety (more than 2 unique emojis)
-  const uniqueEmojis = new Set(responses.filter(r => r.emojiLabel !== null).map(r => r.emojiLabel));
-  if (uniqueEmojis.size > 2) score += 1.67;
-
-  // Factor 3: Completed all 5 scenes
+  // Factor 2: Completed emoji responses
   const completedScenes = responses.filter(r => r.emojiLabel !== null).length;
-  if (completedScenes === 5) score += 1.67;
+  if (completedScenes >= 2) score += 1;
+
+  // Factor 3: MCQ correctness (comprehension)
+  const mcqCorrect = mcqAnswers.filter(a => a.isCorrect).length;
+  if (mcqCorrect > 0) score += 2;
+
+  // Factor 4: Variety in responses
+  const uniqueEmojis = new Set(responses.filter(r => r.emojiLabel !== null).map(r => r.emojiLabel));
+  if (uniqueEmojis.size >= 2) score += 1;
 
   return Math.max(1, Math.min(5, Math.ceil(score)));
 }

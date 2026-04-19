@@ -5,23 +5,27 @@ import { useState, useEffect } from "react";
 interface SceneViewerProps {
   imageUrl: string | null; // Object URL or fallback path
   caption: string;
+  teacherLine?: string; // narration line for the teacher to read aloud
   sceneIndex: number;
   totalScenes: number;
   themeAccent: string;
   isLoading: boolean;
   onPlayClick: () => void;
   showPlayButton: boolean;
+  playButtonLabel?: string; // "Next" or play icon
 }
 
 export default function SceneViewer({
   imageUrl,
   caption,
+  teacherLine,
   sceneIndex,
   totalScenes,
   themeAccent,
   isLoading,
   onPlayClick,
   showPlayButton,
+  playButtonLabel,
 }: SceneViewerProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -97,17 +101,43 @@ export default function SceneViewer({
 
         {/* Play button */}
         {showPlayButton && imageLoaded && !isLoading && (
-          <button
-            onClick={onPlayClick}
-            className="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:scale-110 transition-transform z-20"
-            aria-label="Show emoji picker"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M6 4L16 10L6 16V4Z" fill={themeAccent} />
-            </svg>
-          </button>
+          playButtonLabel ? (
+            <button
+              onClick={onPlayClick}
+              className="absolute bottom-4 right-4 px-5 py-2.5 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-20 text-sm font-semibold"
+              style={{ color: themeAccent }}
+              aria-label={playButtonLabel}
+            >
+              {playButtonLabel} &rarr;
+            </button>
+          ) : (
+            <button
+              onClick={onPlayClick}
+              className="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:scale-110 transition-transform z-20"
+              aria-label="Show emoji picker"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M6 4L16 10L6 16V4Z" fill={themeAccent} />
+              </svg>
+            </button>
+          )
         )}
       </div>
+
+      {/* Teacher narration line */}
+      {teacherLine && imageLoaded && !isLoading && (
+        <div
+          className="mt-4 p-4 rounded-xl border-l-4"
+          style={{ borderColor: themeAccent, backgroundColor: themeAccent + '08' }}
+        >
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+            Read aloud
+          </p>
+          <p className="text-sm text-gray-700 leading-relaxed italic">
+            &ldquo;{teacherLine}&rdquo;
+          </p>
+        </div>
+      )}
     </div>
   );
 }

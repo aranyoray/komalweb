@@ -9,9 +9,11 @@ interface EmojiPickerProps {
   onSelect: (emoji: EmojiOption, responseTimeMs: number) => void;
   onTimeout: () => void;
   themeAccent: string;
+  customEmojis?: EmojiOption[]; // shuffled emoji set
+  promptText?: string; // dynamic question text
 }
 
-export default function EmojiPicker({ ageGroup, onSelect, onTimeout, themeAccent }: EmojiPickerProps) {
+export default function EmojiPicker({ ageGroup, onSelect, onTimeout, themeAccent, customEmojis, promptText }: EmojiPickerProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const startTimeRef = useRef(Date.now());
@@ -19,7 +21,8 @@ export default function EmojiPicker({ ageGroup, onSelect, onTimeout, themeAccent
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { emojis, size, showLabels } = emojiSets[ageGroup];
+  const { size, showLabels } = emojiSets[ageGroup];
+  const emojis = customEmojis || emojiSets[ageGroup].emojis;
 
   // 30-second timeout
   useEffect(() => {
@@ -85,7 +88,7 @@ export default function EmojiPicker({ ageGroup, onSelect, onTimeout, themeAccent
           className="text-center text-xl font-semibold mb-6"
           style={{ color: themeAccent }}
         >
-          What do you feel?
+          {promptText || 'What do you feel?'}
         </h2>
 
         <div

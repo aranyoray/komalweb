@@ -6,6 +6,17 @@ export interface EmojiOption {
   valence: 'positive' | 'negative' | 'neutral';
 }
 
+/** Shuffle emojis using Fisher-Yates, ensuring the correct answer is included */
+export function getShuffledEmojis(ageGroup: AgeGroup, _correctLabel?: string): EmojiOption[] {
+  const { emojis } = emojiSets[ageGroup];
+  const shuffled = [...emojis];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export const emojiSets: Record<AgeGroup, { emojis: EmojiOption[]; size: number; showLabels: boolean }> = {
   '3-6': {
     emojis: [

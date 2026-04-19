@@ -4,19 +4,25 @@ import { useReducer, useCallback, useRef, useEffect, useMemo } from "react";
 import { themes, getShuffledSession } from "@/lib/sel/themes";
 import type { ThemeConfig } from "@/lib/sel/themes";
 import type { AgeGroup, EmojiOption } from "@/lib/sel/emoji-sets";
-import type { SceneResponse } from "@/lib/sel/casel-scoring";
+import type { SceneResponse, QuestionAnswer } from "@/lib/sel/casel-scoring";
+import { getShuffledEmojis } from "@/lib/sel/emoji-sets";
 import ThemeCard from "@/components/sel/ThemeCard";
 import SceneViewer from "@/components/sel/SceneViewer";
 import EmojiPicker from "@/components/sel/EmojiPicker";
 import SelReport from "@/components/sel/SelReport";
+import QuestionCard from "@/components/sel/QuestionCard";
 
 // ─── State Machine ───────────────────────────────────────────
 
-type Screen = 'theme_select' | 'scene' | 'emoji' | 'report';
+// Emoji picker appears only after every 2nd slide (indices 1, 3)
+const EMOJI_SLIDE_INDICES = new Set([1, 3]);
+
+type Screen = 'theme_select' | 'scene' | 'emoji' | 'end_questions' | 'report';
 
 interface SessionScene {
   image: string;
   caption: string;
+  teacherLine: string;
   empathyEmoji: string;
   isBondScene: boolean;
 }
@@ -28,14 +34,18 @@ interface State {
   currentScene: number;
   sessionScenes: SessionScene[];
   responses: SceneResponse[];
+  currentQuestionIndex: number;
+  questionAnswers: QuestionAnswer[];
 }
 
 type Action =
   | { type: 'SELECT_THEME'; theme: ThemeConfig }
   | { type: 'SET_AGE_GROUP'; ageGroup: AgeGroup }
+  | { type: 'NEXT_SCENE' } // advance without emoji (non-emoji slides)
   | { type: 'SHOW_EMOJI' }
   | { type: 'EMOJI_SELECTED'; emoji: EmojiOption; responseTimeMs: number }
   | { type: 'EMOJI_TIMEOUT' }
+  | { type: 'ANSWER_QUESTION'; selectedIndex: number; isCorrect: boolean }
   | { type: 'RESET' };
 
 const initialState: State = {
@@ -45,7 +55,27 @@ const initialState: State = {
   currentScene: 0,
   sessionScenes: [],
   responses: [],
+  currentQuestionIndex: 0,
+  questionAnswers: [],
 };
+
+function advanceAfterEmoji(state: State, newResponse: SceneResponse): Partial<State> {
+  const nextScene = state.currentScene + 1;
+  if (nextScene >= 5) {
+    // After last emoji, go to end questions
+    return {
+      responses: [...state.responses, newResponse],
+      screen: 'end_questions',
+      currentQuestionIndex: 0,
+      questionAnswers: [],
+    };
+  }
+  return {
+    responses: [...state.responses, newResponse],
+    currentScene: nextScene,
+    screen: 'scene',
+  };
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -58,10 +88,29 @@ function reducer(state: State, action: Action): State {
         currentScene: 0,
         sessionScenes: shuffled,
         responses: [],
+        currentQuestionIndex: 0,
+        questionAnswers: [],
       };
     }
     case 'SET_AGE_GROUP':
       return { ...state, ageGroup: action.ageGroup };
+    case 'NEXT_SCENE': {
+      // For non-emoji slides: advance to next scene or end questions
+      const nextScene = state.currentScene + 1;
+      if (nextScene >= 5) {
+        return {
+          ...state,
+          screen: 'end_questions',
+          currentQuestionIndex: 0,
+          questionAnswers: [],
+        };
+      }
+      return {
+        ...state,
+        currentScene: nextScene,
+        screen: 'scene',
+      };
+    }
     case 'SHOW_EMOJI':
       return { ...state, screen: 'emoji' };
     case 'EMOJI_SELECTED': {
@@ -74,13 +123,7 @@ function reducer(state: State, action: Action): State {
         empathyTag: scene?.empathyEmoji || '',
         isBondScene: scene?.isBondScene || false,
       };
-      const isLast = state.currentScene >= 4;
-      return {
-        ...state,
-        responses: [...state.responses, newResponse],
-        currentScene: isLast ? state.currentScene : state.currentScene + 1,
-        screen: isLast ? 'report' : 'scene',
-      };
+      return { ...state, ...advanceAfterEmoji(state, newResponse) };
     }
     case 'EMOJI_TIMEOUT': {
       const scene = state.sessionScenes[state.currentScene];
@@ -92,12 +135,31 @@ function reducer(state: State, action: Action): State {
         empathyTag: scene?.empathyEmoji || '',
         isBondScene: scene?.isBondScene || false,
       };
-      const isLast = state.currentScene >= 4;
+      return { ...state, ...advanceAfterEmoji(state, timeoutResponse) };
+    }
+    case 'ANSWER_QUESTION': {
+      const questions = state.selectedTheme?.endQuestions || [];
+      const currentQ = questions[state.currentQuestionIndex];
+      const newAnswer: QuestionAnswer = {
+        questionType: currentQ?.type || 'mcq',
+        selDimension: currentQ?.selDimension || undefined,
+        selectedIndex: action.selectedIndex,
+        correctIndex: currentQ?.correctIndex ?? 0,
+        isCorrect: action.isCorrect,
+      };
+      const updatedAnswers = [...state.questionAnswers, newAnswer];
+      const isLastQuestion = state.currentQuestionIndex >= questions.length - 1;
+      if (isLastQuestion) {
+        return {
+          ...state,
+          questionAnswers: updatedAnswers,
+          screen: 'report',
+        };
+      }
       return {
         ...state,
-        responses: [...state.responses, timeoutResponse],
-        currentScene: isLast ? state.currentScene : state.currentScene + 1,
-        screen: isLast ? 'report' : 'scene',
+        questionAnswers: updatedAnswers,
+        currentQuestionIndex: state.currentQuestionIndex + 1,
       };
     }
     case 'RESET':
@@ -120,9 +182,9 @@ export default function SelPage() {
     dispatch({ type: 'SELECT_THEME', theme });
   }, []);
 
-  // Auto-show emoji popup after 5 seconds
+  // Auto-show emoji popup after 5 seconds (only on emoji slides)
   useEffect(() => {
-    if (state.screen === 'scene') {
+    if (state.screen === 'scene' && EMOJI_SLIDE_INDICES.has(state.currentScene)) {
       emojiTimerRef.current = setTimeout(() => {
         dispatch({ type: 'SHOW_EMOJI' });
       }, 5000);
@@ -205,29 +267,77 @@ export default function SelPage() {
         )}
 
         {/* ─── Scene Viewer (visible during both scene & emoji screens) ─── */}
-        {(state.screen === 'scene' || state.screen === 'emoji') && state.selectedTheme && currentSceneData && (
-          <div className="animate-fadeIn">
-            <SceneViewer
-              imageUrl={currentSceneData.image}
-              caption={currentSceneData.caption}
-              sceneIndex={state.currentScene}
-              totalScenes={5}
-              themeAccent={state.selectedTheme.palette.accent}
-              isLoading={false}
-              onPlayClick={() => dispatch({ type: 'SHOW_EMOJI' })}
-              showPlayButton={state.screen === 'scene'}
-            />
-          </div>
-        )}
+        {(state.screen === 'scene' || state.screen === 'emoji') && state.selectedTheme && currentSceneData && (() => {
+          const isEmojiSlide = EMOJI_SLIDE_INDICES.has(state.currentScene);
+          return (
+            <div className="animate-fadeIn">
+              <SceneViewer
+                imageUrl={currentSceneData.image}
+                caption={currentSceneData.caption}
+                teacherLine={currentSceneData.teacherLine}
+                sceneIndex={state.currentScene}
+                totalScenes={5}
+                themeAccent={state.selectedTheme!.palette.accent}
+                isLoading={false}
+                onPlayClick={() => {
+                  if (isEmojiSlide) {
+                    dispatch({ type: 'SHOW_EMOJI' });
+                  } else {
+                    dispatch({ type: 'NEXT_SCENE' });
+                  }
+                }}
+                showPlayButton={state.screen === 'scene'}
+                playButtonLabel={isEmojiSlide ? undefined : 'Next'}
+              />
+            </div>
+          );
+        })()}
 
         {/* ─── Emoji Picker Overlay ─── */}
-        {state.screen === 'emoji' && state.selectedTheme && currentSceneData && (
-          <EmojiPicker
-            ageGroup={state.ageGroup}
-            onSelect={handleEmojiSelect}
-            onTimeout={handleEmojiTimeout}
-            themeAccent={state.selectedTheme.palette.accent}
-          />
+        {state.screen === 'emoji' && state.selectedTheme && currentSceneData && (() => {
+          const shuffledEmojis = getShuffledEmojis(state.ageGroup, currentSceneData.empathyEmoji);
+          // Alternate prompt: first emoji (index 1) asks about character, second (index 3) asks about self
+          const promptText = state.currentScene === 1
+            ? `What is ${state.selectedTheme!.mainCharacter} feeling?`
+            : 'How do you feel?';
+          return (
+            <EmojiPicker
+              ageGroup={state.ageGroup}
+              onSelect={handleEmojiSelect}
+              onTimeout={handleEmojiTimeout}
+              themeAccent={state.selectedTheme!.palette.accent}
+              customEmojis={shuffledEmojis}
+              promptText={promptText}
+            />
+          );
+        })()}
+
+        {/* ─── End-of-Lesson Questions (MCQ + SEL) ─── */}
+        {state.screen === 'end_questions' && state.selectedTheme && (
+          <div className="animate-fadeIn">
+            <div className="text-center mb-6">
+              <h2
+                className="text-xl sm:text-2xl font-bold mb-2"
+                style={{ color: state.selectedTheme.palette.text }}
+              >
+                Let&apos;s Think About the Story
+              </h2>
+              <p className="text-sm text-gray-500">
+                Answer these questions about what you just saw
+              </p>
+            </div>
+            <QuestionCard
+              key={state.currentQuestionIndex}
+              question={state.selectedTheme.endQuestions[state.currentQuestionIndex]}
+              questionNumber={state.currentQuestionIndex + 1}
+              totalQuestions={state.selectedTheme.endQuestions.length}
+              themeAccent={state.selectedTheme.palette.accent}
+              themeText={state.selectedTheme.palette.text}
+              onAnswer={(selectedIndex, isCorrect) => {
+                dispatch({ type: 'ANSWER_QUESTION', selectedIndex, isCorrect });
+              }}
+            />
+          </div>
         )}
 
         {/* ─── SEL Report ─── */}
@@ -236,6 +346,7 @@ export default function SelPage() {
             <SelReport
               responses={state.responses}
               theme={state.selectedTheme}
+              questionAnswers={state.questionAnswers}
               onPlayAgain={() => dispatch({ type: 'RESET' })}
             />
           </div>

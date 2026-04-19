@@ -1,4 +1,4 @@
-import { computeCaselScores, type SceneResponse } from '@/lib/sel/casel-scoring';
+import { computeCaselScores, type SceneResponse, type QuestionAnswer } from '@/lib/sel/casel-scoring';
 
 function makeResponse(overrides: Partial<SceneResponse> = {}): SceneResponse {
   return {
@@ -16,26 +16,45 @@ function makeResponses(count: number, overrides: Partial<SceneResponse> = {}): S
   return Array.from({ length: count }, () => makeResponse(overrides));
 }
 
+function makeSelAnswer(dimension: string, isCorrect: boolean): QuestionAnswer {
+  return {
+    questionType: 'sel',
+    selDimension: dimension,
+    selectedIndex: isCorrect ? 1 : 0,
+    correctIndex: 1,
+    isCorrect,
+  };
+}
+
+function makeMcqAnswer(isCorrect: boolean): QuestionAnswer {
+  return {
+    questionType: 'mcq',
+    selectedIndex: isCorrect ? 1 : 0,
+    correctIndex: 1,
+    isCorrect,
+  };
+}
+
 describe('CASEL Scoring', () => {
   describe('Self-Awareness', () => {
-    it('scores 1 when all emojis are the same', () => {
-      const responses = makeResponses(5, { emojiLabel: 'Happy' });
-      const report = computeCaselScores(responses);
-      expect(report.scores.selfAwareness).toBe(1);
-    });
-
-    it('scores 5 when all emojis are different', () => {
-      const labels = ['Happy', 'Sad', 'Scared', 'Wow', 'Calm'];
-      const responses = labels.map(label => makeResponse({ emojiLabel: label }));
-      const report = computeCaselScores(responses);
-      expect(report.scores.selfAwareness).toBe(5);
-    });
-
-    it('scores 3 when 3 unique emojis used', () => {
-      const labels = ['Happy', 'Sad', 'Happy', 'Scared', 'Sad'];
-      const responses = labels.map(label => makeResponse({ emojiLabel: label }));
-      const report = computeCaselScores(responses);
+    it('scores based on emoji diversity + SEL question', () => {
+      const responses = makeResponses(2, { emojiLabel: 'Happy' });
+      const answers = [makeSelAnswer('selfAwareness', true)];
+      const report = computeCaselScores(responses, answers);
+      // 1 unique emoji (capped at 1) + 2 from correct answer = 3
       expect(report.scores.selfAwareness).toBe(3);
+    });
+
+    it('scores higher with diverse emojis + correct question', () => {
+      const responses = [
+        makeResponse({ emojiLabel: 'Happy' }),
+        makeResponse({ emojiLabel: 'Sad' }),
+        makeResponse({ emojiLabel: 'Scared' }),
+      ];
+      const answers = [makeSelAnswer('selfAwareness', true)];
+      const report = computeCaselScores(responses, answers);
+      // 3 unique emojis (capped at 3) + 2 from correct answer = 5
+      expect(report.scores.selfAwareness).toBe(5);
     });
 
     it('ignores no_response entries', () => {
@@ -43,11 +62,9 @@ describe('CASEL Scoring', () => {
         makeResponse({ emojiLabel: 'Happy' }),
         makeResponse({ emojiLabel: null, emojiPicked: null, emojiValence: null }),
         makeResponse({ emojiLabel: 'Sad' }),
-        makeResponse({ emojiLabel: null, emojiPicked: null, emojiValence: null }),
-        makeResponse({ emojiLabel: 'Scared' }),
       ];
       const report = computeCaselScores(responses);
-      expect(report.scores.selfAwareness).toBe(3);
+      expect(report.scores.selfAwareness).toBe(2); // 2 unique, no question bonus
     });
   });
 
@@ -56,22 +73,19 @@ describe('CASEL Scoring', () => {
       const responses = [
         makeResponse({ emojiValence: 'negative' }),
         makeResponse({ emojiValence: 'positive' }),
-        makeResponse({ emojiValence: 'negative' }),
-        makeResponse({ emojiValence: 'positive' }),
-        makeResponse({ emojiValence: 'positive' }),
       ];
       const report = computeCaselScores(responses);
       expect(report.scores.selfManagement).toBe(5);
     });
 
     it('handles all positive emotions (no transitions possible)', () => {
-      const responses = makeResponses(5, { emojiValence: 'positive' });
+      const responses = makeResponses(2, { emojiValence: 'positive' });
       const report = computeCaselScores(responses);
       expect(report.scores.selfManagement).toBe(4); // stable = good
     });
 
     it('does not divide by zero when no negative emotions', () => {
-      const responses = makeResponses(5, { emojiValence: 'neutral' });
+      const responses = makeResponses(2, { emojiValence: 'neutral' });
       const report = computeCaselScores(responses);
       expect(report.scores.selfManagement).toBeGreaterThanOrEqual(1);
       expect(report.scores.selfManagement).toBeLessThanOrEqual(5);
@@ -79,15 +93,14 @@ describe('CASEL Scoring', () => {
   });
 
   describe('Social Awareness', () => {
-    it('scores high when all empathy tags match', () => {
+    it('scores based on empathy match + SEL question', () => {
       const responses = [
         makeResponse({ emojiLabel: 'Happy', empathyTag: 'Happy' }),
         makeResponse({ emojiLabel: 'Sad', empathyTag: 'Sad' }),
-        makeResponse({ emojiLabel: 'Scared', empathyTag: 'Scared' }),
-        makeResponse({ emojiLabel: 'Calm', empathyTag: 'Calm' }),
-        makeResponse({ emojiLabel: 'Happy', empathyTag: 'Happy' }),
       ];
-      const report = computeCaselScores(responses);
+      const answers = [makeSelAnswer('socialAwareness', true)];
+      const report = computeCaselScores(responses, answers);
+      // All empathy match (3) + correct question (2) = 5
       expect(report.scores.socialAwareness).toBe(5);
     });
 
@@ -96,50 +109,53 @@ describe('CASEL Scoring', () => {
         makeResponse({ emojiLabel: 'Calm', empathyTag: 'Happy/Calm' }),
       ];
       const report = computeCaselScores(responses);
-      expect(report.scores.socialAwareness).toBe(5);
+      // 1 match out of 1 = ceil(1/1 * 3) = 3
+      expect(report.scores.socialAwareness).toBe(3);
     });
   });
 
   describe('Relationship Skills', () => {
-    it('scores high on positive bond scene responses', () => {
+    it('scores based on bond scenes + SEL question', () => {
       const responses = [
         makeResponse({ emojiValence: 'positive', isBondScene: true }),
-        makeResponse({ emojiValence: 'negative', isBondScene: false }),
-        makeResponse({ emojiValence: 'neutral', isBondScene: false }),
-        makeResponse({ emojiValence: 'negative', isBondScene: false }),
         makeResponse({ emojiValence: 'positive', isBondScene: true }),
       ];
-      const report = computeCaselScores(responses);
+      const answers = [makeSelAnswer('relationshipSkills', true)];
+      const report = computeCaselScores(responses, answers);
+      // All positive bond (3) + correct question (2) = 5
       expect(report.scores.relationshipSkills).toBe(5);
     });
   });
 
   describe('Responsible Decision-Making', () => {
-    it('scores high with thoughtful, varied, complete responses', () => {
-      const labels = ['Happy', 'Sad', 'Scared', 'Calm', 'Brave'];
-      const responses = labels.map(label =>
-        makeResponse({ emojiLabel: label, responseTimeMs: 5000 })
-      );
-      const report = computeCaselScores(responses);
+    it('scores high with thoughtful responses + correct MCQ', () => {
+      const responses = [
+        makeResponse({ emojiLabel: 'Happy', responseTimeMs: 5000 }),
+        makeResponse({ emojiLabel: 'Sad', responseTimeMs: 5000 }),
+      ];
+      const answers = [makeMcqAnswer(true)];
+      const report = computeCaselScores(responses, answers);
+      // thoughtful (1) + completed (1) + mcq correct (2) + variety (1) = 5
       expect(report.scores.responsibleDecisionMaking).toBe(5);
     });
 
-    it('scores low when rushing (all under 2s)', () => {
-      const responses = makeResponses(5, { responseTimeMs: 1500 });
+    it('scores lower when rushing (all under 2s)', () => {
+      const responses = makeResponses(2, { responseTimeMs: 1500 });
       const report = computeCaselScores(responses);
-      expect(report.scores.responsibleDecisionMaking).toBeLessThanOrEqual(3);
+      // no thoughtful (0) + completed (1) + no mcq (0) + no variety (0) = 1
+      expect(report.scores.responsibleDecisionMaking).toBeLessThanOrEqual(2);
     });
   });
 
   describe('Report', () => {
     it('always includes disclaimer', () => {
-      const responses = makeResponses(5);
+      const responses = makeResponses(2);
       const report = computeCaselScores(responses);
       expect(report.disclaimer).toContain('not a clinical assessment');
     });
 
     it('generates descriptions for all 5 competencies', () => {
-      const responses = makeResponses(5);
+      const responses = makeResponses(2);
       const report = computeCaselScores(responses);
       expect(Object.keys(report.descriptions)).toHaveLength(5);
     });

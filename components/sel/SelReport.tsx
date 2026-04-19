@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { SceneResponse } from "@/lib/sel/casel-scoring";
+import type { SceneResponse, QuestionAnswer } from "@/lib/sel/casel-scoring";
 import { computeCaselScores } from "@/lib/sel/casel-scoring";
 import type { ThemeConfig } from "@/lib/sel/themes";
 import EmotionalJourney from "./EmotionalJourney";
@@ -11,6 +11,7 @@ interface SelReportProps {
   responses: SceneResponse[];
   theme: ThemeConfig;
   childName?: string;
+  questionAnswers?: QuestionAnswer[];
   onPlayAgain?: () => void;
 }
 
@@ -22,8 +23,8 @@ const caselLabels: Record<string, { icon: string; name: string }> = {
   responsibleDecisionMaking: { icon: '🧠', name: 'Thoughtful Engagement' },
 };
 
-export default function SelReport({ responses, theme, childName, onPlayAgain }: SelReportProps) {
-  const report = useMemo(() => computeCaselScores(responses), [responses]);
+export default function SelReport({ responses, theme, childName, questionAnswers, onPlayAgain }: SelReportProps) {
+  const report = useMemo(() => computeCaselScores(responses, questionAnswers), [responses, questionAnswers]);
 
   const title = childName
     ? `${childName}'s Emotional Journey`
