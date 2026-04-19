@@ -95,11 +95,22 @@ function reducer(state: State, action: Action): State {
     case 'SET_AGE_GROUP':
       return { ...state, ageGroup: action.ageGroup };
     case 'NEXT_SCENE': {
-      // For non-emoji slides: advance to next scene or end questions
+      // For non-emoji slides: record a passive response and advance
+      const sceneData = state.sessionScenes[state.currentScene];
+      const passiveResponse: SceneResponse = {
+        emojiPicked: null,
+        emojiLabel: null,
+        emojiValence: null,
+        responseTimeMs: 0,
+        empathyTag: sceneData?.empathyEmoji || '',
+        isBondScene: sceneData?.isBondScene || false,
+      };
+      const updatedResponses = [...state.responses, passiveResponse];
       const nextScene = state.currentScene + 1;
       if (nextScene >= 5) {
         return {
           ...state,
+          responses: updatedResponses,
           screen: 'end_questions',
           currentQuestionIndex: 0,
           questionAnswers: [],
@@ -107,6 +118,7 @@ function reducer(state: State, action: Action): State {
       }
       return {
         ...state,
+        responses: updatedResponses,
         currentScene: nextScene,
         screen: 'scene',
       };

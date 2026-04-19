@@ -108,7 +108,7 @@ export default function EmotionalJourney({ responses, themeAccent }: EmotionalJo
               textAnchor="middle"
               fontSize="16"
             >
-              {pt.response.emojiPicked || '⏭️'}
+              {pt.response.emojiPicked || (pt.response.responseTimeMs === 0 ? '📖' : '⏭️')}
             </text>
             {/* Scene number */}
             <text
