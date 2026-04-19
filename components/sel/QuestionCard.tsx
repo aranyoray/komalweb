@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { EndQuestion } from "@/lib/sel/themes";
 
 interface QuestionCardProps {
@@ -23,15 +23,30 @@ export default function QuestionCard({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
 
+  // Shuffle options randomly on each mount, tracking the new correct index
+  const { shuffledOptions, shuffledCorrectIndex, originalIndices } = useMemo(() => {
+    const indexed = question.options.map((opt, i) => ({ opt, originalIndex: i }));
+    for (let i = indexed.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
+    }
+    return {
+      shuffledOptions: indexed.map(item => item.opt),
+      shuffledCorrectIndex: indexed.findIndex(item => item.originalIndex === question.correctIndex),
+      originalIndices: indexed.map(item => item.originalIndex),
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question]);
+
   const handleSelect = (index: number) => {
     if (answered) return;
     setSelectedIndex(index);
     setAnswered(true);
-    const isCorrect = index === question.correctIndex;
+    const isCorrect = index === shuffledCorrectIndex;
 
     // Delay to show feedback before advancing
     setTimeout(() => {
-      onAnswer(index, isCorrect);
+      onAnswer(originalIndices[index], isCorrect);
     }, 1200);
   };
 
@@ -42,13 +57,13 @@ export default function QuestionCard({
         backgroundColor: 'white',
       };
     }
-    if (index === question.correctIndex) {
+    if (index === shuffledCorrectIndex) {
       return {
         border: '2px solid #22c55e',
         backgroundColor: '#f0fdf4',
       };
     }
-    if (index === selectedIndex && index !== question.correctIndex) {
+    if (index === selectedIndex && index !== shuffledCorrectIndex) {
       return {
         border: '2px solid #ef4444',
         backgroundColor: '#fef2f2',
@@ -91,7 +106,7 @@ export default function QuestionCard({
 
         {/* Options */}
         <div className="space-y-3">
-          {question.options.map((option, index) => (
+          {shuffledOptions.map((option, index) => (
             <button
               key={index}
               onClick={() => handleSelect(index)}
@@ -103,18 +118,18 @@ export default function QuestionCard({
                 <span
                   className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                   style={{
-                    backgroundColor: answered && index === question.correctIndex ? '#22c55e' : themeAccent + '20',
-                    color: answered && index === question.correctIndex ? 'white' : themeAccent,
+                    backgroundColor: answered && index === shuffledCorrectIndex ? '#22c55e' : themeAccent + '20',
+                    color: answered && index === shuffledCorrectIndex ? 'white' : themeAccent,
                   }}
                 >
                   {String.fromCharCode(65 + index)}
                 </span>
                 <span className="text-gray-700">{option}</span>
               </span>
-              {answered && index === question.correctIndex && (
+              {answered && index === shuffledCorrectIndex && (
                 <span className="float-right text-green-600 text-sm mt-0.5">&#10003;</span>
               )}
-              {answered && index === selectedIndex && index !== question.correctIndex && (
+              {answered && index === selectedIndex && index !== shuffledCorrectIndex && (
                 <span className="float-right text-red-500 text-sm mt-0.5">&#10007;</span>
               )}
             </button>
