@@ -68,7 +68,7 @@ export default function EmojiPicker({ ageGroup, onSelect, onTimeout, themeAccent
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-[10000] flex items-end justify-center"
       role="dialog"
       aria-label="How do you feel?"
     >
