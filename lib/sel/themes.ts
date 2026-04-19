@@ -23,6 +23,7 @@ export interface ThemeConfig {
   adaptations: Record<string, AdaptationRule>; // keyed by general emotion category
   fallbackImages: string[]; // paths to 3 static fallback images
   staticImages: string[]; // pre-generated images, 5 per theme
+  ageRanking: Record<string, number>; // lower = shown first for that age group
 }
 
 /** Shuffle array using Fisher-Yates */
@@ -69,6 +70,7 @@ export const themes: ThemeConfig[] = [
     },
     fallbackImages: ['/sel/fallback/ramayana-1.svg', '/sel/fallback/ramayana-2.svg', '/sel/fallback/ramayana-3.svg'],
     staticImages: ['/sel/images/ramayana/scene-1.png', '/sel/images/ramayana/scene-2.png', '/sel/images/ramayana/scene-3.png', '/sel/images/ramayana/scene-4.png', '/sel/images/ramayana/scene-5.png'],
+    ageRanking: { '3-6': 3, '7-9': 1, '10-12': 2 },
   },
   {
     id: 'mahabharata',
@@ -91,6 +93,7 @@ export const themes: ThemeConfig[] = [
     },
     fallbackImages: ['/sel/fallback/mahabharata-1.svg', '/sel/fallback/mahabharata-2.svg', '/sel/fallback/mahabharata-3.svg'],
     staticImages: ['/sel/images/mahabharata/scene-1.png', '/sel/images/mahabharata/scene-2.png', '/sel/images/mahabharata/scene-3.png', '/sel/images/mahabharata/scene-4.png', '/sel/images/mahabharata/scene-5.png'],
+    ageRanking: { '3-6': 8, '7-9': 5, '10-12': 1 },
   },
   {
     id: 'panchatantra',
@@ -113,6 +116,7 @@ export const themes: ThemeConfig[] = [
     },
     fallbackImages: ['/sel/fallback/panchatantra-1.svg', '/sel/fallback/panchatantra-2.svg', '/sel/fallback/panchatantra-3.svg'],
     staticImages: ['/sel/images/panchatantra/scene-1.png', '/sel/images/panchatantra/scene-2.png', '/sel/images/panchatantra/scene-3.png', '/sel/images/panchatantra/scene-4.png', '/sel/images/panchatantra/scene-5.png'],
+    ageRanking: { '3-6': 1, '7-9': 3, '10-12': 6 },
   },
   {
     id: 'krishna-leela',
@@ -135,6 +139,7 @@ export const themes: ThemeConfig[] = [
     },
     fallbackImages: ['/sel/fallback/krishna-1.svg', '/sel/fallback/krishna-2.svg', '/sel/fallback/krishna-3.svg'],
     staticImages: ['/sel/images/krishna-leela/scene-1.png', '/sel/images/krishna-leela/scene-2.png', '/sel/images/krishna-leela/scene-3.png', '/sel/images/krishna-leela/scene-4.png', '/sel/images/krishna-leela/scene-5.png'],
+    ageRanking: { '3-6': 2, '7-9': 2, '10-12': 7 },
   },
   {
     id: 'jataka-tales',
@@ -157,6 +162,122 @@ export const themes: ThemeConfig[] = [
     },
     fallbackImages: ['/sel/fallback/jataka-1.svg', '/sel/fallback/jataka-2.svg', '/sel/fallback/jataka-3.svg'],
     staticImages: ['/sel/images/jataka-tales/scene-1.png', '/sel/images/jataka-tales/scene-2.png', '/sel/images/jataka-tales/scene-3.png', '/sel/images/jataka-tales/scene-4.png', '/sel/images/jataka-tales/scene-5.png'],
+    ageRanking: { '3-6': 5, '7-9': 4, '10-12': 4 },
+  },
+  {
+    id: 'ganesha-tales',
+    name: 'Ganesha Tales',
+    description: 'Adventures of the wise elephant-headed god',
+    palette: { bg: '#fff5f5', accent: '#e11d48', text: '#881337' },
+    characters: 'Young Ganesha: elephant-headed boy with a round belly, one broken tusk, wearing a small golden crown and orange dhoti, riding his mouse Mushika. Parvati: loving mother with serene expression, red sari with gold border. Shiva: calm father with blue throat, crescent moon in matted hair.',
+    settings: 'Mount Kailash with snow peaks, lush gardens with modak sweets, temples with oil lamps, starlit skies.',
+    scenes: [
+      { description: 'Young Ganesha happily eating modaks while sitting on his tiny mouse Mushika, Parvati watching fondly', caption: 'Ganesha loves his favourite sweet — modak!', empathyEmoji: 'Happy', isBondScene: true, narrativeRole: 'setup' },
+      { description: 'Ganesha standing guard at a door, looking determined, a bright light approaching from afar', caption: 'Ganesha makes a promise to guard the door — no matter what', empathyEmoji: 'Brave', isBondScene: false, narrativeRole: 'challenge' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'turning_point' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'climax' },
+      { description: 'Ganesha writing the Mahabharata with his broken tusk, moon and stars twinkling, wisdom glowing around him', caption: 'Ganesha turns every challenge into wisdom', empathyEmoji: 'Calm', isBondScene: true, narrativeRole: 'resolution' },
+    ],
+    adaptations: {
+      positive: { emotion: 'Happy/Brave', direction: 'Show Ganesha racing around the world on his mouse — passing mountains and oceans at incredible speed, joyful and clever. Energetic, fun.', targetMood: 'adventurous' },
+      negative: { emotion: 'Sad/Scared', direction: 'Show Parvati comforting Ganesha with a warm hug — soft moonlight, Mushika curled up at their feet. Safe, loving.', targetMood: 'comforting' },
+      neutral: { emotion: 'Wow/Confused', direction: 'Show Ganesha solving a riddle — circling his parents instead of the world, everyone realizing his wisdom. Clever, illuminating.', targetMood: 'clever' },
+    },
+    fallbackImages: ['/sel/fallback/ganesha-1.svg', '/sel/fallback/ganesha-2.svg', '/sel/fallback/ganesha-3.svg'],
+    staticImages: ['/sel/images/ganesha-tales/scene-5.png', '/sel/images/ganesha-tales/scene-1.png', '/sel/images/ganesha-tales/scene-2.png', '/sel/images/ganesha-tales/scene-3.png', '/sel/images/ganesha-tales/scene-4.png'],
+    ageRanking: { '3-6': 4, '7-9': 6, '10-12': 8 },
+  },
+  {
+    id: 'hanuman-adventures',
+    name: 'Hanuman Adventures',
+    description: 'The brave monkey god\'s incredible feats',
+    palette: { bg: '#fef3e2', accent: '#d97706', text: '#92400e' },
+    characters: 'Hanuman: strong golden monkey with a devoted expression, red dhoti, mace in hand, able to grow or shrink in size. Young Hanuman: mischievous baby monkey reaching for the sun. Surasa: sea monster with a wide mouth, dramatic but not scary. Sita: gentle, hopeful expression, sitting under a tree.',
+    settings: 'Vast blue ocean with waves, mountaintops touching clouds, Lanka gardens with ashoka trees, golden sunrise skies.',
+    scenes: [
+      { description: 'Baby Hanuman leaping toward the sun thinking it is a fruit, clouds parting around him', caption: 'Little Hanuman tries to catch the sun — what a brave leap!', empathyEmoji: 'Wow', isBondScene: false, narrativeRole: 'setup' },
+      { description: 'Hanuman flying over a vast ocean, giant waves below, mountains on the horizon', caption: 'Hanuman flies across the ocean to find Sita', empathyEmoji: 'Brave', isBondScene: false, narrativeRole: 'challenge' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'turning_point' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'climax' },
+      { description: 'Hanuman carrying a glowing mountain of herbs through the night sky, stars all around, hopeful glow', caption: 'Hanuman brings the healing mountain — nothing can stop devotion', empathyEmoji: 'Happy', isBondScene: true, narrativeRole: 'resolution' },
+    ],
+    adaptations: {
+      positive: { emotion: 'Happy/Brave', direction: 'Show Hanuman growing to enormous size to cross the ocean — towering above the waves, confident and powerful. Epic, thrilling.', targetMood: 'epic' },
+      negative: { emotion: 'Sad/Scared', direction: 'Show Hanuman finding Sita in the garden and reassuring her — giving her Rama\'s ring, Sita\'s face lighting up with hope. Tender, hopeful.', targetMood: 'hopeful' },
+      neutral: { emotion: 'Wow/Confused', direction: 'Show Hanuman shrinking tiny to sneak past guards — clever disguise, tiptoeing through Lanka. Playful, clever.', targetMood: 'playful' },
+    },
+    fallbackImages: ['/sel/fallback/hanuman-1.svg', '/sel/fallback/hanuman-2.svg', '/sel/fallback/hanuman-3.svg'],
+    staticImages: ['/sel/images/hanuman-adventures/scene-5.png', '/sel/images/hanuman-adventures/scene-1.png', '/sel/images/hanuman-adventures/scene-2.png', '/sel/images/hanuman-adventures/scene-3.png', '/sel/images/hanuman-adventures/scene-4.png'],
+    ageRanking: { '3-6': 6, '7-9': 7, '10-12': 5 },
+  },
+  {
+    id: 'vikram-betaal',
+    name: 'Vikram & Betaal',
+    description: 'A brave king solves tricky riddles',
+    palette: { bg: '#f0f4ff', accent: '#4f46e5', text: '#312e81' },
+    characters: 'King Vikram: brave king with a determined face, royal turban with a moon crest, simple armor, walking through a dark forest. Betaal: a mischievous spirit hanging upside-down from a tree, playful expression (NOT scary), translucent bluish glow.',
+    settings: 'Moonlit forests with twisted banyan trees, royal courts with flickering torches, misty paths, ancient India at night with stars.',
+    scenes: [
+      { description: 'King Vikram walking bravely into a dark moonlit forest, fireflies lighting his path', caption: 'Brave King Vikram enters the mysterious forest', empathyEmoji: 'Brave', isBondScene: false, narrativeRole: 'setup' },
+      { description: 'Betaal hanging from a tree telling a story, Vikram listening with a thoughtful expression', caption: 'Betaal tells a tricky story — can Vikram solve the riddle?', empathyEmoji: 'Wow', isBondScene: false, narrativeRole: 'challenge' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'turning_point' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'climax' },
+      { description: 'Vikram and Betaal sitting together at sunrise, both smiling, the forest now bright and welcoming', caption: 'Wisdom and courage turn even a rival into a friend', empathyEmoji: 'Happy', isBondScene: true, narrativeRole: 'resolution' },
+    ],
+    adaptations: {
+      positive: { emotion: 'Happy/Brave', direction: 'Show Vikram confidently answering the riddle — a glow of wisdom around his head, Betaal looking impressed. Confident, wise.', targetMood: 'triumphant' },
+      negative: { emotion: 'Sad/Scared', direction: 'Show the forest becoming less scary — fireflies appearing, a friendly owl watching over Vikram. The night is not so dark after all. Reassuring.', targetMood: 'reassuring' },
+      neutral: { emotion: 'Wow/Confused', direction: 'Show the riddle story coming alive as shadow puppets — characters acting out the dilemma, Vikram thinking deeply. Thought-provoking.', targetMood: 'thoughtful' },
+    },
+    fallbackImages: ['/sel/fallback/vikram-1.svg', '/sel/fallback/vikram-2.svg', '/sel/fallback/vikram-3.svg'],
+    staticImages: ['/sel/images/vikram-betaal/scene-2.png', '/sel/images/vikram-betaal/scene-1.png', '/sel/images/vikram-betaal/scene-3.png', '/sel/images/vikram-betaal/scene-4.png', '/sel/images/vikram-betaal/scene-5.png'],
+    ageRanking: { '3-6': 9, '7-9': 8, '10-12': 3 },
+  },
+  {
+    id: 'birbal-akbar',
+    name: 'Akbar & Birbal',
+    description: 'Clever Birbal outwits everyone with humor',
+    palette: { bg: '#f0fdf4', accent: '#16a34a', text: '#14532d' },
+    characters: 'Akbar: grand Mughal emperor with a jeweled turban, rich robes, kind but curious expression. Birbal: slim courtier with a witty smile, simple but elegant clothes, always thinking. Courtiers: group of men in colorful turbans, some jealous, some amused.',
+    settings: 'Ornate Mughal court with arches and fountains, palace gardens with peacocks, bustling bazaars, riverside at sunset.',
+    scenes: [
+      { description: 'Akbar sitting on his grand throne asking a question, Birbal standing with a knowing smile', caption: 'Emperor Akbar has a tricky question — only Birbal can answer!', empathyEmoji: 'Wow', isBondScene: false, narrativeRole: 'setup' },
+      { description: 'Jealous courtiers whispering together, pointing at Birbal, Birbal calmly drinking chai', caption: 'Some courtiers try to get Birbal in trouble', empathyEmoji: 'Sad', isBondScene: false, narrativeRole: 'challenge' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'turning_point' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'climax' },
+      { description: 'Akbar and Birbal laughing together in the garden, peacocks dancing, the whole court joining in', caption: 'Wit and wisdom always find a way — Akbar and Birbal laugh together', empathyEmoji: 'Happy', isBondScene: true, narrativeRole: 'resolution' },
+    ],
+    adaptations: {
+      positive: { emotion: 'Happy/Brave', direction: 'Show Birbal cleverly demonstrating his answer — using a pot of water or drawing lines in sand, Akbar looking amazed. Witty, brilliant.', targetMood: 'witty' },
+      negative: { emotion: 'Sad/Scared', direction: 'Show Birbal sitting calmly while others panic — his quiet confidence inspiring courage in a young servant. Steady, reassuring.', targetMood: 'steady' },
+      neutral: { emotion: 'Wow/Confused', direction: 'Show Birbal asking a counter-question that makes everyone think — the court falling silent, then slowly understanding. Mind-bending, clever.', targetMood: 'illuminating' },
+    },
+    fallbackImages: ['/sel/fallback/birbal-1.svg', '/sel/fallback/birbal-2.svg', '/sel/fallback/birbal-3.svg'],
+    staticImages: ['/sel/images/birbal-akbar/scene-5.png', '/sel/images/birbal-akbar/scene-1.png', '/sel/images/birbal-akbar/scene-2.png', '/sel/images/birbal-akbar/scene-3.png', '/sel/images/birbal-akbar/scene-4.png'],
+    ageRanking: { '3-6': 10, '7-9': 9, '10-12': 9 },
+  },
+  {
+    id: 'durga-tales',
+    name: 'Durga Tales',
+    description: 'The powerful goddess who protects the world',
+    palette: { bg: '#fdf2f8', accent: '#db2777', text: '#831843' },
+    characters: 'Durga: powerful goddess with a serene yet strong face, multiple arms holding symbols of power (lotus, conch, chakra), riding a majestic lion, red and gold sari, warm golden glow. Lion mount: proud and gentle. Village children: looking up with awe and admiration.',
+    settings: 'Cosmic skies with swirling galaxies, peaceful mountaintops, villages celebrating Navratri with oil lamps and garlands, rivers of light.',
+    scenes: [
+      { description: 'Durga riding her lion through a field of flowers, village children waving and cheering', caption: 'Goddess Durga arrives — strength and kindness in every step', empathyEmoji: 'Brave', isBondScene: false, narrativeRole: 'setup' },
+      { description: 'Dark clouds gathering over a peaceful village, villagers looking worried, Durga watching from above', caption: 'Trouble comes to the village — but someone is watching over them', empathyEmoji: 'Scared', isBondScene: false, narrativeRole: 'challenge' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'turning_point' },
+      { description: '', caption: '', empathyEmoji: '', isBondScene: false, narrativeRole: 'climax' },
+      { description: 'Durga blessing the village with light, children dancing around her lion, flowers raining from the sky, lamps everywhere', caption: 'Courage and love make the world bright again', empathyEmoji: 'Happy', isBondScene: true, narrativeRole: 'resolution' },
+    ],
+    adaptations: {
+      positive: { emotion: 'Happy/Brave', direction: 'Show Durga with her arms radiating light — each hand creating something beautiful: a flower, a star, a rainbow. Empowering, magnificent.', targetMood: 'empowering' },
+      negative: { emotion: 'Sad/Scared', direction: 'Show Durga gently holding a scared child — her lion sitting softly beside them, a warm golden shield of light around all three. Protective, safe.', targetMood: 'sheltering' },
+      neutral: { emotion: 'Wow/Confused', direction: 'Show Durga meditating with the cosmos visible around her — galaxies in her hair, rivers flowing from her hands, children watching in wonder. Transcendent, awesome.', targetMood: 'transcendent' },
+    },
+    fallbackImages: ['/sel/fallback/durga-1.svg', '/sel/fallback/durga-2.svg', '/sel/fallback/durga-3.svg'],
+    staticImages: ['/sel/images/durga-tales/scene-3.png', '/sel/images/durga-tales/scene-1.png', '/sel/images/durga-tales/scene-2.png', '/sel/images/durga-tales/scene-4.png', '/sel/images/durga-tales/scene-5.png'],
+    ageRanking: { '3-6': 7, '7-9': 10, '10-12': 10 },
   },
 ];
 

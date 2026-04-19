@@ -34,7 +34,18 @@
       "WebFetch(domain:raviraj.lol)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:provokedev.in)",
-      "WebFetch(domain:www.linkedin.com)"
+      "WebFetch(domain:www.linkedin.com)",
+      "Bash(npx jest:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/sel)",
+      "Bash(curl -s http://localhost:3001/api/sel/generate-image -X OPTIONS)",
+      "Bash(GEMINI_API_KEY=AIzaSyCj7xPSYr6pIwyfdUmdJca3hwMoLKvtHtI node scripts/generate-sel-images.mjs)",
+      "Bash(curl -s \"https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyCj7xPSYr6pIwyfdUmdJca3hwMoLKvtHtI\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/sel/images/ramayana/scene-1.png)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/sel/images/krishna-leela/scene-3.png)",
+      "Bash(find \"C:/raviraj-data/komalweb/public/sel/images\" -name \"*.svg\" -exec rm {} \\\\;)",
+      "Bash(GEMINI_API_KEY=\"AIzaSyCj7xPSYr6pIwyfdUmdJca3hwMoLKvtHtI\" node scripts/generate-sel-images.mjs)",
+      "Bash(find \"C:/raviraj-data/komalweb/public/sel/images\" -name \"*.svg\" -delete)"
     ]
   }
 }

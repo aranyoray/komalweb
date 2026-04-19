@@ -88,8 +88,8 @@ export default function SceneViewer({
 
         {/* Caption overlay */}
         {caption && imageLoaded && !isLoading && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/60 to-transparent">
-            <p className="text-white text-sm sm:text-base font-medium leading-relaxed">
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/60 to-transparent z-10">
+            <p className={`text-white text-sm sm:text-base font-medium leading-relaxed ${showPlayButton ? 'pr-16' : ''}`}>
               {caption}
             </p>
           </div>

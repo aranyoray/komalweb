@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -12,63 +12,63 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 
 const themes = [
   {
-    id: 'ramayana',
-    style: 'soft watercolor, warm palette, traditional Indian art, forest greens and golden yellows',
-    characters: 'Rama (blue-tinted skin, golden crown, yellow dhoti, calm expression), Sita (green sari, gentle face, flower in hair), Hanuman (golden fur, devotional expression, red dhoti)',
+    id: 'ganesha-tales',
+    style: 'soft watercolor, warm reds and golds, traditional Indian art, temple and kitchen settings',
+    characters: 'Young Ganesha (elephant-headed boy with round belly, one broken tusk, small golden crown, orange dhoti, riding tiny mouse Mushika), Parvati (loving mother, red sari with gold)',
     scenes: [
-      'Rama and Sita walking peacefully through a lush green forest with deer and colorful birds around them, golden sunlight filtering through trees',
-      'Sita looking concerned as dark clouds gather, a golden palace visible in the distance, dramatic but not scary atmosphere',
-      'Hanuman flying through the sky carrying a glowing mountain with healing herbs, clouds parting around him, warm golden light',
-      'Rama standing on a beach watching a stone bridge being built across a vast blue ocean toward a golden city, monkeys helping',
-      'Rama and Sita reunited in a flower-filled palace courtyard, Hanuman celebrating, petals falling from the sky, everyone smiling',
+      'Cute baby Ganesha happily eating round modak sweets while sitting on his tiny mouse Mushika, warm kitchen with clay pots, golden morning light',
+      'Young Ganesha standing guard at an ornate golden temple doorway looking determined, a bright divine light approaching from distance',
+      'Playful Ganesha circling his parents Shiva and Parvati on his tiny mouse, joyful race around Mount Kailash, clouds and mountains',
+      'Mother Parvati lovingly hugging young Ganesha, soft moonlight, mouse Mushika curled at their feet, flowers around them',
+      'Ganesha writing with his broken tusk as a pen on a long scroll under a starlit night sky, wisdom glowing around him',
     ],
   },
   {
-    id: 'mahabharata',
-    style: 'soft watercolor, warm palette, traditional Indian art, royal purples and battle golds',
-    characters: 'Arjuna (warrior with focused expression, bow and arrows), Krishna (blue skin, peacock feather crown, flute, peaceful smile, yellow robes), Draupadi (regal bearing, red and gold sari)',
+    id: 'hanuman-adventures',
+    style: 'soft watercolor, warm ambers and golden yellows, traditional Indian art, epic sky and ocean settings',
+    characters: 'Hanuman (strong golden monkey with devoted expression, red dhoti, able to grow or shrink), Baby Hanuman (mischievous baby monkey), Sita (gentle expression, sitting under tree)',
     scenes: [
-      'Young Pandava and Kaurava children playing together in a grand palace garden with peacocks and fountains, joyful atmosphere',
-      'Draupadi standing tall with dignity in a royal court filled with golden pillars, other people looking on with varied expressions',
-      'Arjuna practicing archery in a forest clearing, splitting a target perfectly, golden arrows and focused expression, impressed onlookers',
-      'Arjuna sitting on a chariot looking thoughtful and uncertain, Krishna beside him gesturing wisely, vast green field at dawn',
-      'Krishna speaking gently to Arjuna with a soft golden aura around them, chariot on a peaceful morning field with sunrise',
+      'Baby Hanuman leaping joyfully upward toward the bright orange sun thinking it is a mango fruit, white clouds parting around him, blue sky',
+      'Hanuman flying heroically over a vast blue ocean, giant waves below, golden mountains on the distant horizon, cape flowing behind',
+      'Giant enormous Hanuman standing tall above ocean waves, tiny boats below for scale, powerful golden aura, epic mountain-sized pose',
+      'Hanuman in a beautiful Ashoka garden offering a glowing golden ring to Sita who sits under a tree, hope lighting her face, leaves falling',
+      'Hanuman flying through a starlit night sky carrying a glowing green mountain of healing herbs, stars sparkling all around, hopeful glow trailing',
     ],
   },
   {
-    id: 'panchatantra',
-    style: 'soft watercolor, warm palette, Indian folk art style, jungle greens and warm oranges',
-    characters: 'Talking animals with expressive faces: a wise lion with a gentle golden mane, a clever white rabbit with bright eyes, a loyal black crow, a kind spotted deer, a playful brown monkey with a long tail',
+    id: 'vikram-betaal',
+    style: 'soft watercolor, deep indigos and moonlit blues, traditional Indian art, mysterious forest settings',
+    characters: 'King Vikram (brave king with royal turban, moon crest, simple armor), Betaal (playful translucent blue spirit hanging from tree, NOT scary)',
     scenes: [
-      'A group of animal friends gathered happily around a sparkling pond in a lush jungle — lion, rabbit, crow, deer, monkey chatting',
-      'A sly fox approaching the group of friends with a sneaky expression, the other animals looking at each other uncertainly',
-      'The clever rabbit drawing a plan in the dirt with a stick while the other animals watch with excited expressions, bright sunny day',
-      'The animals working together to set a clever trap using vines and coconuts, teamwork and determination on their faces',
-      'All animals celebrating together in a flower-filled meadow, even the fox looking embarrassed but included, rainbow in the sky',
+      'Brave King Vikram walking into a mysterious moonlit forest, golden fireflies lighting his path, twisted banyan trees, purple-blue night sky',
+      'A playful glowing blue spirit Betaal hanging upside-down from a gnarled tree branch telling a story, Vikram listening thoughtfully below, moonlight',
+      'Beautiful shadow puppets on a glowing orange screen, oil lamps on each side, silhouettes of characters acting out a story, warm firelight',
+      'A welcoming moonlit forest with dozens of golden fireflies everywhere, a friendly owl on a branch, wildflowers blooming, magical not scary',
+      'King Vikram and the spirit Betaal sitting together as friends at beautiful sunrise, forest bright and welcoming, birds flying, orange dawn sky',
     ],
   },
   {
-    id: 'krishna-leela',
-    style: 'soft watercolor, warm palette, traditional Indian art, butter yellows and river blues, pastoral feel',
-    characters: 'Young Krishna (playful child with blue skin, peacock feather in curly hair, yellow dhoti, mischievous smile), Yashoda (loving mother with warm expression), village children in colorful clothes',
+    id: 'birbal-akbar',
+    style: 'soft watercolor, emerald greens and Mughal golds, traditional Indian art, ornate court and garden settings',
+    characters: 'Emperor Akbar (grand jeweled turban, rich robes, kind curious expression), Birbal (slim courtier with witty smile, simple elegant clothes), Courtiers (colorful turbans)',
     scenes: [
-      'Baby Krishna sitting on Yashoda lap both laughing, a butter pot nearby, warm kitchen setting with clay pots and morning light',
-      'Young Krishna climbing a tall stack of clay pots to reach butter on a high shelf, village girls watching and giggling from doorway',
-      'Krishna dancing playfully in rain puddles with village children, peacocks dancing nearby, colorful umbrellas and splashing water',
-      'Krishna standing bravely on the hood of a large but non-scary serpent in a river, villagers watching in amazement from the bank',
-      'Krishna playing his flute under a big banyan tree by the Yamuna river, cows and children gathered peacefully, golden sunset sky',
+      'Emperor Akbar sitting on an ornate golden Mughal throne in a grand court with arches and pillars, Birbal standing with a knowing smile, courtiers around',
+      'Jealous Mughal courtiers in colorful turbans whispering together in a group, while clever Birbal stands apart calmly sipping chai with a confident smile',
+      'Clever Birbal drawing lines in sand with a stick demonstrating his brilliant answer, Emperor Akbar watching amazed, courtiers leaning in, sparkle of wisdom',
+      'Birbal asking a brilliant counter-question in the ornate Mughal court, everyone falling thoughtfully silent, golden light of realization dawning on faces',
+      'Emperor Akbar and Birbal laughing together in a beautiful Mughal garden with peacocks dancing, marble fountain, colorful flowers blooming everywhere',
     ],
   },
   {
-    id: 'jataka-tales',
-    style: 'soft watercolor, warm palette, ancient Indian art, earthy browns and saffron, gentle and wise mood',
-    characters: 'A golden deer with gentle antlers (the Bodhisattva), a small colorful bird with delicate wings, a wise old villager with a walking stick, forest animals with kind expressions',
+    id: 'durga-tales',
+    style: 'soft watercolor, rich pinks and divine golds, traditional Indian art, cosmic and village festival settings',
+    characters: 'Goddess Durga (powerful serene face, multiple arms holding lotus and conch, riding majestic lion, red and gold sari, warm golden glow), Village children (looking up in awe)',
     scenes: [
-      'A beautiful golden deer resting peacefully under a great banyan tree, soft sunlight filtering through leaves, butterflies around',
-      'A small bird with a broken wing sitting alone on a mossy rock in the rain, looking sad, dark clouds but not scary',
-      'The golden deer gently carrying the injured bird on its back through the forest, sheltering it from rain with large green leaves',
-      'The deer and bird arriving at a warm village, villagers coming out with kind expressions, an elder offering food and medicine',
-      'The healed bird flying happily around the golden deer in a sunlit forest glade, other animals watching, flowers blooming everywhere',
+      'Goddess Durga riding her majestic golden lion through a field of colorful flowers, village children waving and cheering, warm golden divine aura around her',
+      'Dark dramatic clouds gathering over a peaceful Indian village with clay huts, tiny worried villagers looking up, Goddess Durga watching protectively from the glowing clouds above',
+      'Powerful Goddess Durga with multiple arms radiating beams of golden light, each hand creating something beautiful - a lotus flower, a star, a rainbow, empowering cosmic scene',
+      'Goddess Durga gently holding a scared child in her arms protectively, her lion sitting softly beside them, a warm golden dome shield of light surrounding all three',
+      'Goddess Durga blessing the village from above with divine golden light rays, children dancing around her lion, colorful flower petals raining from sky, oil lamps glowing everywhere',
     ],
   },
 ];
@@ -103,7 +103,7 @@ async function generateImage(theme, sceneIndex) {
       if (part.inlineData?.mimeType?.startsWith('image/')) {
         const ext = part.inlineData.mimeType.includes('png') ? 'png' :
                     part.inlineData.mimeType.includes('webp') ? 'webp' : 'jpg';
-        const outPath = join('public', 'sel', 'images', theme.id, `scene-${sceneIndex + 1}.${ext}`);
+        const outPath = join('public', 'sel', 'images', theme.id, `scene-${sceneIndex + 1}.png`);
         const buf = Buffer.from(part.inlineData.data, 'base64');
         writeFileSync(outPath, buf);
         console.log(`  ✓ Saved ${outPath} (${(buf.length / 1024).toFixed(0)}KB)`);
@@ -117,7 +117,13 @@ async function generateImage(theme, sceneIndex) {
 }
 
 async function main() {
-  console.log('Generating SEL images with Gemini...\n');
+  console.log('Generating SEL images for new themes with Gemini...\n');
+
+  // Ensure directories exist
+  for (const theme of themes) {
+    const dir = join('public', 'sel', 'images', theme.id);
+    mkdirSync(dir, { recursive: true });
+  }
 
   const results = {};
 
@@ -129,18 +135,18 @@ async function main() {
       try {
         const path = await generateImage(theme, i);
         results[theme.id].push(path);
-        // Rate limit: wait 2s between calls
-        if (i < 4) await new Promise(r => setTimeout(r, 2000));
+        // Rate limit: wait 3s between calls
+        if (i < 4) await new Promise(r => setTimeout(r, 3000));
       } catch (err) {
         console.error(`  ✗ Error: ${err.message}`);
         results[theme.id].push(null);
         // Wait longer on error (might be rate limited)
-        await new Promise(r => setTimeout(r, 5000));
+        await new Promise(r => setTimeout(r, 8000));
       }
     }
 
     // Wait between themes
-    await new Promise(r => setTimeout(r, 3000));
+    await new Promise(r => setTimeout(r, 4000));
   }
 
   console.log('\n\nRESULTS:');

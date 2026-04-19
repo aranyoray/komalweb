@@ -63,6 +63,7 @@ export default function Navbar() {
     () => [
       { label: "Safety", href: { type: "route", value: "/content-safety" } as const },
       { label: "Mindfulness", href: { type: "route", value: "/mindfulness" } as const },
+      { label: "Stories", href: { type: "route", value: "/stories" } as const },
       { label: "About", href: { type: "route", value: "/team" } as const },
       { label: "Team", href: { type: "route", value: "/team" } as const },
       { label: "Pricing", href: { type: "route", value: "/pricing" } as const },

@@ -11,6 +11,7 @@ interface SelReportProps {
   responses: SceneResponse[];
   theme: ThemeConfig;
   childName?: string;
+  onPlayAgain?: () => void;
 }
 
 const caselLabels: Record<string, { icon: string; name: string }> = {
@@ -21,7 +22,7 @@ const caselLabels: Record<string, { icon: string; name: string }> = {
   responsibleDecisionMaking: { icon: '🧠', name: 'Thoughtful Engagement' },
 };
 
-export default function SelReport({ responses, theme, childName }: SelReportProps) {
+export default function SelReport({ responses, theme, childName, onPlayAgain }: SelReportProps) {
   const report = useMemo(() => computeCaselScores(responses), [responses]);
 
   const title = childName
@@ -112,13 +113,13 @@ export default function SelReport({ responses, theme, childName }: SelReportProp
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Link
-          href="/sel"
+        <button
+          onClick={onPlayAgain}
           className="px-6 py-3 rounded-full text-center font-semibold text-white transition-transform hover:scale-105"
           style={{ backgroundColor: theme.palette.accent }}
         >
           Play New Session
-        </Link>
+        </button>
         <Link
           href="/"
           className="px-6 py-3 rounded-full text-center font-semibold border-2 transition-transform hover:scale-105"

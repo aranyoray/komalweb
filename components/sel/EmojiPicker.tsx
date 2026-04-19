@@ -68,16 +68,16 @@ export default function EmojiPicker({ ageGroup, onSelect, onTimeout, themeAccent
 
   return (
     <div
-      className="fixed inset-0 z-[10000] flex items-end justify-center"
+      className="fixed inset-0 z-[10000] flex items-center justify-center"
       role="dialog"
       aria-label="How do you feel?"
     >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/30 animate-fadeIn" />
+      {/* Overlay with minimal blur */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-[3px] animate-fadeIn" />
 
       {/* Bottom sheet */}
       <div
-        className="relative w-full max-w-lg bg-white rounded-t-[1.5rem] shadow-2xl px-6 py-8 animate-slideUp"
+        className="relative w-full max-w-lg mx-4 bg-white rounded-2xl shadow-2xl px-6 py-8 animate-scaleIn"
         ref={containerRef}
         onKeyDown={handleKeyDown}
       >
@@ -134,12 +134,12 @@ export default function EmojiPicker({ ageGroup, onSelect, onTimeout, themeAccent
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
         }
         .animate-fadeIn { animation: fadeIn 0.3s ease forwards; }
-        .animate-slideUp { animation: slideUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        .animate-scaleIn { animation: scaleIn 0.3s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
       `}</style>
     </div>
   );

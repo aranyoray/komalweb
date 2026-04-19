@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useCallback, useRef, useEffect } from "react";
+import { useReducer, useCallback, useRef, useEffect, useMemo } from "react";
 import { themes, getShuffledSession } from "@/lib/sel/themes";
 import type { ThemeConfig } from "@/lib/sel/themes";
 import type { AgeGroup, EmojiOption } from "@/lib/sel/emoji-sets";
@@ -8,12 +8,11 @@ import type { SceneResponse } from "@/lib/sel/casel-scoring";
 import ThemeCard from "@/components/sel/ThemeCard";
 import SceneViewer from "@/components/sel/SceneViewer";
 import EmojiPicker from "@/components/sel/EmojiPicker";
-import BreathingCircle from "@/components/sel/BreathingCircle";
 import SelReport from "@/components/sel/SelReport";
 
 // ─── State Machine ───────────────────────────────────────────
 
-type Screen = 'theme_select' | 'scene' | 'emoji' | 'breathing' | 'report';
+type Screen = 'theme_select' | 'scene' | 'emoji' | 'report';
 
 interface SessionScene {
   image: string;
@@ -29,7 +28,6 @@ interface State {
   currentScene: number;
   sessionScenes: SessionScene[];
   responses: SceneResponse[];
-  unlockedThemes: string[];
 }
 
 type Action =
@@ -38,7 +36,6 @@ type Action =
   | { type: 'SHOW_EMOJI' }
   | { type: 'EMOJI_SELECTED'; emoji: EmojiOption; responseTimeMs: number }
   | { type: 'EMOJI_TIMEOUT' }
-  | { type: 'BREATHING_DONE' }
   | { type: 'RESET' };
 
 const initialState: State = {
@@ -48,7 +45,6 @@ const initialState: State = {
   currentScene: 0,
   sessionScenes: [],
   responses: [],
-  unlockedThemes: ['ramayana'],
 };
 
 function reducer(state: State, action: Action): State {
@@ -82,7 +78,8 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         responses: [...state.responses, newResponse],
-        screen: isLast ? 'report' : 'breathing',
+        currentScene: isLast ? state.currentScene : state.currentScene + 1,
+        screen: isLast ? 'report' : 'scene',
       };
     }
     case 'EMOJI_TIMEOUT': {
@@ -99,17 +96,12 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         responses: [...state.responses, timeoutResponse],
-        screen: isLast ? 'report' : 'breathing',
+        currentScene: isLast ? state.currentScene : state.currentScene + 1,
+        screen: isLast ? 'report' : 'scene',
       };
     }
-    case 'BREATHING_DONE':
-      return {
-        ...state,
-        currentScene: state.currentScene + 1,
-        screen: 'scene',
-      };
     case 'RESET':
-      return { ...initialState, unlockedThemes: state.unlockedThemes };
+      return { ...initialState };
     default:
       return state;
   }
@@ -151,15 +143,13 @@ export default function SelPage() {
     dispatch({ type: 'EMOJI_TIMEOUT' });
   }, []);
 
-  // Breathing auto-advance after 5 seconds
-  useEffect(() => {
-    if (state.screen === 'breathing') {
-      const timeout = setTimeout(() => {
-        dispatch({ type: 'BREATHING_DONE' });
-      }, 5000);
-      return () => clearTimeout(timeout);
-    }
-  }, [state.screen]);
+  // Sort themes by age-based ranking
+  const sortedThemes = useMemo(() =>
+    [...themes].sort((a, b) =>
+      (a.ageRanking[state.ageGroup] ?? 99) - (b.ageRanking[state.ageGroup] ?? 99)
+    ),
+    [state.ageGroup]
+  );
 
   // ─── Render ──────────────────────────────────────
 
@@ -170,7 +160,7 @@ export default function SelPage() {
 
   return (
     <div className="min-h-screen transition-colors duration-700" style={themeStyle}>
-      <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+      <div className="max-w-5xl mx-auto px-4 pt-32 sm:pt-36 pb-8 sm:pb-12">
 
         {/* ─── Theme Selection ─── */}
         {state.screen === 'theme_select' && (
@@ -203,12 +193,10 @@ export default function SelPage() {
 
             {/* Theme cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {themes.map((theme, i) => (
+              {sortedThemes.map((theme) => (
                 <ThemeCard
                   key={theme.id}
                   theme={theme}
-                  isUnlocked={state.unlockedThemes.includes(theme.id)}
-                  isFeatured={i === 0}
                   onSelect={handleThemeSelect}
                 />
               ))}
@@ -216,8 +204,8 @@ export default function SelPage() {
           </div>
         )}
 
-        {/* ─── Scene Viewer ─── */}
-        {state.screen === 'scene' && state.selectedTheme && currentSceneData && (
+        {/* ─── Scene Viewer (visible during both scene & emoji screens) ─── */}
+        {(state.screen === 'scene' || state.screen === 'emoji') && state.selectedTheme && currentSceneData && (
           <div className="animate-fadeIn">
             <SceneViewer
               imageUrl={currentSceneData.image}
@@ -227,38 +215,18 @@ export default function SelPage() {
               themeAccent={state.selectedTheme.palette.accent}
               isLoading={false}
               onPlayClick={() => dispatch({ type: 'SHOW_EMOJI' })}
-              showPlayButton={true}
+              showPlayButton={state.screen === 'scene'}
             />
           </div>
         )}
 
-        {/* ─── Emoji Picker ─── */}
+        {/* ─── Emoji Picker Overlay ─── */}
         {state.screen === 'emoji' && state.selectedTheme && currentSceneData && (
-          <div>
-            <SceneViewer
-              imageUrl={currentSceneData.image}
-              caption={currentSceneData.caption}
-              sceneIndex={state.currentScene}
-              totalScenes={5}
-              themeAccent={state.selectedTheme.palette.accent}
-              isLoading={false}
-              onPlayClick={() => {}}
-              showPlayButton={false}
-            />
-            <EmojiPicker
-              ageGroup={state.ageGroup}
-              onSelect={handleEmojiSelect}
-              onTimeout={handleEmojiTimeout}
-              themeAccent={state.selectedTheme.palette.accent}
-            />
-          </div>
-        )}
-
-        {/* ─── Breathing Transition ─── */}
-        {state.screen === 'breathing' && state.selectedTheme && (
-          <BreathingCircle
+          <EmojiPicker
+            ageGroup={state.ageGroup}
+            onSelect={handleEmojiSelect}
+            onTimeout={handleEmojiTimeout}
             themeAccent={state.selectedTheme.palette.accent}
-            message="Take a breath before the next story..."
           />
         )}
 
@@ -268,6 +236,7 @@ export default function SelPage() {
             <SelReport
               responses={state.responses}
               theme={state.selectedTheme}
+              onPlayAgain={() => dispatch({ type: 'RESET' })}
             />
           </div>
         )}
