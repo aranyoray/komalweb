@@ -21,7 +21,7 @@ export default function PricingPage() {
         },
         {
             name: "Grow",
-            priceINR: 99,
+            priceINR: 149,
             priceUSD: 10,
             billingMonths: 1,
             periodMonthlyLabel: "/month",
@@ -39,9 +39,9 @@ export default function PricingPage() {
         },
         {
             name: "Thrive",
-            priceINR: Math.round(99 * 6 * 0.9),
+            priceINR: 449,
             priceUSD: Math.round(10 * 6 * 0.9),
-            originalPriceINR: 99 * 6,
+            originalPriceINR: 499,
             originalPriceUSD: 10 * 6,
             billingMonths: 6,
             periodMonthlyLabel: "/6 months",

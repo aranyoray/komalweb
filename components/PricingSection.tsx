@@ -332,16 +332,6 @@ export default function PricingSection({ plans }: { plans: Plan[] }) {
         </div>
       )}
 
-      {/* Currency indicator (no toggle) */}
-      {!isLoading && (
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex items-center bg-gray-100 rounded-full px-4 py-2">
-            <span className="text-sm text-text-dim">
-              Prices shown in {geoData.currencySymbol} {geoData.currencyCode}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
