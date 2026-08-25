@@ -154,7 +154,7 @@ export default function WhyPage() {
                         </svg>
                     </span>
                     <p className="text-gray-700 text-sm leading-relaxed">
-                        Please email <strong>aranyo@komalkids.com</strong> to request access to our confidential materials. We respond within 24 hours to verified investor inquiries. A password-protected link will be provided—please use your professional email to access.
+                        Please email <strong>play@komalkids.com</strong> to request access to our confidential materials. We respond within 24 hours to verified investor inquiries. A password-protected link will be provided—please use your professional email to access.
                     </p>
                 </div>
             </section>
@@ -204,15 +204,14 @@ export default function WhyPage() {
                                 </svg>
                             </span>
                             <div>
-                                <p className="font-bold text-gray-900 text-lg">Aranyo Ray</p>
-                                <p className="text-gray-500 text-sm">CEO & Founder</p>
+                                <p className="font-bold text-gray-900 text-lg">Komal Kids</p>
+                                <p className="text-gray-500 text-sm">Investor Relations</p>
                             </div>
                         </div>
 
                         <div className="flex flex-col items-start md:items-end gap-1.5">
-                            <p className="text-gray-600 font-medium">+91 76670 70012</p>
-                            <p className="text-gray-900 font-medium">aranyo@komalkids.com</p>
-                            <a href="https://linkedin.com/in/aranyoray" className="text-primary text-sm font-medium hover:underline inline-flex items-center gap-1">
+                            <p className="text-gray-900 font-medium">play@komalkids.com</p>
+                            <a href="https://www.linkedin.com/company/komalkids/" className="text-primary text-sm font-medium hover:underline inline-flex items-center gap-1">
                                 LinkedIn Profile
                                 <svg className="w-3 h-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M7 17L17 7" />

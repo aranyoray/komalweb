@@ -253,12 +253,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // ── Company Pages ──
     {
-      url: `${baseUrl}/team`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
       url: `${baseUrl}/investors`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
