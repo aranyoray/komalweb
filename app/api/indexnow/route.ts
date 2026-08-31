@@ -53,7 +53,6 @@ const ALL_URLS = [
   '/blog/is-ai-safe-for-kids-educator',
   '/blog/is-ai-safe-for-kids-trust',
   '/blog/is-ai-safe-for-kids-policy',
-  '/team',
   '/investors',
   '/marketing',
   '/help',

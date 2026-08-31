@@ -5,7 +5,6 @@ import Link from "next/link";
 import Script from "next/script";
 import Image from "next/image";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
-import AdvisorsSection from "@/components/AdvisorsSection";
 
 
 import FaqAccordion from "@/components/FaqAccordion";
@@ -186,18 +185,6 @@ export default function Home() {
             logo: "https://komalkids.com/komaliconnobg.png",
             description: "KOMAL is an AI-powered child internet safety platform that protects children online through smart content filtering and parental controls.",
             foundingDate: "2024",
-            founders: [
-              {
-                "@type": "Person",
-                name: "Saarthak Kumar",
-                jobTitle: "Co-Founder & CEO"
-              },
-              {
-                "@type": "Person",
-                name: "Aranyo Ray",
-                jobTitle: "Co-Founder & CTO"
-              }
-            ],
             contactPoint: {
               "@type": "ContactPoint",
               email: "play@komalkids.com",
@@ -903,9 +890,6 @@ export default function Home() {
         </div>
       </section>
       */}
-
-      {/* Advisors Section */}
-      <AdvisorsSection />
 
       {/* For Schools & Therapists */}
       <section className="enterprise-cta pt-8 pb-12 md:py-16 bg-primary text-white text-center relative overflow-hidden" id="for-schools">

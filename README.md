@@ -73,9 +73,8 @@ Open [http://localhost:3001](http://localhost:3001) with your browser to see the
 1. **Home** (`/`) - Landing page with hero section, features, pricing, and FAQ
 2. **How KOMAL Works** (`/how-komal-works`) - Detailed explanation of the technology
 3. **Meet KOMAL** (`/meet-komal`) - Platform overview and technical details
-4. **Team** (`/team`) - Meet the team behind KOMAL
-5. **Privacy Policy** (`/privacy-policy`) - Comprehensive privacy policy with COPPA, DPDPA, and GDPR compliance
-6. **404 Page** (`/not-found`) - Custom 404 error page
+4. **Privacy Policy** (`/privacy-policy`) - Comprehensive privacy policy with COPPA, DPDPA, and GDPR compliance
+5. **404 Page** (`/not-found`) - Custom 404 error page
 
 ## Build for Production
 

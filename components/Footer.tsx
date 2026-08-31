@@ -373,7 +373,7 @@ export default function Footer() {
               Refund Policy
             </Link>
             <span className="text-border">|</span>
-            <Link href="/team" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
+            <Link href="/about-komal" className="text-text-dim hover:text-text hover:scale-105 transition-all duration-300">
               About Us
             </Link>
           </div>
