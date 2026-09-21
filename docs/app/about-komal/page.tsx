@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import Script from "next/script";
@@ -22,21 +21,6 @@ export default function AboutKomalPage() {
             "logo": "https://komalkids.com/komaliconnobg.png",
             "description": "Komal Kids (also known as Komal, Komal – Your Digital Buddy) is an AI-powered digital guardian for children ages 3-12. Using real-time behavioral AI, Komal adapts to each child's emotional and learning state, providing safe, age-appropriate digital experiences while protecting privacy through on-device processing.",
             "foundingDate": "2024",
-            "founders": [
-              {
-                "@type": "Person",
-                "name": "Saarthak Kumar",
-                "jobTitle": "Co-Founder & CEO",
-                "alumniOf": "Columbia University, London School of Economics"
-              },
-              {
-                "@type": "Person",
-                "name": "Aranyo Ray",
-                "jobTitle": "Co-Founder & CTO",
-                "alumniOf": "Yale University",
-                "award": "1st Place, APA at ISEF"
-              }
-            ],
             "sameAs": [
               "https://play.google.com/store/apps/details?id=com.komalkids.app&hl=en",
               "https://apps.apple.com/us/app/komal-your-digital-buddy/id6757139754",
@@ -133,133 +117,6 @@ export default function AboutKomalPage() {
             </section>
           </ScrollReveal>
 
-          {/* Founding Team */}
-          <ScrollReveal delay={0.2}>
-            <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-6 text-text">Founding Team</h2>
-              <div className="space-y-8">
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Saarthak Kumar</h3>
-                  <p className="text-sm text-text-dim mb-3">Co-Founder & CEO</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Saarthak holds MPAs from Columbia University and the London School of Economics in economic
-                    policy and quantitative analysis. He served as an Advisor to the Permanent Mission of India
-                    at the United Nations, bringing expertise in international policy and development economics.
-                    At Komal, he leads overall strategy and execution.
-                  </p>
-                  <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> MPA, Columbia & LSE | Ex-UN Advisor
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Aranyo Ray</h3>
-                  <p className="text-sm text-text-dim mb-3">Co-Founder & CTO</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Aranyo built edtech products and worked at pioneering SaaS startups like Graymatics and Commenda.
-                    A Wu Tsai Scholar at Yale University investigating implicit bias in multicultural learning, he won
-                    1st Place from the American Psychological Association (APA) at ISEF for his culturally relevant
-                    game app and is published in Harvard's Journal of Emerging Investigators. At Komal, he leads
-                    technology and product development.
-                  </p>
-                  <p className="text-sm text-text-dim mt-2">
-                    <strong>Credentials:</strong> Wu Tsai Scholar, Yale University | Ex-Graymatics, Commenda |
-                    Published in Harvard's Journal of Emerging Investigators
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <div className="flex items-start gap-5">
-                    <div className="shrink-0">
-                      <Image
-                        src="/joy-cai.png"
-                        alt="Joy Cai"
-                        width={96}
-                        height={96}
-                        className="rounded-full object-cover w-20 h-20 md:w-24 md:h-24"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2 text-text">Joy Cai</h3>
-                      <p className="text-sm text-text-dim mb-3">Growth & Partnership</p>
-                      <p className="text-text-dim leading-relaxed">
-                        Joy is a health-tech operator and founder. She founded Solis Health, a registered dietitian
-                        platform that provides nutritional counseling backed by health insurance. Previously, she was
-                        Chief of Staff at Flagler Health, where she aided in a $4M seed stage raise. She brings deep
-                        experience in fundraising, operations, and growth.
-                      </p>
-                      <p className="text-sm text-text-dim mt-2">
-                        <strong>Credentials:</strong> BA Economics, UPenn | Founder, Solis Health | Ex-Chief of Staff, Flagler Health
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </ScrollReveal>
-
-          {/* Advisory Board */}
-          <ScrollReveal delay={0.3}>
-            <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-6 text-text">Advisory Board</h2>
-              <div className="space-y-6">
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Linda Yu, Master of Business Administration (MBA)</h3>
-                  <p className="text-sm text-text-dim mb-3">Regional CEO for Canada & China</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Ms. Yu serves as Chair of the Canada Sunshine Foundation and Executive President of the Canadian Women's Federation. She has extensive experience as a senior leader of multiple non-profit organizations and an advocate for parental rights. She has worked as a youth mentor at the Sunshine Foundation for 8 years, guiding over 2,000 young people and driving various initiatives in youth development, educational opportunities, and family well-being. Ms. Yu has led numerous large-scale fundraising campaigns, raising over 120,000 Canadian dollars to support children's programs, family services, and healthcare initiatives—including fundraising projects for UNICEF and the Red Cross. Linda oversees international partnerships, business development, and expansion for Komal across the Canadian and Chinese markets. She also provides consulting services in parental trust building and community-led distribution, and supports the development of the brand's marketing and promotion strategies.
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Audrey Wisch</h3>
-                  <p className="text-sm text-text-dim mb-3">CEO | Co-Founder & CEO, Curious Cardinals | Forbes 30u30</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Audrey is the Co-Founder & CEO of Curious Cardinals, a leading mentorship platform connecting 
-                    students with inspiring role models. A Forbes 30 Under 30 honoree, she brings deep expertise in 
-                    education technology, youth engagement, and scaling mission-driven startups to help Komal reach 
-                    families worldwide.
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Dr. (Prof) Om Prakash Singh, MD, FRCP</h3>
-                  <p className="text-sm text-text-dim mb-3">Editor-in-Chief, Indian Journal of Psychiatry</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Dr. Singh is a senior psychiatrist with three decades of clinical, academic, and leadership experience, 
-                    shaping psychiatric education, research standards, and policy in South Asia. He specializes in child 
-                    and adolescent mental health, community psychiatry, ethics, and access to care, authoring 140+ 
-                    peer-reviewed articles and 2 books. He holds an MD from Lady Hardinge Medical College, is a Fellow of 
-                    the Royal College of Physicians (Edinburgh) and International Distinguished Fellow of the APA. At Komal, 
-                    he advises our de-addiction strategy and psychosocial framework for children's digital experiences.
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Bratati Sinha Ray</h3>
-                  <p className="text-sm text-text-dim mb-3">Consultant Psychologist | Apollo Clinic | 22+ years experience</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Bratati is a Consultant Psychologist and Psychotherapist at Apollo Clinic with 22+ years of experience 
-                    in child psychology, working pan-India across cultural boundaries with clients aged 5-85. She specializes 
-                    in supporting children and adolescents with ADHD, learning disorders, ASD, OCD, anxiety, depression, and 
-                    addiction. She holds a Masters in Clinical Psychology, PGDs in Psychological Counseling and Clinical 
-                    Psychology, and is a certified Trauma Healer.
-                  </p>
-                </div>
-
-                <div className="bg-surface/50 p-6 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2 text-text">Shreya Jain, MBA</h3>
-                  <p className="text-sm text-text-dim mb-3">CEO | Founder, The Stack | Formerly at BYJU'S</p>
-                  <p className="text-text-dim leading-relaxed">
-                    Shreya is the Founder of The Stack and Reservoir Neurodiversity. Formerly at BYJU'S, she is an expert 
-                    in go-to-market strategy and neurodiversity, helping Komal reach and support diverse communities through 
-                    strategic growth.
-                  </p>
-                </div>
-              </div>
-            </section>
-          </ScrollReveal>
-
           {/* Research Foundation */}
           <ScrollReveal delay={0.4}>
             <section className="mb-12">
@@ -272,8 +129,8 @@ export default function AboutKomalPage() {
                 </p>
                 <p>
                   The platform incorporates insights from leading research institutions including Yale University, UC Berkeley, 
-                  and the University of Calgary's Internal Attention Lab. Our advisory board includes experts from the 
-                  American Psychological Association, Indian Journal of Psychiatry, and leading pediatric psychology clinics.
+                  and the University of Calgary's Internal Attention Lab, alongside expertise spanning child psychiatry, 
+                  clinical psychology, and pediatric mental health.
                 </p>
                 <p>
                   Komal's real-time behavioral AI is informed by research on attention tracking, ADHD detection, mindfulness 

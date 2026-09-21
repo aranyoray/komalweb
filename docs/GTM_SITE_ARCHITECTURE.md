@@ -25,7 +25,6 @@
 
 ```
 /why                        Philosophy / Manifesto
-/team                       Team
 /safety-trust               Safety & Trust
 /content-safety             Content Safety
 /privacy-policy             Privacy Policy

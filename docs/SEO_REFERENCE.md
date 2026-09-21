@@ -62,7 +62,6 @@
 - `/pricing` - Commercial intent
 - `/demo` - Conversion page
 - `/marketing` - App store landing
-- `/team` - E-E-A-T
 - `/why` - Mission/philosophy
 
 ---

@@ -60,7 +60,7 @@ const content = {
       },
       {
         title: "Expert Advisory",
-        description: "Advised by leading Indian child psychologists including Dr. (Prof) Om Prakash Singh, MD, FRCP, Editor-in-Chief of the Indian Journal of Psychiatry."
+        description: "Advised by leading Indian child psychologists and mental-health experts, grounded in clinical research and best practices."
       },
       {
         title: "Privacy Protected",
