@@ -234,26 +234,45 @@ export const DANGEROUS_KEYWORD_PATTERNS = [
 // Domain Classification Functions
 // ============================================================================
 
-export function isSocialMediaSite(url: string): boolean {
-  try {
-    const parsedUrl = new URL(url);
-    const hostname = parsedUrl.hostname.toLowerCase();
+/**
+ * Extract a lowercase hostname from user input that may be a full URL
+ * ("https://facebook.com/x"), a bare domain ("facebook.com"), or a plain
+ * keyword ("math for kids"). Bare domains lack a scheme, so `new URL()`
+ * throws on them; we retry with an "https://" prefix so bare domains are
+ * still classified. Returns null when no hostname can be derived (e.g. a
+ * multi-word keyword), leaving such input for keyword-based analysis.
+ */
+function extractHostname(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
 
-    if (SOCIAL_MEDIA_DOMAINS.has(hostname)) return true;
-
-    const withoutWww = hostname.replace(/^www\./, '');
-    if (SOCIAL_MEDIA_DOMAINS.has(withoutWww)) return true;
-
-    for (const domain of SOCIAL_MEDIA_DOMAINS) {
-      if (hostname.endsWith('.' + domain) || hostname === domain) {
-        return true;
-      }
+  for (const candidate of [trimmed, `https://${trimmed}`]) {
+    try {
+      return new URL(candidate).hostname.toLowerCase();
+    } catch {
+      // Try the next candidate (e.g. the https://-prefixed form).
     }
-
-    return false;
-  } catch {
-    return false;
   }
+
+  return null;
+}
+
+export function isSocialMediaSite(url: string): boolean {
+  const hostname = extractHostname(url);
+  if (!hostname) return false;
+
+  if (SOCIAL_MEDIA_DOMAINS.has(hostname)) return true;
+
+  const withoutWww = hostname.replace(/^www\./, '');
+  if (SOCIAL_MEDIA_DOMAINS.has(withoutWww)) return true;
+
+  for (const domain of SOCIAL_MEDIA_DOMAINS) {
+    if (hostname.endsWith('.' + domain) || hostname === domain) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function getDangerousSiteCategory(hostname: string): DangerousSiteInfo | null {
@@ -321,26 +340,23 @@ export function getDangerousSiteCategory(hostname: string): DangerousSiteInfo | 
 }
 
 export function isDangerousSite(url: string): DangerousSiteInfo | null {
-  try {
-    const parsedUrl = new URL(url);
-    const hostname = parsedUrl.hostname.toLowerCase();
+  const hostname = extractHostname(url);
 
+  if (hostname) {
     const result = getDangerousSiteCategory(hostname);
     if (result) return result;
 
     const withoutWww = hostname.replace(/^www\./, '');
     const resultWithoutWww = getDangerousSiteCategory(withoutWww);
     if (resultWithoutWww) return resultWithoutWww;
-
-    const fullUrl = url.toLowerCase();
-    for (const pattern of DANGEROUS_KEYWORD_PATTERNS) {
-      if (pattern.test(fullUrl)) {
-        return getDangerousSiteCategory(fullUrl) || { category: 'dangerous', reason: 'Age-inappropriate content detected in URL', severity: 'high' };
-      }
-    }
-
-    return null;
-  } catch {
-    return null;
   }
+
+  const fullUrl = url.toLowerCase();
+  for (const pattern of DANGEROUS_KEYWORD_PATTERNS) {
+    if (pattern.test(fullUrl)) {
+      return getDangerousSiteCategory(fullUrl) || { category: 'dangerous', reason: 'Age-inappropriate content detected in URL', severity: 'high' };
+    }
+  }
+
+  return null;
 }

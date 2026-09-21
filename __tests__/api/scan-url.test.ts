@@ -1,3 +1,11 @@
+/**
+ * Route handlers run in a server (Node) context, so this suite uses the Node
+ * test environment. jsdom does not expose the Web `Request`/`Response`/`fetch`
+ * globals that `next/server` (NextRequest extends Request) relies on at module
+ * load, which otherwise throws "ReferenceError: Request is not defined".
+ *
+ * @jest-environment node
+ */
 import { POST } from '@/app/api/scan-url/route';
 import { NextRequest } from 'next/server';
 
